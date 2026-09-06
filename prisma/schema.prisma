@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- BetterAuth ----------
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions        Session[]
+  accounts        Account[]
+  routinesCreated Routine[]        @relation("RoutineCreator")
+  memberships     RoutineMember[]
+  workoutSessions WorkoutSession[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ---------- Krafitt ----------
+
+model Routine {
+  id            String   @id @default(cuid())
+  name          String
+  durationWeeks Int
+  creatorId     String
+  creator       User     @relation("RoutineCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  workouts Workout[]
+  members  RoutineMember[]
+  sessions WorkoutSession[]
+}
+
+/// The owner is a member too (canEdit = true). Progress (cursor) is per athlete.
+model RoutineMember {
+  id        String  @id @default(cuid())
+  routineId String
+  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  canEdit   Boolean @default(false)
+  isActive  Boolean @default(false)
+  cursor    Int     @default(0)
+
+  @@unique([routineId, userId])
+}
+
+/// One training day of the routine: "Push A", "Legs"...
+model Workout {
+  id        String  @id @default(cuid())
+  routineId String
+  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int
+
+  exercises Exercise[]
+  sessions  WorkoutSession[]
+
+  @@index([routineId, order])
+}
+
+model Exercise {
+  id           String  @id @default(cuid())
+  workoutId    String
+  workout      Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  name         String
+  order        Int
+  sets         Int
+  repMin       Int
+  repMax       Int
+  technique    String
+  targetWeight Float?
+
+  logs SetLog[]
+
+  @@index([workoutId, order])
+}
+
+model WorkoutSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineId   String
+  routine     Routine   @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  workoutId   String
+  workout     Workout   @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  week        Int
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  logs SetLog[]
+
+  @@unique([userId, workoutId, week])
+  @@index([userId, routineId])
+}
+
+model SetLog {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  setIndex   Int
+  weight     Float
+  reps       Int
+
+  @@unique([sessionId, exerciseId, setIndex])
+}

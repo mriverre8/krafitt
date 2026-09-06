@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Krafitt
 
-## Getting Started
+Gym progress tracking: shared routines, today's workout and set-by-set logging.
 
-First, run the development server:
+## Getting started
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy `.env.example` to `.env` and fill it in with your Supabase project:
+   - `DATABASE_URL`: the pooler in *Transaction* mode (port 6543, with `?pgbouncer=true`). Used by the app.
+   - `DIRECT_URL`: the direct connection (port 5432). Used by `prisma migrate`.
+   - `BETTER_AUTH_SECRET`: `openssl rand -base64 32`.
+2. `pnpm install`
+3. `pnpm db:migrate` — creates the tables in Supabase.
+4. `pnpm dev`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Commands
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The project is pinned to pnpm through the `packageManager` field, so `corepack` picks the right version.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Development server |
+| `pnpm build` | Production build |
+| `pnpm test` | Tests (Vitest) |
+| `pnpm db:migrate` | Applies Prisma migrations |
 
-## Learn More
+## How it works
 
-To learn more about Next.js, take a look at the following resources:
+- **Routine**: N weeks × M training days. Each day holds exercises with sets, a rep range and a technique.
+- **Progress**: every athlete keeps their own cursor inside the routine. The home screen shows the pending workout of whichever routine you marked as **active**, and it does not move on until you finish it (or skip it by hand).
+- **Logging**: the fields stay locked until you press *Start*. A set only unlocks once the previous one is filled in, and it is saved right away. Filling in the last set closes the workout and moves you to the next day.
+- **Permissions**: only the owner adds athletes, grants editing rights and deletes the routine.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Languages and theme
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Languages: English, Spanish and Catalan. Dictionaries live in `src/i18n/{en,es,ca}.ts`; English is the source and the other two are typed against it, so a missing key is a compile error. The locale comes from a cookie, falling back to the browser's `Accept-Language`.
+- Light/dark theme through a cookie: the server paints the class on `<html>`, so there is no flash and no blocking script. Colour tokens live in `src/app/globals.css`.
+- Both are switched from the top bar. Neither needs an extra dependency.
 
-## Deploy on Vercel
+## Layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/components/`: one component per file, all client components (they use `useT()`).
+- `src/tests/`: one suite per component, plus `progress.test.ts` (pure logic) and `i18n.test.ts` (key parity across locales).
+- `src/app/`: server pages and server actions.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Not done yet
+
+- Stats (`/routines/[id]/stats` is a placeholder).
+- Plurals: strings such as "1 weeks · 1 days" do not agree with 1. Doing it properly needs `Intl.PluralRules` per placeholder.
