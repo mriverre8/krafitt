@@ -1,8 +1,17 @@
 import { NavBar } from '@/components/nav-bar';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock('@/lib/auth-client', () => ({
+    authClient: { signOut: vi.fn().mockResolvedValue(undefined) },
+}));
+
+/** The mobile menu and the desktop links never coexist on a real viewport. */
+function openMenu(name: string) {
+    fireEvent.click(screen.getByRole('button', { name }));
+    return screen.getByLabelText(name, { selector: 'div' });
+}
 
 describe('NavBar', () => {
     it('hides the app links when signed out', () => {
@@ -17,6 +26,9 @@ describe('NavBar', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Sign out' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Menu' })
         ).not.toBeInTheDocument();
     });
 
@@ -36,16 +48,73 @@ describe('NavBar', () => {
         ).toBeInTheDocument();
     });
 
-    it('always offers theme and language controls', () => {
+    it('keeps theme and language out of the bar until settings is opened', () => {
         render(
             <NavBar
                 signedIn={false}
                 theme="dark"
             />
         );
-        expect(screen.getByLabelText('Switch theme')).toBeInTheDocument();
+        expect(screen.queryByLabelText('Switch theme')).not.toBeInTheDocument();
         expect(
-            screen.getByRole('group', { name: 'Language' })
+            screen.queryByRole('group', { name: 'Language' })
+        ).not.toBeInTheDocument();
+
+        const menu = openMenu('Settings');
+        expect(within(menu).getByLabelText('Switch theme')).toBeInTheDocument();
+        expect(
+            within(menu).getByRole('group', { name: 'Language' })
         ).toBeInTheDocument();
+    });
+
+    it('puts every signed-in option in the mobile user menu', () => {
+        render(
+            <NavBar
+                signedIn
+                theme="dark"
+            />
+        );
+        const menu = openMenu('Menu');
+        expect(within(menu).getByRole('link', { name: 'Today' })).toBeVisible();
+        expect(
+            within(menu).getByRole('link', { name: 'Routines' })
+        ).toBeVisible();
+        expect(
+            within(menu).getByRole('button', { name: 'Settings' })
+        ).toBeVisible();
+        expect(
+            within(menu).getByRole('button', { name: 'Sign out' })
+        ).toBeVisible();
+    });
+
+    it('expands language and theme inside the mobile menu', () => {
+        render(
+            <NavBar
+                signedIn
+                theme="dark"
+            />
+        );
+        const menu = openMenu('Menu');
+        expect(
+            within(menu).queryByLabelText('Switch theme')
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(within(menu).getByRole('button', { name: 'Settings' }));
+        expect(within(menu).getByLabelText('Switch theme')).toBeInTheDocument();
+        expect(
+            within(menu).getByRole('group', { name: 'Language' })
+        ).toBeInTheDocument();
+    });
+
+    it('offers a single settings control, never one per breakpoint', () => {
+        render(
+            <NavBar
+                signedIn
+                theme="dark"
+            />
+        );
+        expect(
+            screen.getAllByRole('button', { name: 'Settings' })
+        ).toHaveLength(1);
     });
 });
