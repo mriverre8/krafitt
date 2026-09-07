@@ -10,6 +10,8 @@ export const en = {
     'nav.signOut': 'Sign out',
     'nav.theme': 'Switch theme',
     'nav.language': 'Language',
+    'nav.settings': 'Settings',
+    'nav.menu': 'Menu',
 
     'landing.feature1':
         'Build routines with their days, exercises, sets, rep ranges and technique.',

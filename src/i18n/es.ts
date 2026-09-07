@@ -10,6 +10,8 @@ export const es: Dict = {
     'nav.signOut': 'Salir',
     'nav.theme': 'Cambiar tema',
     'nav.language': 'Idioma',
+    'nav.settings': 'Configuración',
+    'nav.menu': 'Menú',
 
     'landing.feature1':
         'Monta rutinas con sus días, ejercicios, series, rango de repeticiones y técnica.',

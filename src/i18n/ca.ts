@@ -10,6 +10,8 @@ export const ca: Dict = {
     'nav.signOut': 'Sortir',
     'nav.theme': 'Canviar tema',
     'nav.language': 'Idioma',
+    'nav.settings': 'Configuració',
+    'nav.menu': 'Menú',
 
     'landing.feature1':
         'Munta rutines amb els seus dies, exercicis, sèries, rang de repeticions i tècnica.',

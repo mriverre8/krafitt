@@ -1,0 +1,94 @@
+'use client';
+
+import { useT } from '@/i18n/use-t';
+import { authClient } from '@/lib/auth-client';
+import type { Theme } from '@/lib/theme';
+import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Dropdown } from './dropdown';
+import { SettingsPanel } from './settings-panel';
+
+const itemClass =
+    'flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-blaze';
+
+/** Mobile navigation: every signed-in action behind a single user icon. */
+export function UserMenu({ theme }: { theme: Theme }) {
+    const t = useT();
+    const router = useRouter();
+    const [showSettings, setShowSettings] = useState(false);
+
+    return (
+        <Dropdown
+            label={t('nav.menu')}
+            icon={
+                <User
+                    size={16}
+                    aria-hidden
+                />
+            }
+        >
+            {(close) => (
+                <>
+                    <Link
+                        href="/"
+                        onClick={close}
+                        className={itemClass}
+                    >
+                        <CalendarDays
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.today')}
+                    </Link>
+                    <Link
+                        href="/routines"
+                        onClick={close}
+                        className={itemClass}
+                    >
+                        <Dumbbell
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.routines')}
+                    </Link>
+
+                    <button
+                        type="button"
+                        onClick={() => setShowSettings((value) => !value)}
+                        aria-expanded={showSettings}
+                        className={itemClass}
+                    >
+                        <Settings
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.settings')}
+                    </button>
+                    {showSettings && (
+                        <div className="border-line border-t pt-2 pb-1">
+                            <SettingsPanel theme={theme} />
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            close();
+                            await authClient.signOut();
+                            router.refresh();
+                        }}
+                        className={itemClass}
+                    >
+                        <LogOut
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.signOut')}
+                    </button>
+                </>
+            )}
+        </Dropdown>
+    );
+}
