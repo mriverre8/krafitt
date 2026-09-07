@@ -41,12 +41,19 @@ export function SetRow({
     (!saved || saved.weight !== parsedWeight || saved.reps !== parsedReps);
   const done = !!saved && !canSave;
 
+  // The left rule is the state: quiet when locked, orange when it is your turn,
+  // green once the set is banked.
   return (
-    <div className="flex items-center gap-2">
-      <span className={`w-12 shrink-0 text-[11px] font-bold uppercase tracking-wider ${done ? "text-volt" : "text-muted"}`}>
-        {t("today.set", { n: number })}
+    <div
+      className={`flex items-center gap-2 border-l-2 pl-2.5 transition-colors ${
+        done ? "border-surge" : enabled ? "border-blaze" : "border-line"
+      }`}
+    >
+      <span className={`figure w-5 shrink-0 text-lg ${done ? "text-surge" : "text-muted"}`}>
+        <span className="sr-only">{t("today.set", { n: number })}</span>
+        <span aria-hidden>{number}</span>
       </span>
-      <span className="w-20 shrink-0 text-[11px] tabular-nums text-muted">
+      <span className="w-16 shrink-0 text-xs tabular-nums text-muted">
         {previous && previousWeek !== null
           ? t("today.previous", {
               week: previousWeek,
@@ -65,7 +72,7 @@ export function SetRow({
         disabled={!enabled}
         value={weight}
         onChange={(event) => setDraft({ weight: event.target.value, reps })}
-        className={`${inputClass} text-center tabular-nums`}
+        className={`${inputClass} figure text-center text-base`}
       />
       <input
         type="number"
@@ -76,7 +83,7 @@ export function SetRow({
         disabled={!enabled}
         value={reps}
         onChange={(event) => setDraft({ weight, reps: event.target.value })}
-        className={`${inputClass} text-center tabular-nums`}
+        className={`${inputClass} figure text-center text-base`}
       />
       <button
         type="button"
@@ -84,8 +91,12 @@ export function SetRow({
         onClick={() => onSave(parsedWeight, parsedReps)}
         aria-label={t("today.saveLabel", { n: number })}
         data-done={done}
-        className={`grid w-10 shrink-0 place-items-center rounded-xl py-2.5 transition disabled:opacity-30 ${
-          done ? "bg-volt text-black" : "bg-blaze text-white"
+        // A banked set keeps its green even though the button is done and
+        // disabled; a locked one goes neutral, because faded orange turns muddy.
+        className={`lift grid w-11 shrink-0 place-items-center rounded-xl py-2.5 disabled:pointer-events-none ${
+          done
+            ? "bg-surge text-on-accent"
+            : "bg-blaze text-on-accent hover:bg-ember disabled:bg-surface2 disabled:text-muted"
         }`}
       >
         {done ? <Check size={16} aria-hidden /> : <ArrowRight size={16} aria-hidden />}

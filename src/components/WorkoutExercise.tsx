@@ -2,6 +2,7 @@
 
 import { useT } from "@/i18n/useT";
 import type { SetValue } from "@/lib/progress";
+import { cardClass } from "@/lib/ui";
 import { SetRow } from "./SetRow";
 
 export type ExerciseView = {
@@ -32,14 +33,12 @@ export function WorkoutExercise({
   const t = useT();
 
   return (
-    <section className="rounded-2xl border border-line bg-surface p-4">
+    <section className={cardClass}>
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="display text-xl">{exercise.name}</h2>
-        <span className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-blaze">
-          {exercise.technique}
-        </span>
+        <h2 className="display text-2xl">{exercise.name}</h2>
+        <span className="shrink-0 text-sm font-semibold text-blaze">{exercise.technique}</span>
       </div>
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         {t("today.exerciseMeta", {
           sets: exercise.sets,
           min: exercise.repMin,
@@ -49,7 +48,7 @@ export function WorkoutExercise({
           ` · ${t("today.target", { weight: exercise.targetWeight })}`}
       </p>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {Array.from({ length: exercise.sets }, (_, setIndex) => (
           <SetRow
             key={setIndex}

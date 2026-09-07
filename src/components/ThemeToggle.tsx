@@ -26,7 +26,7 @@ export function ThemeToggle({ theme }: { theme: Theme }) {
       type="button"
       onClick={toggle}
       aria-label={t("nav.theme")}
-      className="rounded-lg border border-line p-1.5 text-muted transition hover:border-blaze hover:text-blaze"
+      className="rounded-lg border border-line p-1.5 text-muted transition-colors hover:border-blaze hover:text-blaze"
     >
       {current === "dark" ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
     </button>

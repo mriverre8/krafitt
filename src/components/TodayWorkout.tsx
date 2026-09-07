@@ -49,20 +49,25 @@ export function TodayWorkout(props: TodayWorkoutProps) {
 
   return (
     <div className="space-y-4">
-      <header className="overflow-hidden rounded-2xl border border-line bg-surface">
-        <div className="bg-gradient-to-br from-blaze to-ember p-5 text-white">
-          <p className="text-[11px] font-bold uppercase tracking-[0.25em] opacity-80">
-            {routineName}
-          </p>
-          <h1 className="display text-4xl">{workout.name}</h1>
-          <p className="mt-1 text-xs font-bold uppercase tracking-widest opacity-90">
-            {t("today.week", { week, total: totalWeeks })}
+      <header className="rounded-2xl border border-line bg-surface p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="truncate text-sm text-muted">{routineName}</p>
+            <h1 className="display text-5xl text-ink">{workout.name}</h1>
+          </div>
+          {/* "2 / 8" reads at arm's length; the sentence stays for screen readers. */}
+          <p className="figure shrink-0 text-right text-3xl leading-none text-blaze">
+            <span className="sr-only">{t("today.week", { week, total: totalWeeks })}</span>
+            <span aria-hidden>
+              {week}
+              <span className="block text-xs font-medium text-muted">/ {totalWeeks}</span>
+            </span>
           </p>
         </div>
 
-        <div className="p-4">
+        <div className="mt-4">
           {started ? (
-            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-volt">
+            <p className="flex items-center gap-2 text-sm font-semibold text-surge">
               <Flame size={16} aria-hidden />
               {t("today.inProgress")}
             </p>
@@ -71,7 +76,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
               type="button"
               disabled={pending || workout.exercises.length === 0}
               onClick={() => run(() => startWorkout(workout.id, week))}
-              className={`${primaryClass} flex w-full items-center justify-center gap-2 py-4 text-base`}
+              className={`${primaryClass} flex w-full items-center justify-center gap-2 py-4 text-lg`}
             >
               <Play size={18} aria-hidden />
               {t("today.start")}
@@ -87,6 +92,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
           {t("today.noExercises")}
         </p>
       )}
+
 
       {workout.exercises.map((exercise) => (
         <WorkoutExercise

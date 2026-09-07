@@ -13,7 +13,7 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
 
   return (
     <form action={formAction} className="space-y-3 rounded-2xl border border-line bg-surface p-4">
-      <h2 className="display text-2xl">{t("routines.newTitle")}</h2>
+      <h2 className="display text-3xl">{t("routines.newTitle")}</h2>
       <input
         name="name"
         aria-label={t("routines.nameLabel")}

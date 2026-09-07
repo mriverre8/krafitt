@@ -14,9 +14,9 @@ export default async function RoutinesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="display text-4xl">{t("routines.title")}</h1>
+      <h1 className="display text-5xl">{t("routines.title")}</h1>
 
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {routines.map((routine) => (
           <RoutineCard
             key={routine.id}
@@ -30,7 +30,7 @@ export default async function RoutinesPage() {
           />
         ))}
         {routines.length === 0 && (
-          <li className="rounded-2xl border border-dashed border-line p-6 text-center text-sm text-muted">
+          <li className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">
             {t("routines.empty")}
           </li>
         )}

@@ -13,7 +13,7 @@ export function NavBar({ signedIn, theme }: { signedIn: boolean; theme: Theme })
 
   return (
     <nav className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-      <Link href="/" className="display text-2xl text-ink">
+      <Link href="/" className="display text-3xl text-ink transition-colors hover:text-blaze">
         Kra<span className="text-blaze">fitt</span>
       </Link>
 
@@ -22,14 +22,14 @@ export function NavBar({ signedIn, theme }: { signedIn: boolean; theme: Theme })
           <>
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
+              className="flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-blaze"
             >
               <CalendarDays size={14} aria-hidden />
               {t("nav.today")}
             </Link>
             <Link
               href="/routines"
-              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
+              className="flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-blaze"
             >
               <Dumbbell size={14} aria-hidden />
               {t("nav.routines")}

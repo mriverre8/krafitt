@@ -36,7 +36,7 @@ export function AuthForms() {
 
   return (
     <div className="rounded-2xl border border-line bg-surface p-5">
-      <div className="mb-4 flex gap-1 rounded-xl bg-surface2 p-1 text-sm">
+      <div className="mb-4 flex gap-1 rounded-xl bg-surface2 p-1">
         {(["login", "signup"] as const).map((option) => (
           <button
             key={option}
@@ -45,8 +45,8 @@ export function AuthForms() {
               setMode(option);
               setError(undefined);
             }}
-            className={`flex-1 rounded-lg py-2 font-bold uppercase tracking-wide transition ${
-              mode === option ? "bg-blaze text-white" : "text-muted hover:text-ink"
+            className={`flex-1 rounded-lg py-2 font-semibold transition-colors ${
+              mode === option ? "bg-blaze text-on-accent" : "text-muted hover:text-ink"
             }`}
           >
             {option === "login" ? t("auth.login") : t("auth.signup")}
@@ -86,7 +86,7 @@ export function AuthForms() {
 
         <FormError message={error} />
 
-        <button type="submit" disabled={loading} className={`${primaryClass} w-full py-3.5 text-base`}>
+        <button type="submit" disabled={loading} className={`${primaryClass} w-full py-3.5 text-lg`}>
           {mode === "login" ? t("auth.submitLogin") : t("auth.submitSignup")}
         </button>
       </form>

@@ -27,8 +27,8 @@ export default async function RoutinePage({ params }: PageProps<"/routines/[id]"
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="display text-4xl">{routine.name}</h1>
-        <p className="text-xs font-bold uppercase tracking-widest text-muted">
+        <h1 className="display text-5xl">{routine.name}</h1>
+        <p className="text-muted">
           {t("routine.meta", {
             weeks: routine.durationWeeks,
             days: routine.workouts.length,
@@ -37,9 +37,7 @@ export default async function RoutinePage({ params }: PageProps<"/routines/[id]"
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted">
-          {t("routine.workouts")}
-        </h2>
+        <h2 className="text-sm font-semibold text-muted">{t("routine.workouts")}</h2>
 
         {routine.workouts.map((workout) => (
           <WorkoutEditor
@@ -57,7 +55,7 @@ export default async function RoutinePage({ params }: PageProps<"/routines/[id]"
       <ActionButton
         action={deleteRoutine.bind(null, routine.id)}
         confirm={t("routine.deleteConfirm", { name: routine.name })}
-        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-blaze"
+        className="flex items-center gap-1.5 text-sm font-semibold text-danger transition-colors hover:text-danger/80"
       >
         <Trash size={14} aria-hidden />
         {t("routine.delete")}

@@ -18,7 +18,7 @@ export function SignOutButton() {
       }}
       aria-label={t("nav.signOut")}
       title={t("nav.signOut")}
-      className="text-muted transition hover:text-blaze"
+      className="rounded-lg p-1.5 text-muted transition-colors hover:bg-surface2 hover:text-blaze"
     >
       <LogOut size={16} aria-hidden />
     </button>

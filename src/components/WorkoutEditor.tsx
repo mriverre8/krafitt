@@ -2,6 +2,7 @@
 
 import { useT } from "@/i18n/useT";
 import type { FormAction } from "@/lib/forms";
+import { cardClass, iconButtonClass } from "@/lib/ui";
 import { Trash, X } from "lucide-react";
 import { ActionButton } from "./ActionButton";
 import { AddExerciseForm } from "./AddExerciseForm";
@@ -21,24 +22,24 @@ export function WorkoutEditor({
   const t = useT();
 
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4">
+    <div className={cardClass}>
       <div className="flex items-center justify-between gap-2">
-        <h3 className="display text-xl">{workout.name}</h3>
+        <h3 className="display text-2xl">{workout.name}</h3>
         <ActionButton
           action={() => onDeleteWorkout(workout.id)}
           confirm={t("routine.deleteDayConfirm", { name: workout.name })}
           label={t("routine.deleteDay")}
-          className="text-muted transition hover:text-blaze"
+          className={iconButtonClass}
         >
           <Trash size={16} aria-hidden />
         </ActionButton>
       </div>
 
-      <ul className="mt-3 space-y-1 text-sm">
+      <ul className="mt-2 text-sm">
         {workout.exercises.map((exercise) => (
           <li
             key={exercise.id}
-            className="flex items-center justify-between gap-2 border-t border-line pt-1.5"
+            className="flex items-center justify-between gap-2 border-t border-line py-2 transition-colors hover:bg-surface2"
           >
             <span className="min-w-0">
               <span className="font-semibold">{exercise.name}</span>
@@ -52,14 +53,14 @@ export function WorkoutEditor({
             <ActionButton
               action={() => onDeleteExercise(exercise.id)}
               label={t("exercise.delete")}
-              className="shrink-0 text-muted transition hover:text-blaze"
+              className={`${iconButtonClass} shrink-0`}
             >
               <X size={14} aria-hidden />
             </ActionButton>
           </li>
         ))}
         {workout.exercises.length === 0 && (
-          <li className="text-muted">{t("routine.noExercises")}</li>
+          <li className="pt-2 text-muted">{t("routine.noExercises")}</li>
         )}
       </ul>
 
