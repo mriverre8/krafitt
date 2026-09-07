@@ -15,6 +15,5 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      # --ignore-scripts skips the prisma generate postinstall: prettier does not need the client.
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm format:check

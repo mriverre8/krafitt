@@ -15,7 +15,5 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      # Full install: the postinstall runs prisma generate, and src/generated is
-      # gitignored, so without it tsc cannot resolve the Prisma client imports.
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
