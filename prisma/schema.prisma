@@ -20,8 +20,7 @@ model User {
 
   sessions        Session[]
   accounts        Account[]
-  routinesCreated Routine[]        @relation("RoutineCreator")
-  memberships     RoutineMember[]
+  routines        Routine[]
   workoutSessions WorkoutSession[]
 }
 
@@ -65,31 +64,21 @@ model Verification {
 
 // ---------- Krafitt ----------
 
+/// A routine belongs to a single user: isActive and cursor are that user's progress.
 model Routine {
   id            String   @id @default(cuid())
   name          String
   durationWeeks Int
   creatorId     String
-  creator       User     @relation("RoutineCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  creator       User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
+  isActive      Boolean  @default(false)
+  cursor        Int      @default(0)
 
   workouts Workout[]
-  members  RoutineMember[]
   sessions WorkoutSession[]
-}
 
-/// The owner is a member too (canEdit = true). Progress (cursor) is per athlete.
-model RoutineMember {
-  id        String  @id @default(cuid())
-  routineId String
-  routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  canEdit   Boolean @default(false)
-  isActive  Boolean @default(false)
-  cursor    Int     @default(0)
-
-  @@unique([routineId, userId])
+  @@index([creatorId])
 }
 
 /// One training day of the routine: "Push A", "Legs"...

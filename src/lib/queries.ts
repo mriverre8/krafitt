@@ -9,23 +9,15 @@ function toLogs(logs: { exerciseId: string; setIndex: number; weight: number; re
 
 /** Today's workout from the user's active routine. */
 export async function todayWorkout(userId: string) {
-  const membership = await prisma.routineMember.findFirst({
-    where: { userId, isActive: true },
+  const routine = await prisma.routine.findFirst({
+    where: { creatorId: userId, isActive: true },
     include: {
-      routine: {
-        include: {
-          workouts: {
-            orderBy: { order: "asc" },
-            include: { exercises: { orderBy: { order: "asc" } } },
-          },
-        },
-      },
+      workouts: { orderBy: { order: "asc" }, include: { exercises: { orderBy: { order: "asc" } } } },
     },
   });
-  if (!membership) return null;
+  if (!routine) return null;
 
-  const { routine } = membership;
-  const position = positionFromCursor(membership.cursor, routine.workouts.length, routine.durationWeeks);
+  const position = positionFromCursor(routine.cursor, routine.workouts.length, routine.durationWeeks);
   if (!position) return { routine, finished: true as const };
 
   const workout = routine.workouts[position.workoutIndex];
@@ -56,10 +48,10 @@ export async function todayWorkout(userId: string) {
 }
 
 export async function myRoutines(userId: string) {
-  return prisma.routineMember.findMany({
-    where: { userId },
-    orderBy: { routine: { createdAt: "desc" } },
-    include: { routine: { include: { _count: { select: { workouts: true, members: true } } } } },
+  return prisma.routine.findMany({
+    where: { creatorId: userId },
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { workouts: true } } },
   });
 }
 
@@ -68,7 +60,6 @@ export async function routineDetail(routineId: string) {
     where: { id: routineId },
     include: {
       workouts: { orderBy: { order: "asc" }, include: { exercises: { orderBy: { order: "asc" } } } },
-      members: { include: { user: { select: { id: true, name: true, email: true } } } },
     },
   });
 }

@@ -2,8 +2,7 @@ import type { Dict } from "./en";
 
 export const es: Dict = {
   "app.name": "Krafitt",
-  "app.tagline":
-    "Monta tus rutinas de gimnasio, registra cada serie y picaos entre compañeros de entrenamiento.",
+  "app.tagline": "Monta tus rutinas de gimnasio y registra cada serie, semana a semana.",
 
   "nav.today": "Hoy",
   "nav.routines": "Rutinas",
@@ -16,7 +15,6 @@ export const es: Dict = {
     "La pantalla principal te muestra el entrenamiento que te toca hoy, y no cambia hasta que lo terminas.",
   "landing.feature3":
     "Registra peso y repeticiones serie a serie, con los números de la sesión anterior al lado.",
-  "landing.feature4": "Comparte la rutina con otros atletas y decide quién puede editarla.",
 
   "auth.login": "Iniciar sesión",
   "auth.signup": "Registrarse",
@@ -56,9 +54,7 @@ export const es: Dict = {
   "routines.empty": "Aún no tienes rutinas.",
   "routines.active": "Activa",
   "routines.markActive": "Marcar activa",
-  "routines.meta": "{weeks} semanas · {days} días · {athletes} atletas",
-  "routines.yours": "creada por ti",
-  "routines.editor": "puedes editar",
+  "routines.meta": "{weeks} semanas · {days} días",
   "routines.progress": "{done}/{total} entrenamientos",
   "routines.newTitle": "Nueva rutina",
   "routines.namePlaceholder": "Nombre de la rutina",
@@ -67,7 +63,6 @@ export const es: Dict = {
   "routines.create": "Crear rutina",
 
   "routine.meta": "{weeks} semanas · {days} días por semana",
-  "routine.stats": "Ver estadísticas",
   "routine.workouts": "Entrenamientos",
   "routine.deleteDay": "Borrar día",
   "routine.deleteDayConfirm": "¿Borrar {name} y sus ejercicios?",
@@ -95,29 +90,9 @@ export const es: Dict = {
   "technique.backoff": "Back off",
   "technique.dropset": "Drop set",
 
-  "athletes.title": "Atletas",
-  "athletes.owner": "creador",
-  "athletes.editor": "editor",
-  "athletes.grantEdit": "Dar edición",
-  "athletes.revokeEdit": "Quitar edición",
-  "athletes.remove": "Expulsar",
-  "athletes.removeConfirm": "¿Expulsar a este atleta?",
-  "athletes.emailPlaceholder": "Email del atleta",
-  "athletes.emailLabel": "Email del atleta",
-  "athletes.canEdit": "Puede editar la rutina",
-  "athletes.add": "Añadir atleta",
-  "athletes.onlyOwner": "Solo el creador puede añadir atletas.",
-
-  "stats.title": "Estadísticas de {name}",
-  "stats.soon":
-    "Próximamente: progreso general y ejercicio por ejercicio, comparado con el resto de atletas de la rutina.",
-  "stats.back": "Volver a la rutina",
-
   "error.notSignedIn": "No has iniciado sesión",
   "error.routineNotFound": "Rutina no encontrada",
   "error.noAccess": "No tienes acceso a esta rutina",
-  "error.onlyOwner": "Solo el creador puede hacer esto",
-  "error.noEditPermission": "No tienes permiso para editar esta rutina",
   "error.workoutNotFound": "Entrenamiento no encontrado",
   "error.exerciseNotFound": "Ejercicio no encontrado",
   "error.routineName": "Ponle un nombre a la rutina",
@@ -127,11 +102,6 @@ export const es: Dict = {
   "error.sets": "Series: entre 1 y 20",
   "error.repRange": "El rango de repeticiones no es válido",
   "error.targetWeight": "El peso objetivo no es válido",
-  "error.noUserWithEmail": "No hay ningún usuario registrado con {email}",
-  "error.alreadyYou": "Ya estás en la rutina",
-  "error.alreadyMember": "Ese atleta ya está en la rutina",
-  "error.ownerAlwaysEdits": "El creador siempre puede editar",
-  "error.cannotRemoveOwner": "No puedes expulsar al creador",
   "error.weight": "Peso no válido",
   "error.reps": "Repeticiones no válidas",
   "error.sessionNotFound": "Sesión no encontrada",

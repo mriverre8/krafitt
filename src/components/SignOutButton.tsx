@@ -2,6 +2,7 @@
 
 import { useT } from "@/i18n/useT";
 import { authClient } from "@/lib/auth-client";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function SignOutButton() {
@@ -15,9 +16,11 @@ export function SignOutButton() {
         await authClient.signOut();
         router.refresh();
       }}
-      className="text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
+      aria-label={t("nav.signOut")}
+      title={t("nav.signOut")}
+      className="text-muted transition hover:text-blaze"
     >
-      {t("nav.signOut")}
+      <LogOut size={16} aria-hidden />
     </button>
   );
 }

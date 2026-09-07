@@ -3,6 +3,7 @@
 import { useT } from "@/i18n/useT";
 import { setPreferenceCookie } from "@/lib/cookies";
 import { THEME_COOKIE, type Theme } from "@/lib/theme";
+import { Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
 /**
@@ -25,9 +26,9 @@ export function ThemeToggle({ theme }: { theme: Theme }) {
       type="button"
       onClick={toggle}
       aria-label={t("nav.theme")}
-      className="rounded-lg border border-line px-2 py-1 text-xs transition hover:border-blaze"
+      className="rounded-lg border border-line p-1.5 text-muted transition hover:border-blaze hover:text-blaze"
     >
-      {current === "dark" ? "☀" : "☾"}
+      {current === "dark" ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
     </button>
   );
 }

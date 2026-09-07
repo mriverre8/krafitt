@@ -2,8 +2,7 @@ import type { Dict } from "./en";
 
 export const ca: Dict = {
   "app.name": "Krafitt",
-  "app.tagline":
-    "Munta les teves rutines de gimnàs, registra cada sèrie i piqueu-vos entre companys d'entrenament.",
+  "app.tagline": "Munta les teves rutines de gimnàs i registra cada sèrie, setmana a setmana.",
 
   "nav.today": "Avui",
   "nav.routines": "Rutines",
@@ -16,7 +15,6 @@ export const ca: Dict = {
     "La pantalla principal et mostra l'entrenament que et toca avui, i no canvia fins que l'acabes.",
   "landing.feature3":
     "Registra pes i repeticions sèrie a sèrie, amb els números de la sessió anterior al costat.",
-  "landing.feature4": "Comparteix la rutina amb altres atletes i decideix qui la pot editar.",
 
   "auth.login": "Inicia sessió",
   "auth.signup": "Registra't",
@@ -56,9 +54,7 @@ export const ca: Dict = {
   "routines.empty": "Encara no tens rutines.",
   "routines.active": "Activa",
   "routines.markActive": "Marcar activa",
-  "routines.meta": "{weeks} setmanes · {days} dies · {athletes} atletes",
-  "routines.yours": "creada per tu",
-  "routines.editor": "pots editar",
+  "routines.meta": "{weeks} setmanes · {days} dies",
   "routines.progress": "{done}/{total} entrenaments",
   "routines.newTitle": "Nova rutina",
   "routines.namePlaceholder": "Nom de la rutina",
@@ -67,7 +63,6 @@ export const ca: Dict = {
   "routines.create": "Crear rutina",
 
   "routine.meta": "{weeks} setmanes · {days} dies per setmana",
-  "routine.stats": "Veure estadístiques",
   "routine.workouts": "Entrenaments",
   "routine.deleteDay": "Esborrar dia",
   "routine.deleteDayConfirm": "Esborrar {name} i els seus exercicis?",
@@ -95,29 +90,9 @@ export const ca: Dict = {
   "technique.backoff": "Back off",
   "technique.dropset": "Drop set",
 
-  "athletes.title": "Atletes",
-  "athletes.owner": "creador",
-  "athletes.editor": "editor",
-  "athletes.grantEdit": "Donar edició",
-  "athletes.revokeEdit": "Treure edició",
-  "athletes.remove": "Expulsar",
-  "athletes.removeConfirm": "Expulsar aquest atleta?",
-  "athletes.emailPlaceholder": "Correu de l'atleta",
-  "athletes.emailLabel": "Correu de l'atleta",
-  "athletes.canEdit": "Pot editar la rutina",
-  "athletes.add": "Afegir atleta",
-  "athletes.onlyOwner": "Només el creador pot afegir atletes.",
-
-  "stats.title": "Estadístiques de {name}",
-  "stats.soon":
-    "Properament: progrés general i exercici per exercici, comparat amb la resta d'atletes de la rutina.",
-  "stats.back": "Tornar a la rutina",
-
   "error.notSignedIn": "No has iniciat sessió",
   "error.routineNotFound": "Rutina no trobada",
   "error.noAccess": "No tens accés a aquesta rutina",
-  "error.onlyOwner": "Només el creador pot fer això",
-  "error.noEditPermission": "No tens permís per editar aquesta rutina",
   "error.workoutNotFound": "Entrenament no trobat",
   "error.exerciseNotFound": "Exercici no trobat",
   "error.routineName": "Posa-li un nom a la rutina",
@@ -127,11 +102,6 @@ export const ca: Dict = {
   "error.sets": "Sèries: entre 1 i 20",
   "error.repRange": "El rang de repeticions no és vàlid",
   "error.targetWeight": "El pes objectiu no és vàlid",
-  "error.noUserWithEmail": "No hi ha cap usuari registrat amb {email}",
-  "error.alreadyYou": "Ja ets a la rutina",
-  "error.alreadyMember": "Aquest atleta ja és a la rutina",
-  "error.ownerAlwaysEdits": "El creador sempre pot editar",
-  "error.cannotRemoveOwner": "No pots expulsar el creador",
   "error.weight": "Pes no vàlid",
   "error.reps": "Repeticions no vàlides",
   "error.sessionNotFound": "Sessió no trobada",

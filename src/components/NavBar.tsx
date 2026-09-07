@@ -2,6 +2,7 @@
 
 import { useT } from "@/i18n/useT";
 import type { Theme } from "@/lib/theme";
+import { CalendarDays, Dumbbell } from "lucide-react";
 import Link from "next/link";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { SignOutButton } from "./SignOutButton";
@@ -21,14 +22,16 @@ export function NavBar({ signedIn, theme }: { signedIn: boolean; theme: Theme })
           <>
             <Link
               href="/"
-              className="text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
             >
+              <CalendarDays size={14} aria-hidden />
               {t("nav.today")}
             </Link>
             <Link
               href="/routines"
-              className="text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-blaze"
             >
+              <Dumbbell size={14} aria-hidden />
               {t("nav.routines")}
             </Link>
             <SignOutButton />

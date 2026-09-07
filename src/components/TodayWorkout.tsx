@@ -5,6 +5,7 @@ import { useT } from "@/i18n/useT";
 import { isSetEnabled, type Logs } from "@/lib/progress";
 import { ghostClass, primaryClass } from "@/lib/ui";
 import { useSessionStore } from "@/store/session";
+import { Flame, Play, SkipForward } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { FormError } from "./FormError";
 import { WorkoutExercise, type ExerciseView } from "./WorkoutExercise";
@@ -61,7 +62,8 @@ export function TodayWorkout(props: TodayWorkoutProps) {
 
         <div className="p-4">
           {started ? (
-            <p className="text-sm font-bold uppercase tracking-wide text-volt">
+            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-volt">
+              <Flame size={16} aria-hidden />
               {t("today.inProgress")}
             </p>
           ) : (
@@ -69,8 +71,9 @@ export function TodayWorkout(props: TodayWorkoutProps) {
               type="button"
               disabled={pending || workout.exercises.length === 0}
               onClick={() => run(() => startWorkout(workout.id, week))}
-              className={`${primaryClass} w-full py-4 text-base`}
+              className={`${primaryClass} flex w-full items-center justify-center gap-2 py-4 text-base`}
             >
+              <Play size={18} aria-hidden />
               {t("today.start")}
             </button>
           )}
@@ -108,8 +111,9 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         type="button"
         disabled={pending}
         onClick={() => run(() => skipDay(routineId))}
-        className={`${ghostClass} w-full`}
+        className={`${ghostClass} flex w-full items-center justify-center gap-2`}
       >
+        <SkipForward size={14} aria-hidden />
         {t("today.skip")}
       </button>
     </div>

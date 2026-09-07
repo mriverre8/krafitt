@@ -1,6 +1,6 @@
 # Krafitt
 
-Gym progress tracking: shared routines, today's workout and set-by-set logging.
+Gym progress tracking: your routines, today's workout and set-by-set logging.
 
 ## Getting started
 
@@ -26,9 +26,9 @@ The project is pinned to pnpm through the `packageManager` field, so `corepack` 
 ## How it works
 
 - **Routine**: N weeks × M training days. Each day holds exercises with sets, a rep range and a technique.
-- **Progress**: every athlete keeps their own cursor inside the routine. The home screen shows the pending workout of whichever routine you marked as **active**, and it does not move on until you finish it (or skip it by hand).
+- **Progress**: each routine keeps a cursor. The home screen shows the pending workout of whichever routine you marked as **active**, and it does not move on until you finish it (or skip it by hand).
 - **Logging**: the fields stay locked until you press *Start*. A set only unlocks once the previous one is filled in, and it is saved right away. Filling in the last set closes the workout and moves you to the next day.
-- **Permissions**: only the owner adds athletes, grants editing rights and deletes the routine.
+- **Ownership**: a routine belongs to whoever created it. There is no sharing.
 
 ## Languages and theme
 
@@ -44,5 +44,5 @@ The project is pinned to pnpm through the `packageManager` field, so `corepack` 
 
 ## Not done yet
 
-- Stats (`/routines/[id]/stats` is a placeholder).
+- Stats: no progress charts yet, general or per exercise.
 - Plurals: strings such as "1 weeks · 1 days" do not agree with 1. Doing it properly needs `Intl.PluralRules` per placeholder.

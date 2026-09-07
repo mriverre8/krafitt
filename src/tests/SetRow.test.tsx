@@ -41,7 +41,7 @@ describe("SetRow", () => {
   it("shows the stored values and marks the set as done", () => {
     render(<SetRow {...base} saved={{ weight: 60, reps: 10 }} />);
     expect(screen.getByLabelText("Weight set 1")).toHaveValue(60);
-    expect(screen.getByLabelText("Save set 1")).toHaveTextContent("✓");
+    expect(screen.getByLabelText("Save set 1")).toHaveAttribute("data-done", "true");
   });
 
   it("shows last session's numbers as a reference", () => {

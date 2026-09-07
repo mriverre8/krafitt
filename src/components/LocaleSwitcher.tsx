@@ -3,6 +3,7 @@
 import { LOCALE_COOKIE, LOCALES, type Locale } from "@/i18n/config";
 import { useLocale, useT } from "@/i18n/useT";
 import { setPreferenceCookie } from "@/lib/cookies";
+import { Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 /** Server components render the copy, so changing locale needs a refresh. */
@@ -17,7 +18,8 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <div role="group" aria-label={t("nav.language")} className="flex gap-1">
+    <div role="group" aria-label={t("nav.language")} className="flex items-center gap-1">
+      <Languages size={14} aria-hidden className="text-muted" />
       {LOCALES.map((option) => (
         <button
           key={option}

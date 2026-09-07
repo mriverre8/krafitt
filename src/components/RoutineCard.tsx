@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/i18n/useT";
+import { Flame } from "lucide-react";
 import Link from "next/link";
 import { ActionButton } from "./ActionButton";
 
@@ -9,11 +10,8 @@ export type RoutineCardProps = {
   name: string;
   durationWeeks: number;
   workoutCount: number;
-  memberCount: number;
   cursor: number;
   isActive: boolean;
-  isOwner: boolean;
-  canEdit: boolean;
   onSetActive: (routineId: string) => Promise<void>;
 };
 
@@ -38,16 +36,13 @@ export function RoutineCard(props: RoutineCardProps) {
             {t("routines.meta", {
               weeks: props.durationWeeks,
               days: props.workoutCount,
-              athletes: props.memberCount,
             })}
-          </p>
-          <p className="text-xs text-muted">
-            {props.isOwner ? t("routines.yours") : props.canEdit ? t("routines.editor") : ""}
           </p>
         </div>
 
         {props.isActive ? (
-          <span className="shrink-0 rounded-full bg-blaze px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-blaze px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+            <Flame size={12} aria-hidden />
             {t("routines.active")}
           </span>
         ) : (

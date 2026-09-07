@@ -1,31 +1,16 @@
 import { getT } from "@/i18n/server";
 import { prisma } from "./db";
 
-export type AccessLevel = "view" | "edit" | "owner";
-
 /**
  * The single place permissions are checked: every server action goes through it.
- * view  -> is a member of the routine
- * edit  -> canEdit, or is the owner
- * owner -> owner only (sharing, permissions, deleting)
+ * A routine belongs to whoever created it, so access is all or nothing.
  */
-export async function requireAccess(routineId: string, userId: string, level: AccessLevel = "view") {
+export async function requireRoutine(routineId: string, userId: string) {
   const t = await getT();
   const routine = await prisma.routine.findUnique({ where: { id: routineId } });
   if (!routine) throw new Error(t("error.routineNotFound"));
-
-  const membership = await prisma.routineMember.findUnique({
-    where: { routineId_userId: { routineId, userId } },
-  });
-  const isCreator = routine.creatorId === userId;
-
-  if (!membership && !isCreator) throw new Error(t("error.noAccess"));
-  if (level === "owner" && !isCreator) throw new Error(t("error.onlyOwner"));
-  if (level === "edit" && !isCreator && !membership?.canEdit) {
-    throw new Error(t("error.noEditPermission"));
-  }
-
-  return { routine, membership, isCreator, canEdit: isCreator || !!membership?.canEdit };
+  if (routine.creatorId !== userId) throw new Error(t("error.noAccess"));
+  return routine;
 }
 
 export async function routineIdOfWorkout(workoutId: string) {

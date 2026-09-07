@@ -12,7 +12,7 @@ describe("Landing", () => {
   it("explains the app and offers the auth form", () => {
     render(<Landing />);
     expect(screen.getByText(/Build your gym routines/)).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
     expect(screen.getByRole("button", { name: "Let's go" })).toBeInTheDocument();
   });
 

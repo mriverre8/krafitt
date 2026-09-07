@@ -3,6 +3,7 @@
 import { useT } from "@/i18n/useT";
 import type { FormAction } from "@/lib/forms";
 import { inputClass, primaryClass } from "@/lib/ui";
+import { Plus } from "lucide-react";
 import { useActionState, useId } from "react";
 import { FormError } from "./FormError";
 
@@ -70,7 +71,12 @@ export function AddExerciseForm({ action, workoutId }: { action: FormAction; wor
         <option value={t("technique.dropset")} />
       </datalist>
       <FormError message={state.error} />
-      <button type="submit" disabled={pending} className={`${primaryClass} w-full`}>
+      <button
+        type="submit"
+        disabled={pending}
+        className={`${primaryClass} flex w-full items-center justify-center gap-2`}
+      >
+        <Plus size={16} aria-hidden />
         {t("exercise.add")}
       </button>
     </form>

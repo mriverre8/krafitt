@@ -2,8 +2,7 @@
 // is a compile error rather than a blank string in the UI.
 export const en = {
   "app.name": "Krafitt",
-  "app.tagline":
-    "Build your gym routines, log every single set and push each other with your training partners.",
+  "app.tagline": "Build your gym routines and log every single set, week after week.",
 
   "nav.today": "Today",
   "nav.routines": "Routines",
@@ -16,7 +15,6 @@ export const en = {
     "The home screen shows the workout you owe today, and it stays there until you finish it.",
   "landing.feature3":
     "Log weight and reps set by set, with last session's numbers right next to you.",
-  "landing.feature4": "Share the routine with other athletes and decide who can edit it.",
 
   "auth.login": "Sign in",
   "auth.signup": "Sign up",
@@ -56,9 +54,7 @@ export const en = {
   "routines.empty": "You have no routines yet.",
   "routines.active": "Active",
   "routines.markActive": "Set active",
-  "routines.meta": "{weeks} weeks · {days} days · {athletes} athletes",
-  "routines.yours": "created by you",
-  "routines.editor": "you can edit",
+  "routines.meta": "{weeks} weeks · {days} days",
   "routines.progress": "{done}/{total} workouts",
   "routines.newTitle": "New routine",
   "routines.namePlaceholder": "Routine name",
@@ -67,7 +63,6 @@ export const en = {
   "routines.create": "Create routine",
 
   "routine.meta": "{weeks} weeks · {days} days per week",
-  "routine.stats": "View stats",
   "routine.workouts": "Workouts",
   "routine.deleteDay": "Delete day",
   "routine.deleteDayConfirm": "Delete {name} and its exercises?",
@@ -95,29 +90,9 @@ export const en = {
   "technique.backoff": "Back off",
   "technique.dropset": "Drop set",
 
-  "athletes.title": "Athletes",
-  "athletes.owner": "owner",
-  "athletes.editor": "editor",
-  "athletes.grantEdit": "Grant editing",
-  "athletes.revokeEdit": "Revoke editing",
-  "athletes.remove": "Remove",
-  "athletes.removeConfirm": "Remove this athlete?",
-  "athletes.emailPlaceholder": "Athlete email",
-  "athletes.emailLabel": "Athlete email",
-  "athletes.canEdit": "Can edit the routine",
-  "athletes.add": "Add athlete",
-  "athletes.onlyOwner": "Only the owner can add athletes.",
-
-  "stats.title": "Stats for {name}",
-  "stats.soon":
-    "Coming soon: overall progress and exercise by exercise, compared with the other athletes on the routine.",
-  "stats.back": "Back to the routine",
-
   "error.notSignedIn": "You are not signed in",
   "error.routineNotFound": "Routine not found",
   "error.noAccess": "You do not have access to this routine",
-  "error.onlyOwner": "Only the owner can do this",
-  "error.noEditPermission": "You do not have permission to edit this routine",
   "error.workoutNotFound": "Workout not found",
   "error.exerciseNotFound": "Exercise not found",
   "error.routineName": "Give the routine a name",
@@ -127,11 +102,6 @@ export const en = {
   "error.sets": "Sets: between 1 and 20",
   "error.repRange": "The rep range is not valid",
   "error.targetWeight": "The target weight is not valid",
-  "error.noUserWithEmail": "No registered user with {email}",
-  "error.alreadyYou": "You are already on the routine",
-  "error.alreadyMember": "That athlete is already on the routine",
-  "error.ownerAlwaysEdits": "The owner can always edit",
-  "error.cannotRemoveOwner": "You cannot remove the owner",
   "error.weight": "Invalid weight",
   "error.reps": "Invalid reps",
   "error.sessionNotFound": "Session not found",

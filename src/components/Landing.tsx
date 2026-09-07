@@ -1,13 +1,13 @@
 "use client";
 
 import { useT } from "@/i18n/useT";
+import { CalendarDays, ClipboardList, Dumbbell } from "lucide-react";
 import { AuthForms } from "./AuthForms";
 
 const FEATURES = [
-  "landing.feature1",
-  "landing.feature2",
-  "landing.feature3",
-  "landing.feature4",
+  ["landing.feature1", ClipboardList],
+  ["landing.feature2", CalendarDays],
+  ["landing.feature3", Dumbbell],
 ] as const;
 
 export function Landing() {
@@ -23,12 +23,12 @@ export function Landing() {
       </div>
 
       <ul className="grid gap-2">
-        {FEATURES.map((key, index) => (
+        {FEATURES.map(([key, Icon]) => (
           <li
             key={key}
             className="flex gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted"
           >
-            <span className="display text-2xl text-blaze">{index + 1}</span>
+            <Icon size={22} aria-hidden className="shrink-0 self-center text-blaze" />
             <span className="self-center">{t(key)}</span>
           </li>
         ))}

@@ -3,6 +3,7 @@
 import type { FormAction } from "@/lib/forms";
 import { inputClass, labelClass, primaryClass } from "@/lib/ui";
 import { useT } from "@/i18n/useT";
+import { Plus } from "lucide-react";
 import { FormError } from "./FormError";
 import { useActionState } from "react";
 
@@ -31,7 +32,12 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
         />
       </label>
       <FormError message={state.error} />
-      <button type="submit" disabled={pending} className={`${primaryClass} w-full`}>
+      <button
+        type="submit"
+        disabled={pending}
+        className={`${primaryClass} flex w-full items-center justify-center gap-2`}
+      >
+        <Plus size={16} aria-hidden />
         {t("routines.create")}
       </button>
     </form>

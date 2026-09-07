@@ -9,6 +9,13 @@ describe("ThemeToggle", () => {
     document.cookie = `${THEME_COOKIE}=; max-age=0; path=/`;
   });
 
+  it("offers the sun in dark mode and the moon in light mode", () => {
+    const { container } = render(<ThemeToggle theme="dark" />);
+    expect(container.querySelector(".lucide-sun")).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("Switch theme"));
+    expect(container.querySelector(".lucide-moon")).toBeInTheDocument();
+  });
+
   it("switches the html class from dark to light", () => {
     document.documentElement.classList.add("dark");
     render(<ThemeToggle theme="dark" />);

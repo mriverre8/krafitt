@@ -3,6 +3,7 @@
 import { useT } from "@/i18n/useT";
 import type { FormAction } from "@/lib/forms";
 import { ghostClass, inputClass } from "@/lib/ui";
+import { Plus } from "lucide-react";
 import { useActionState } from "react";
 import { FormError } from "./FormError";
 
@@ -20,7 +21,12 @@ export function AddWorkoutForm({ action, routineId }: { action: FormAction; rout
           placeholder={t("routine.dayPlaceholder")}
           className={inputClass}
         />
-        <button type="submit" disabled={pending} className={ghostClass}>
+        <button
+          type="submit"
+          disabled={pending}
+          className={`${ghostClass} flex shrink-0 items-center gap-1.5`}
+        >
+          <Plus size={14} aria-hidden />
           {t("routine.addDay")}
         </button>
       </div>

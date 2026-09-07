@@ -3,6 +3,7 @@
 import { useT } from "@/i18n/useT";
 import type { SetValue } from "@/lib/progress";
 import { inputClass } from "@/lib/ui";
+import { ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
 
 export function SetRow({
@@ -82,11 +83,12 @@ export function SetRow({
         disabled={!canSave}
         onClick={() => onSave(parsedWeight, parsedReps)}
         aria-label={t("today.saveLabel", { n: number })}
-        className={`w-10 shrink-0 rounded-xl py-2.5 text-sm font-bold transition disabled:opacity-30 ${
+        data-done={done}
+        className={`grid w-10 shrink-0 place-items-center rounded-xl py-2.5 transition disabled:opacity-30 ${
           done ? "bg-volt text-black" : "bg-blaze text-white"
         }`}
       >
-        {done ? "✓" : "→"}
+        {done ? <Check size={16} aria-hidden /> : <ArrowRight size={16} aria-hidden />}
       </button>
     </div>
   );

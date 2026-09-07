@@ -1,7 +1,7 @@
 "use server";
 
 import { getT } from "@/i18n/server";
-import { requireAccess, routineIdOfExercise, routineIdOfWorkout } from "@/lib/access";
+import { requireRoutine, routineIdOfExercise, routineIdOfWorkout } from "@/lib/access";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { FormState } from "@/lib/forms";
@@ -25,16 +25,11 @@ export async function createRoutine(_previous: FormState, data: FormData): Promi
     return { error: t("error.duration") };
   }
 
-  const hasActive = await prisma.routineMember.findFirst({
-    where: { userId: user.id, isActive: true },
+  const hasActive = await prisma.routine.findFirst({
+    where: { creatorId: user.id, isActive: true },
   });
   const routine = await prisma.routine.create({
-    data: {
-      name,
-      durationWeeks,
-      creatorId: user.id,
-      members: { create: { userId: user.id, canEdit: true, isActive: !hasActive } },
-    },
+    data: { name, durationWeeks, creatorId: user.id, isActive: !hasActive },
   });
 
   revalidatePath("/routines");
@@ -43,13 +38,10 @@ export async function createRoutine(_previous: FormState, data: FormData): Promi
 
 export async function setActiveRoutine(routineId: string) {
   const user = await requireUser();
-  await requireAccess(routineId, user.id);
+  await requireRoutine(routineId, user.id);
   await prisma.$transaction([
-    prisma.routineMember.updateMany({ where: { userId: user.id }, data: { isActive: false } }),
-    prisma.routineMember.update({
-      where: { routineId_userId: { routineId, userId: user.id } },
-      data: { isActive: true },
-    }),
+    prisma.routine.updateMany({ where: { creatorId: user.id }, data: { isActive: false } }),
+    prisma.routine.update({ where: { id: routineId }, data: { isActive: true } }),
   ]);
   revalidatePath("/");
   revalidatePath("/routines");
@@ -57,7 +49,7 @@ export async function setActiveRoutine(routineId: string) {
 
 export async function deleteRoutine(routineId: string) {
   const user = await requireUser();
-  await requireAccess(routineId, user.id, "owner");
+  await requireRoutine(routineId, user.id);
   await prisma.routine.delete({ where: { id: routineId } });
   revalidatePath("/");
   redirect("/routines");
@@ -70,7 +62,7 @@ export async function addWorkout(_previous: FormState, data: FormData): Promise<
   const routineId = str(data, "routineId");
   const name = str(data, "name");
   if (!name) return { error: (await getT())("error.workoutName") };
-  await requireAccess(routineId, user.id, "edit");
+  await requireRoutine(routineId, user.id);
 
   const order = await prisma.workout.count({ where: { routineId } });
   await prisma.workout.create({ data: { routineId, name, order } });
@@ -100,7 +92,7 @@ export async function addExercise(_previous: FormState, data: FormData): Promise
   }
 
   const routineId = await routineIdOfWorkout(workoutId);
-  await requireAccess(routineId, user.id, "edit");
+  await requireRoutine(routineId, user.id);
 
   const order = await prisma.exercise.count({ where: { workoutId } });
   await prisma.exercise.create({
@@ -113,7 +105,7 @@ export async function addExercise(_previous: FormState, data: FormData): Promise
 export async function deleteWorkout(workoutId: string) {
   const user = await requireUser();
   const routineId = await routineIdOfWorkout(workoutId);
-  await requireAccess(routineId, user.id, "edit");
+  await requireRoutine(routineId, user.id);
   await prisma.workout.delete({ where: { id: workoutId } });
   revalidatePath(`/routines/${routineId}`);
   revalidatePath("/");
@@ -122,55 +114,10 @@ export async function deleteWorkout(workoutId: string) {
 export async function deleteExercise(exerciseId: string) {
   const user = await requireUser();
   const routineId = await routineIdOfExercise(exerciseId);
-  await requireAccess(routineId, user.id, "edit");
+  await requireRoutine(routineId, user.id);
   await prisma.exercise.delete({ where: { id: exerciseId } });
   revalidatePath(`/routines/${routineId}`);
   revalidatePath("/");
-}
-
-// ---------- sharing (owner only) ----------
-
-export async function addAthlete(_previous: FormState, data: FormData): Promise<FormState> {
-  const user = await requireUser();
-  const t = await getT();
-  const routineId = str(data, "routineId");
-  const email = str(data, "email").toLowerCase();
-  const canEdit = data.get("canEdit") === "on";
-  await requireAccess(routineId, user.id, "owner");
-
-  const athlete = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (!athlete) return { error: t("error.noUserWithEmail", { email }) };
-  if (athlete.id === user.id) return { error: t("error.alreadyYou") };
-
-  const already = await prisma.routineMember.findUnique({
-    where: { routineId_userId: { routineId, userId: athlete.id } },
-  });
-  if (already) return { error: t("error.alreadyMember") };
-
-  await prisma.routineMember.create({ data: { routineId, userId: athlete.id, canEdit } });
-  revalidatePath(`/routines/${routineId}`);
-  return {};
-}
-
-export async function setMemberEdit(routineId: string, userId: string, canEdit: boolean) {
-  const owner = await requireUser();
-  const { routine } = await requireAccess(routineId, owner.id, "owner");
-  if (userId === routine.creatorId) throw new Error((await getT())("error.ownerAlwaysEdits"));
-
-  await prisma.routineMember.update({
-    where: { routineId_userId: { routineId, userId } },
-    data: { canEdit },
-  });
-  revalidatePath(`/routines/${routineId}`);
-}
-
-export async function removeMember(routineId: string, userId: string) {
-  const owner = await requireUser();
-  const { routine } = await requireAccess(routineId, owner.id, "owner");
-  if (userId === routine.creatorId) throw new Error((await getT())("error.cannotRemoveOwner"));
-
-  await prisma.routineMember.delete({ where: { routineId_userId: { routineId, userId } } });
-  revalidatePath(`/routines/${routineId}`);
 }
 
 // ---------- training ----------
@@ -178,7 +125,7 @@ export async function removeMember(routineId: string, userId: string) {
 export async function startWorkout(workoutId: string, week: number) {
   const user = await requireUser();
   const routineId = await routineIdOfWorkout(workoutId);
-  await requireAccess(routineId, user.id);
+  await requireRoutine(routineId, user.id);
   await prisma.workoutSession.upsert({
     where: { userId_workoutId_week: { userId: user.id, workoutId, week } },
     create: { userId: user.id, routineId, workoutId, week },
@@ -238,8 +185,8 @@ export async function logSet(
         where: { id: sessionId },
         data: { completedAt: new Date() },
       }),
-      prisma.routineMember.update({
-        where: { routineId_userId: { routineId: session.routineId, userId: user.id } },
+      prisma.routine.update({
+        where: { id: session.routineId },
         data: { cursor: { increment: 1 } },
       }),
     ]);
@@ -251,10 +198,7 @@ export async function logSet(
 /** Move to the next day without training. */
 export async function skipDay(routineId: string) {
   const user = await requireUser();
-  await requireAccess(routineId, user.id);
-  await prisma.routineMember.update({
-    where: { routineId_userId: { routineId, userId: user.id } },
-    data: { cursor: { increment: 1 } },
-  });
+  await requireRoutine(routineId, user.id);
+  await prisma.routine.update({ where: { id: routineId }, data: { cursor: { increment: 1 } } });
   revalidatePath("/");
 }

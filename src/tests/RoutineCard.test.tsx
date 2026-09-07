@@ -7,19 +7,16 @@ const props: RoutineCardProps = {
   name: "Strength",
   durationWeeks: 4,
   workoutCount: 3,
-  memberCount: 2,
   cursor: 6,
   isActive: false,
-  isOwner: true,
-  canEdit: true,
   onSetActive: async () => {},
 };
 
 describe("RoutineCard", () => {
-  it("summarises the routine and the athlete's progress", () => {
+  it("summarises the routine and its progress", () => {
     render(<RoutineCard {...props} />);
     expect(screen.getByText("Strength")).toBeInTheDocument();
-    expect(screen.getByText("4 weeks · 3 days · 2 athletes")).toBeInTheDocument();
+    expect(screen.getByText("4 weeks · 3 days")).toBeInTheDocument();
     expect(screen.getByText("6/12 workouts")).toBeInTheDocument();
   });
 
@@ -39,10 +36,5 @@ describe("RoutineCard", () => {
     render(<RoutineCard {...props} isActive />);
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Set active" })).not.toBeInTheDocument();
-  });
-
-  it("labels the viewer's role", () => {
-    render(<RoutineCard {...props} isOwner={false} canEdit />);
-    expect(screen.getByText("you can edit")).toBeInTheDocument();
   });
 });
