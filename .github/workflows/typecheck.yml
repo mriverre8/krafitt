@@ -1,0 +1,21 @@
+name: typecheck
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      # Full install: the postinstall runs prisma generate, and src/generated is
+      # gitignored, so without it tsc cannot resolve the Prisma client imports.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
