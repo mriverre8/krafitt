@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "postinstall": "prisma generate"
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
@@ -34,6 +35,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "jsdom": "^30.0.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5",

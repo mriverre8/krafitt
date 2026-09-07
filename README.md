@@ -5,7 +5,7 @@ Gym progress tracking: your routines, today's workout and set-by-set logging.
 ## Getting started
 
 1. Copy `.env.example` to `.env` and fill it in with your Supabase project:
-   - `DATABASE_URL`: the pooler in *Transaction* mode (port 6543, with `?pgbouncer=true`). Used by the app.
+   - `DATABASE_URL`: the pooler in _Transaction_ mode (port 6543, with `?pgbouncer=true`). Used by the app.
    - `DIRECT_URL`: the direct connection (port 5432). Used by `prisma migrate`.
    - `BETTER_AUTH_SECRET`: `openssl rand -base64 32`.
 2. `pnpm install`
@@ -16,18 +16,18 @@ Gym progress tracking: your routines, today's workout and set-by-set logging.
 
 The project is pinned to pnpm through the `packageManager` field, so `corepack` picks the right version.
 
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` | Development server |
-| `pnpm build` | Production build |
-| `pnpm test` | Tests (Vitest) |
+| Command           | What it does              |
+| ----------------- | ------------------------- |
+| `pnpm dev`        | Development server        |
+| `pnpm build`      | Production build          |
+| `pnpm test`       | Tests (Vitest)            |
 | `pnpm db:migrate` | Applies Prisma migrations |
 
 ## How it works
 
 - **Routine**: N weeks × M training days. Each day holds exercises with sets, a rep range and a technique.
 - **Progress**: each routine keeps a cursor. The home screen shows the pending workout of whichever routine you marked as **active**, and it does not move on until you finish it (or skip it by hand).
-- **Logging**: the fields stay locked until you press *Start*. A set only unlocks once the previous one is filled in, and it is saved right away. Filling in the last set closes the workout and moves you to the next day.
+- **Logging**: the fields stay locked until you press _Start_. A set only unlocks once the previous one is filled in, and it is saved right away. Filling in the last set closes the workout and moves you to the next day.
 - **Ownership**: a routine belongs to whoever created it. There is no sharing.
 
 ## Languages and theme
