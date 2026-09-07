@@ -1,6 +1,6 @@
 import { createRoutine, setActiveRoutine } from "@/app/actions";
-import { CreateRoutineForm } from "@/components/CreateRoutineForm";
-import { RoutineCard } from "@/components/RoutineCard";
+import { CreateRoutineForm } from "@/components/create-routine-form";
+import { RoutineCard } from "@/components/routine-card";
 import { getT } from "@/i18n/server";
 import { currentUser } from "@/lib/auth";
 import { myRoutines } from "@/lib/queries";

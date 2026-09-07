@@ -1,5 +1,5 @@
-import { NavBar } from "@/components/NavBar";
-import { I18nProvider } from "@/i18n/I18nProvider";
+import { NavBar } from "@/components/nav-bar";
+import { I18nProvider } from "@/i18n/i18n-provider";
 import { getDictionary, getLocale } from "@/i18n/server";
 import { currentUser } from "@/lib/auth";
 import { getTheme } from "@/lib/theme-server";

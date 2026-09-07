@@ -1,4 +1,4 @@
-import { I18nProvider } from "@/i18n/I18nProvider";
+import { I18nProvider } from "@/i18n/i18n-provider";
 import { dictionaries, type Locale } from "@/i18n/config";
 import { render } from "@testing-library/react";
 

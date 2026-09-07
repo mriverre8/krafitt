@@ -1,6 +1,6 @@
-import { EmptyState } from "@/components/EmptyState";
-import { Landing } from "@/components/Landing";
-import { TodayWorkout } from "@/components/TodayWorkout";
+import { EmptyState } from "@/components/empty-state";
+import { Landing } from "@/components/landing";
+import { TodayWorkout } from "@/components/today-workout";
 import { getT } from "@/i18n/server";
 import { currentUser } from "@/lib/auth";
 import { todayWorkout } from "@/lib/queries";

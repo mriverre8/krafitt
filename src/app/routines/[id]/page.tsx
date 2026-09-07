@@ -5,9 +5,9 @@ import {
   deleteRoutine,
   deleteWorkout,
 } from "@/app/actions";
-import { ActionButton } from "@/components/ActionButton";
-import { AddWorkoutForm } from "@/components/AddWorkoutForm";
-import { WorkoutEditor } from "@/components/WorkoutEditor";
+import { ActionButton } from "@/components/action-button";
+import { AddWorkoutForm } from "@/components/add-workout-form";
+import { WorkoutEditor } from "@/components/workout-editor";
 import { getT } from "@/i18n/server";
 import { requireRoutine } from "@/lib/access";
 import { currentUser } from "@/lib/auth";
