@@ -184,20 +184,9 @@ export async function deleteExercise(exerciseId: string) {
 
 // ---------- training ----------
 
-export async function startWorkout(workoutId: string, week: number) {
-    const user = await requireUser();
-    const routineId = await routineIdOfWorkout(workoutId);
-    await requireRoutine(routineId, user.id);
-    await prisma.workoutSession.upsert({
-        where: { userId_workoutId_week: { userId: user.id, workoutId, week } },
-        create: { userId: user.id, routineId, workoutId, week },
-        update: {},
-    });
-    revalidatePath('/');
-}
-
 export async function logSet(
-    sessionId: string,
+    workoutId: string,
+    week: number,
     exerciseId: string,
     setIndex: number,
     weight: number,
@@ -211,8 +200,14 @@ export async function logSet(
     if (!Number.isInteger(reps) || reps < REPS.min || reps > REPS.max)
         throw new Error(t('error.reps'));
 
-    const session = await prisma.workoutSession.findUnique({
-        where: { id: sessionId },
+    const routineId = await routineIdOfWorkout(workoutId);
+    await requireRoutine(routineId, user.id);
+
+    // The first logged set is what opens the session for this week.
+    const session = await prisma.workoutSession.upsert({
+        where: { userId_workoutId_week: { userId: user.id, workoutId, week } },
+        create: { userId: user.id, routineId, workoutId, week },
+        update: {},
         include: {
             logs: true,
             workout: {
@@ -225,8 +220,6 @@ export async function logSet(
             },
         },
     });
-    if (!session || session.userId !== user.id)
-        throw new Error(t('error.sessionNotFound'));
     if (session.completedAt) throw new Error(t('error.alreadyFinished'));
 
     const exercise = session.workout.exercises.find(
@@ -255,9 +248,13 @@ export async function logSet(
 
     await prisma.setLog.upsert({
         where: {
-            sessionId_exerciseId_setIndex: { sessionId, exerciseId, setIndex },
+            sessionId_exerciseId_setIndex: {
+                sessionId: session.id,
+                exerciseId,
+                setIndex,
+            },
         },
-        create: { sessionId, exerciseId, setIndex, weight, reps },
+        create: { sessionId: session.id, exerciseId, setIndex, weight, reps },
         update: { weight, reps },
     });
 
@@ -265,7 +262,7 @@ export async function logSet(
     if (isSessionComplete(session.workout.exercises, logs)) {
         await prisma.$transaction([
             prisma.workoutSession.update({
-                where: { id: sessionId },
+                where: { id: session.id },
                 data: { completedAt: new Date() },
             }),
             prisma.routine.update({

@@ -39,8 +39,6 @@ export const es: Dict = {
     'home.goToRoutines': 'Ir a mis rutinas',
 
     'today.week': 'Semana {week} de {total}',
-    'today.start': 'Iniciar entrenamiento',
-    'today.inProgress': 'Entrenamiento en curso. Rellena las series en orden.',
     'today.noExercises': 'Este entrenamiento aún no tiene ejercicios.',
     'today.skip': 'Saltar al siguiente día',
     'today.set': 'Serie {n}',
@@ -116,7 +114,6 @@ export const es: Dict = {
     'error.repRange': 'El rango de repeticiones no es válido',
     'error.weight': 'Peso no válido',
     'error.reps': 'Repeticiones no válidas',
-    'error.sessionNotFound': 'Sesión no encontrada',
     'error.alreadyFinished': 'Este entrenamiento ya está finalizado',
     'error.wrongExercise': 'Ese ejercicio no es de este entrenamiento',
     'error.setOutOfRange': 'Serie fuera de rango',

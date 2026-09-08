@@ -39,8 +39,6 @@ export const en = {
     'home.goToRoutines': 'Go to my routines',
 
     'today.week': 'Week {week} of {total}',
-    'today.start': 'Start workout',
-    'today.inProgress': 'Workout in progress. Fill the sets in order.',
     'today.noExercises': 'This workout has no exercises yet.',
     'today.skip': 'Skip to next day',
     'today.set': 'Set {n}',
@@ -115,7 +113,6 @@ export const en = {
     'error.repRange': 'The rep range is not valid',
     'error.weight': 'Invalid weight',
     'error.reps': 'Invalid reps',
-    'error.sessionNotFound': 'Session not found',
     'error.alreadyFinished': 'This workout is already finished',
     'error.wrongExercise': 'That exercise is not part of this workout',
     'error.setOutOfRange': 'Set out of range',

@@ -39,8 +39,6 @@ export const ca: Dict = {
     'home.goToRoutines': 'Anar a les meves rutines',
 
     'today.week': 'Setmana {week} de {total}',
-    'today.start': 'Iniciar entrenament',
-    'today.inProgress': 'Entrenament en curs. Omple les sèries en ordre.',
     'today.noExercises': 'Aquest entrenament encara no té exercicis.',
     'today.skip': 'Saltar al dia següent',
     'today.set': 'Sèrie {n}',
@@ -116,7 +114,6 @@ export const ca: Dict = {
     'error.repRange': 'El rang de repeticions no és vàlid',
     'error.weight': 'Pes no vàlid',
     'error.reps': 'Repeticions no vàlides',
-    'error.sessionNotFound': 'Sessió no trobada',
     'error.alreadyFinished': 'Aquest entrenament ja està finalitzat',
     'error.wrongExercise': "Aquest exercici no és d'aquest entrenament",
     'error.setOutOfRange': 'Sèrie fora de rang',

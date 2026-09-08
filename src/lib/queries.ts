@@ -70,7 +70,6 @@ export async function todayWorkout(userId: string) {
         finished: false as const,
         workout,
         week,
-        sessionId: session?.id ?? null,
         logs: toLogs(session?.logs ?? []),
         previous: toLogs(previousSession?.logs ?? []),
         previousWeek: previousSession?.week ?? null,

@@ -6,11 +6,7 @@ import { useSessionStore } from '@/store/session';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/app/actions', () => ({
-    logSet: vi.fn(),
-    skipDay: vi.fn(),
-    startWorkout: vi.fn(),
-}));
+vi.mock('@/app/actions', () => ({ logSet: vi.fn(), skipDay: vi.fn() }));
 
 const props: TodayWorkoutProps = {
     routineId: 'r1',
@@ -31,14 +27,13 @@ const props: TodayWorkoutProps = {
             },
         ],
     },
-    sessionId: null,
     logs: {},
     previous: {},
     previousWeek: null,
 };
 
 describe('TodayWorkout', () => {
-    beforeEach(() => useSessionStore.setState({ sessionId: null, logs: {} }));
+    beforeEach(() => useSessionStore.setState({ logs: {} }));
 
     it('shows the routine, day and week', () => {
         render(<TodayWorkout {...props} />);
@@ -46,22 +41,10 @@ describe('TodayWorkout', () => {
         expect(screen.getByText('Week 2 of 8')).toBeInTheDocument();
     });
 
-    it('locks every field until the workout is started', () => {
+    // No start button any more: the first set is open from the moment the day
+    // is on screen, and logging it is what opens the session.
+    it('opens the first set straight away and locks the rest', () => {
         render(<TodayWorkout {...props} />);
-        expect(
-            screen.getByRole('button', { name: 'Start workout' })
-        ).toBeInTheDocument();
-        expect(screen.getByLabelText('Weight set 1')).toBeDisabled();
-        expect(screen.getByLabelText('Weight set 2')).toBeDisabled();
-    });
-
-    it('once started, only the first set is open', () => {
-        render(
-            <TodayWorkout
-                {...props}
-                sessionId="s1"
-            />
-        );
         expect(screen.getByLabelText('Weight set 1')).toBeEnabled();
         expect(screen.getByLabelText('Weight set 2')).toBeDisabled();
     });
@@ -70,23 +53,19 @@ describe('TodayWorkout', () => {
         render(
             <TodayWorkout
                 {...props}
-                sessionId="s1"
                 logs={{ e1: { 0: { weight: 80, reps: 8 } } }}
             />
         );
         expect(screen.getByLabelText('Weight set 2')).toBeEnabled();
     });
 
-    it('cannot be started when the day has no exercises', () => {
+    it('says so when the day has no exercises', () => {
         render(
             <TodayWorkout
                 {...props}
                 workout={{ ...props.workout, exercises: [] }}
             />
         );
-        expect(
-            screen.getByRole('button', { name: 'Start workout' })
-        ).toBeDisabled();
         expect(
             screen.getByText('This workout has no exercises yet.')
         ).toBeInTheDocument();
