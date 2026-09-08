@@ -1,35 +1,15 @@
 /**
- * The account's face. A stored photo wins; otherwise the initials, which is a
- * monogram in its own right rather than a placeholder waiting for an upload.
- *
- * The photo goes through a plain <img>, not next/image: the optimizer only
- * accepts absolute URLs whose host is listed in `remotePatterns`, and this app
- * has no image source to list yet — email and password sign-up never fills
- * `image` in. Swap in next/image the day photos come from a host we know.
+ * The account's face rendered as initials, a monogram.
  */
 export function Avatar({
     name,
-    image,
     className = '',
 }: {
     name: string;
-    image?: string | null;
     className?: string;
 }) {
-    // Decorative either way: the name it stands for is always right beside it.
+    // Decorative: the name it stands for is always right beside it.
     const shared = `shrink-0 overflow-hidden rounded-md ${className}`;
-
-    if (image) {
-        return (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-                src={image}
-                alt=""
-                aria-hidden
-                className={`${shared} object-cover`}
-            />
-        );
-    }
 
     const initials =
         name

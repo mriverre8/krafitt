@@ -18,18 +18,7 @@ describe('Avatar', () => {
         expect(container.textContent).toBe('ÁÑ');
     });
 
-    it('shows the photo instead once there is one', () => {
-        render(
-            <Avatar
-                name="Marc"
-                image="https://example.com/me.jpg"
-            />
-        );
-        const photo = screen.getByRole('presentation', { hidden: true });
-        expect(photo).toHaveAttribute('src', 'https://example.com/me.jpg');
-    });
-
-    it('stays out of the accessibility tree either way', () => {
+    it('stays out of the accessibility tree', () => {
         // The name it stands for is always rendered next to it.
         const { container } = render(<Avatar name="Marc" />);
         expect(container.firstChild).toHaveAttribute('aria-hidden');
