@@ -7,7 +7,7 @@ vi.mock('@/lib/auth-client', () => ({
     authClient: { signOut: vi.fn().mockResolvedValue(undefined) },
 }));
 
-/** The mobile menu and the desktop links never coexist on a real viewport. */
+/** The menu repeats the app links only below md, where the bar hides them. */
 function openMenu(name: string) {
     fireEvent.click(screen.getByRole('button', { name }));
     return screen.getByLabelText(name, { selector: 'div' });
@@ -17,7 +17,7 @@ describe('NavBar', () => {
     it('hides the app links when signed out', () => {
         render(
             <NavBar
-                signedIn={false}
+                userName={null}
                 theme="dark"
             />
         );
@@ -35,7 +35,7 @@ describe('NavBar', () => {
     it('shows the app links when signed in', () => {
         render(
             <NavBar
-                signedIn
+                userName="Ada"
                 theme="dark"
             />
         );
@@ -44,14 +44,14 @@ describe('NavBar', () => {
             screen.getByRole('link', { name: 'Routines' })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Sign out' })
+            screen.getByRole('button', { name: 'Menu' })
         ).toBeInTheDocument();
     });
 
     it('keeps theme and language out of the bar until settings is opened', () => {
         render(
             <NavBar
-                signedIn={false}
+                userName={null}
                 theme="dark"
             />
         );
@@ -67,10 +67,10 @@ describe('NavBar', () => {
         ).toBeInTheDocument();
     });
 
-    it('puts every signed-in option in the mobile user menu', () => {
+    it('puts every signed-in option in the user menu', () => {
         render(
             <NavBar
-                signedIn
+                userName="Ada"
                 theme="dark"
             />
         );
@@ -87,10 +87,10 @@ describe('NavBar', () => {
         ).toBeVisible();
     });
 
-    it('expands language and theme inside the mobile menu', () => {
+    it('expands language and theme inside the user menu', () => {
         render(
             <NavBar
-                signedIn
+                userName="Ada"
                 theme="dark"
             />
         );
@@ -109,12 +109,13 @@ describe('NavBar', () => {
     it('offers a single settings control, never one per breakpoint', () => {
         render(
             <NavBar
-                signedIn
+                userName="Ada"
                 theme="dark"
             />
         );
+        const menu = openMenu('Menu');
         expect(
-            screen.getAllByRole('button', { name: 'Settings' })
+            within(menu).getAllByRole('button', { name: 'Settings' })
         ).toHaveLength(1);
     });
 });

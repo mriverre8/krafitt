@@ -13,8 +13,9 @@ import { SettingsPanel } from './settings-panel';
 const itemClass =
     'flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-blaze';
 
-/** Mobile navigation: every signed-in action behind a single user icon. */
-export function UserMenu({ theme }: { theme: Theme }) {
+/** Every signed-in action behind a single user icon. The app links are
+    already in the bar from md up, so the menu only repeats them below it. */
+export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
     const t = useT();
     const router = useRouter();
     const [showSettings, setShowSettings] = useState(false);
@@ -23,10 +24,15 @@ export function UserMenu({ theme }: { theme: Theme }) {
         <Dropdown
             label={t('nav.menu')}
             icon={
-                <User
-                    size={16}
-                    aria-hidden
-                />
+                <span className="flex items-center gap-1.5">
+                    <User
+                        size={16}
+                        aria-hidden
+                    />
+                    <span className="hidden max-w-32 truncate text-sm font-semibold md:inline">
+                        {name}
+                    </span>
+                </span>
             }
         >
             {(close) => (
@@ -34,7 +40,7 @@ export function UserMenu({ theme }: { theme: Theme }) {
                     <Link
                         href="/"
                         onClick={close}
-                        className={itemClass}
+                        className={`${itemClass} md:hidden`}
                     >
                         <CalendarDays
                             size={14}
@@ -45,7 +51,7 @@ export function UserMenu({ theme }: { theme: Theme }) {
                     <Link
                         href="/routines"
                         onClick={close}
-                        className={itemClass}
+                        className={`${itemClass} md:hidden`}
                     >
                         <Dumbbell
                             size={14}

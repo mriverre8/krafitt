@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                 >
                     <header className="border-line bg-bg/90 sticky top-0 z-10 border-b backdrop-blur">
                         <NavBar
-                            signedIn={!!user}
+                            userName={user?.name ?? null}
                             theme={theme}
                         />
                     </header>

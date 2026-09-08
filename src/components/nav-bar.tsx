@@ -6,20 +6,20 @@ import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Dropdown } from './dropdown';
 import { SettingsPanel } from './settings-panel';
-import { SignOutButton } from './sign-out-button';
 import { UserMenu } from './user-menu';
 
 const linkClass =
     'flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-blaze';
 
 export function NavBar({
-    signedIn,
+    userName,
     theme,
 }: {
-    signedIn: boolean;
+    userName: string | null;
     theme: Theme;
 }) {
     const t = useT();
+    const signedIn = userName !== null;
 
     return (
         <nav className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
@@ -53,13 +53,17 @@ export function NavBar({
                             />
                             {t('nav.routines')}
                         </Link>
-                        <SignOutButton />
                     </div>
                 )}
 
-                {/* Signed in, the mobile settings live inside the user menu, so
-                    this control only needs to show up from md up. */}
-                <div className={signedIn ? 'hidden md:block' : undefined}>
+                {/* Signed in, settings and sign out live inside the user menu
+                    at every breakpoint. */}
+                {userName !== null ? (
+                    <UserMenu
+                        name={userName}
+                        theme={theme}
+                    />
+                ) : (
                     <Dropdown
                         label={t('nav.settings')}
                         icon={
@@ -71,12 +75,6 @@ export function NavBar({
                     >
                         {() => <SettingsPanel theme={theme} />}
                     </Dropdown>
-                </div>
-
-                {signedIn && (
-                    <div className="md:hidden">
-                        <UserMenu theme={theme} />
-                    </div>
                 )}
             </div>
         </nav>
