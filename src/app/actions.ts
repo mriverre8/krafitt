@@ -9,6 +9,7 @@ import {
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { NAME_MAX, REPS, SETS, WEEKS, WEIGHT } from '@/lib/constants';
+import { isRepMode } from '@/lib/reps';
 import type { FormState } from '@/lib/forms';
 import { isSessionComplete, isSetEnabled, type Logs } from '@/lib/progress';
 import { revalidatePath } from 'next/cache';
@@ -17,6 +18,9 @@ import { redirect } from 'next/navigation';
 const str = (data: FormData, key: string) => String(data.get(key) ?? '').trim();
 const int = (data: FormData, key: string) =>
     Number.parseInt(String(data.get(key) ?? ''), 10);
+/** Every value submitted under the same repeated field name. */
+const ints = (data: FormData, key: string) =>
+    data.getAll(key).map((value) => Number.parseInt(String(value), 10));
 
 // ---------- routines ----------
 
@@ -92,7 +96,7 @@ export async function addWorkout(
     const order = await prisma.workout.count({ where: { routineId } });
     await prisma.workout.create({ data: { routineId, name, order } });
     revalidatePath(`/routines/${routineId}`);
-    return {};
+    return { ok: true };
 }
 
 export async function addExercise(
@@ -103,31 +107,50 @@ export async function addExercise(
     const t = await getT();
     const workoutId = str(data, 'workoutId');
     const name = str(data, 'name');
-    const sets = int(data, 'sets');
-    const repMin = int(data, 'repMin');
-    const repMax = int(data, 'repMax');
-    const technique = str(data, 'technique') || t('technique.linear');
-    const rawWeight = str(data, 'targetWeight');
-    const targetWeight = rawWeight === '' ? null : Number(rawWeight);
+    // The form repeats these fields, one value per set row.
+    const modes = data.getAll('repMode').map(String);
+    const repMins = ints(data, 'repMin');
+    const repMaxs = ints(data, 'repMax');
+    const techniques = data
+        .getAll('technique')
+        .map((value) => String(value).trim() || t('technique.linear'));
 
     if (!name) return { error: t('error.exerciseName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    if (!Number.isInteger(sets) || sets < SETS.min || sets > SETS.max)
-        return { error: t('error.sets') };
     if (
-        !Number.isInteger(repMin) ||
-        !Number.isInteger(repMax) ||
-        repMin < REPS.min ||
-        repMax < repMin ||
-        repMax > REPS.max
+        modes.length < SETS.min ||
+        modes.length > SETS.max ||
+        !modes.every(isRepMode) ||
+        repMins.length !== modes.length ||
+        repMaxs.length !== modes.length ||
+        techniques.length !== modes.length
+    ) {
+        return { error: t('error.sets') };
+    }
+
+    // AMRAP stores no target at all; a fixed count is the same value twice.
+    const sets = modes.map((mode, index) => ({
+        order: index,
+        technique: techniques[index],
+        ...(mode === 'amrap'
+            ? { repMin: null, repMax: null }
+            : {
+                  repMin: repMins[index],
+                  repMax: mode === 'fixed' ? repMins[index] : repMaxs[index],
+              }),
+    }));
+    if (
+        sets.some(
+            ({ repMin, repMax }) =>
+                repMin !== null &&
+                (!Number.isInteger(repMin) ||
+                    !Number.isInteger(repMax) ||
+                    repMin < REPS.min ||
+                    repMax! < repMin ||
+                    repMax! > REPS.max)
+        )
     ) {
         return { error: t('error.repRange') };
-    }
-    if (
-        targetWeight !== null &&
-        (!Number.isFinite(targetWeight) || targetWeight < 0)
-    ) {
-        return { error: t('error.targetWeight') };
     }
 
     const routineId = await routineIdOfWorkout(workoutId);
@@ -135,19 +158,10 @@ export async function addExercise(
 
     const order = await prisma.exercise.count({ where: { workoutId } });
     await prisma.exercise.create({
-        data: {
-            workoutId,
-            name,
-            order,
-            sets,
-            repMin,
-            repMax,
-            technique,
-            targetWeight,
-        },
+        data: { workoutId, name, order, sets: { create: sets } },
     });
     revalidatePath(`/routines/${routineId}`);
-    return {};
+    return { ok: true };
 }
 
 export async function deleteWorkout(workoutId: string) {
@@ -201,7 +215,14 @@ export async function logSet(
         where: { id: sessionId },
         include: {
             logs: true,
-            workout: { include: { exercises: { orderBy: { order: 'asc' } } } },
+            workout: {
+                include: {
+                    exercises: {
+                        orderBy: { order: 'asc' },
+                        include: { sets: true },
+                    },
+                },
+            },
         },
     });
     if (!session || session.userId !== user.id)
@@ -215,7 +236,7 @@ export async function logSet(
     if (
         !Number.isInteger(setIndex) ||
         setIndex < 0 ||
-        setIndex >= exercise.sets
+        setIndex >= exercise.sets.length
     ) {
         throw new Error(t('error.setOutOfRange'));
     }

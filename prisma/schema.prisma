@@ -96,20 +96,31 @@ model Workout {
 }
 
 model Exercise {
-  id           String  @id @default(cuid())
-  workoutId    String
-  workout      Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  name         String
-  order        Int
-  sets         Int
-  repMin       Int
-  repMax       Int
-  technique    String
-  targetWeight Float?
+  id        String  @id @default(cuid())
+  workoutId String
+  workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int
 
+  sets ExerciseSet[]
   logs SetLog[]
 
   @@index([workoutId, order])
+}
+
+/// One prescribed set. Each carries its own rep range and technique, so a top
+/// set and its back offs live in the same exercise.
+model ExerciseSet {
+  id         String   @id @default(cuid())
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  order      Int
+  /// Both null means AMRAP; equal values mean a fixed number of reps.
+  repMin     Int?
+  repMax     Int?
+  technique  String
+
+  @@index([exerciseId, order])
 }
 
 model WorkoutSession {

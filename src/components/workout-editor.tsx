@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { FormAction } from '@/lib/forms';
+import { formatReps } from '@/lib/reps';
 import { cardClass, iconButtonClass } from '@/lib/ui';
 import { Trash, X } from 'lucide-react';
 import { ActionButton } from './action-button';
@@ -52,10 +53,12 @@ export function WorkoutEditor({
                             </span>
                             <span className="text-muted">
                                 {' · '}
-                                {exercise.sets}×{exercise.repMin}-
-                                {exercise.repMax} · {exercise.technique}
-                                {exercise.targetWeight !== null &&
-                                    ` · ${t('today.target', { weight: exercise.targetWeight })}`}
+                                {exercise.sets
+                                    .map(
+                                        (set) =>
+                                            `${formatReps(set, t)} ${set.technique}`
+                                    )
+                                    .join(' · ')}
                             </span>
                         </span>
                         <ActionButton
@@ -77,7 +80,7 @@ export function WorkoutEditor({
                 )}
             </ul>
 
-            <div className="mt-3">
+            <div className="border-line mt-4 border-t pt-4">
                 <AddExerciseForm
                     action={addExercise}
                     workoutId={workout.id}

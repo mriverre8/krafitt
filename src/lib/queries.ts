@@ -25,7 +25,12 @@ export async function todayWorkout(userId: string) {
         include: {
             workouts: {
                 orderBy: { order: 'asc' },
-                include: { exercises: { orderBy: { order: 'asc' } } },
+                include: {
+                    exercises: {
+                        orderBy: { order: 'asc' },
+                        include: { sets: { orderBy: { order: 'asc' } } },
+                    },
+                },
             },
         },
     });
@@ -86,7 +91,12 @@ export async function routineDetail(routineId: string) {
         include: {
             workouts: {
                 orderBy: { order: 'asc' },
-                include: { exercises: { orderBy: { order: 'asc' } } },
+                include: {
+                    exercises: {
+                        orderBy: { order: 'asc' },
+                        include: { sets: { orderBy: { order: 'asc' } } },
+                    },
+                },
             },
         },
     });

@@ -24,11 +24,10 @@ const props: TodayWorkoutProps = {
             {
                 id: 'e1',
                 name: 'Bench press',
-                sets: 2,
-                repMin: 6,
-                repMax: 8,
-                technique: 'Top set',
-                targetWeight: 80,
+                sets: [
+                    { repMin: 4, repMax: 6, technique: 'Top set' },
+                    { repMin: 8, repMax: 10, technique: 'Back off' },
+                ],
             },
         ],
     },

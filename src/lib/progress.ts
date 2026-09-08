@@ -1,6 +1,6 @@
 /** Pure progression logic. No Prisma, no React: the only part with unit tests. */
 
-export type ExercisePlan = { id: string; sets: number };
+export type ExercisePlan = { id: string; sets: readonly unknown[] };
 export type SetValue = { weight: number; reps: number };
 /** exerciseId -> setIndex -> logged value */
 export type Logs = Record<
@@ -36,7 +36,7 @@ export function positionFromCursor(
 /** Every set of the workout, in the order they must be filled in. */
 export function flatSets(exercises: ExercisePlan[]): FlatSet[] {
     return exercises.flatMap((e, exerciseIndex) =>
-        Array.from({ length: Math.max(0, e.sets) }, (_, setIndex) => ({
+        Array.from({ length: e.sets.length }, (_, setIndex) => ({
             exerciseId: e.id,
             exerciseIndex,
             setIndex,

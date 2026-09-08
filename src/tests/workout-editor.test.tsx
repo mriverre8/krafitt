@@ -10,11 +10,11 @@ const workout = {
         {
             id: 'e1',
             name: 'Bench press',
-            sets: 4,
-            repMin: 6,
-            repMax: 8,
-            technique: 'Top set',
-            targetWeight: 80,
+            sets: [
+                { repMin: 4, repMax: 6, technique: 'Top set' },
+                { repMin: 8, repMax: 8, technique: 'Back off' },
+                { repMin: null, repMax: null, technique: 'Drop set' },
+            ],
         },
     ],
 };
@@ -31,7 +31,11 @@ describe('WorkoutEditor', () => {
         render(<WorkoutEditor {...base} />);
         expect(screen.getByText('Push A')).toBeInTheDocument();
         expect(screen.getByText('Bench press')).toBeInTheDocument();
-        expect(screen.getByText(/4×6-8 · Top set/)).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /4-6 reps Top set · 8 reps Back off · AMRAP Drop set/
+            )
+        ).toBeInTheDocument();
     });
 
     it('offers the editing controls', () => {

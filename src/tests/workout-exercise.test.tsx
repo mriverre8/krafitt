@@ -8,11 +8,11 @@ import { describe, expect, it, vi } from 'vitest';
 const exercise: ExerciseView = {
     id: 'e1',
     name: 'Bench press',
-    sets: 3,
-    repMin: 6,
-    repMax: 8,
-    technique: 'Top set',
-    targetWeight: 80,
+    sets: [
+        { repMin: 4, repMax: 6, technique: 'Top set' },
+        { repMin: 8, repMax: 10, technique: 'Back off' },
+        { repMin: 8, repMax: 10, technique: 'Back off' },
+    ],
 };
 
 const base = {
@@ -25,27 +25,17 @@ const base = {
 };
 
 describe('WorkoutExercise', () => {
-    it('renders the prescription', () => {
+    it('gives every set its own prescription', () => {
         render(<WorkoutExercise {...base} />);
         expect(screen.getByText('Bench press')).toBeInTheDocument();
-        expect(screen.getByText('Top set')).toBeInTheDocument();
-        expect(screen.getByText(/3 × 6-8 reps/)).toBeInTheDocument();
-        expect(screen.getByText(/target 80 kg/)).toBeInTheDocument();
+        expect(screen.getByText(/4-6 reps/)).toBeInTheDocument();
+        expect(screen.getByText('· Top set')).toBeInTheDocument();
+        expect(screen.getAllByText('· Back off')).toHaveLength(2);
     });
 
     it('renders one row per set', () => {
         render(<WorkoutExercise {...base} />);
         expect(screen.getAllByLabelText(/^Weight set/)).toHaveLength(3);
-    });
-
-    it('omits the target when the exercise has none', () => {
-        render(
-            <WorkoutExercise
-                {...base}
-                exercise={{ ...exercise, targetWeight: null }}
-            />
-        );
-        expect(screen.queryByText(/target/)).not.toBeInTheDocument();
     });
 
     it('reports which set was saved', () => {

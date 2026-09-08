@@ -6,10 +6,13 @@ import {
 } from '@/lib/progress';
 import { describe, expect, it } from 'vitest';
 
-const exercises = [
-    { id: 'a', sets: 2 },
-    { id: 'b', sets: 1 },
-];
+/** Only the number of sets matters here, so the rows can be empty objects. */
+const plan = (id: string, count: number) => ({
+    id,
+    sets: Array.from({ length: count }, () => ({})),
+});
+
+const exercises = [plan('a', 2), plan('b', 1)];
 
 describe('positionFromCursor', () => {
     it('walks day by day and then week by week', () => {

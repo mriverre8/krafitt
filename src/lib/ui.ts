@@ -2,10 +2,14 @@
 // Hover always pairs with an :active state (.lift in globals.css): a touch
 // screen has no hover, so it can never be the only feedback.
 
-export const inputClass =
-    'w-full min-w-0 rounded-xl border border-line bg-surface2 px-3 py-2.5 text-sm text-ink ' +
+// Width lives outside the field styling: a row that sizes its own columns
+// cannot win against a w-full baked into the shared string.
+export const fieldClass =
+    'rounded-xl border border-line bg-surface2 px-3 py-2.5 text-sm text-ink ' +
     'transition-colors placeholder:text-muted hover:border-muted focus:border-blaze ' +
     'focus:outline-none focus:ring-2 focus:ring-blaze/25 disabled:opacity-30';
+
+export const inputClass = `w-full min-w-0 ${fieldClass}`;
 
 export const primaryClass =
     'lift rounded-xl bg-blaze px-4 py-3 font-display text-base font-bold uppercase tracking-wide ' +

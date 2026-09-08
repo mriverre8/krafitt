@@ -2,18 +2,13 @@
 
 import { useT } from '@/i18n/use-t';
 import type { SetValue } from '@/lib/progress';
+import { formatReps, type RepSpec } from '@/lib/reps';
 import { cardClass } from '@/lib/ui';
 import { SetRow } from './set-row';
 
-export type ExerciseView = {
-    id: string;
-    name: string;
-    sets: number;
-    repMin: number;
-    repMax: number;
-    technique: string;
-    targetWeight: number | null;
-};
+export type SetPlan = RepSpec & { technique: string };
+
+export type ExerciseView = { id: string; name: string; sets: SetPlan[] };
 
 export function WorkoutExercise({
     exercise,
@@ -34,35 +29,32 @@ export function WorkoutExercise({
 
     return (
         <section className={cardClass}>
-            <div className="flex items-baseline justify-between gap-2">
-                <h2 className="display text-2xl">{exercise.name}</h2>
-                <span className="text-blaze shrink-0 text-sm font-semibold">
-                    {exercise.technique}
-                </span>
-            </div>
-            <p className="text-muted text-sm">
-                {t('today.exerciseMeta', {
-                    sets: exercise.sets,
-                    min: exercise.repMin,
-                    max: exercise.repMax,
-                })}
-                {exercise.targetWeight !== null &&
-                    ` · ${t('today.target', { weight: exercise.targetWeight })}`}
-            </p>
+            <h2 className="display text-2xl">{exercise.name}</h2>
 
             <div className="mt-4 space-y-2.5">
-                {Array.from({ length: exercise.sets }, (_, setIndex) => (
-                    <SetRow
+                {exercise.sets.map((set, setIndex) => (
+                    <div
                         key={setIndex}
-                        setIndex={setIndex}
-                        enabled={isSetEnabled(setIndex)}
-                        saved={logs[setIndex]}
-                        previous={previous[setIndex]}
-                        previousWeek={previousWeek}
-                        onSave={(weight, reps) =>
-                            onSaveSet(setIndex, weight, reps)
-                        }
-                    />
+                        className="space-y-1"
+                    >
+                        {/* Each set carries its own prescription. */}
+                        <p className="text-muted pl-10 text-xs">
+                            {formatReps(set, t)}
+                            <span className="text-blaze font-semibold">
+                                {` · ${set.technique}`}
+                            </span>
+                        </p>
+                        <SetRow
+                            setIndex={setIndex}
+                            enabled={isSetEnabled(setIndex)}
+                            saved={logs[setIndex]}
+                            previous={previous[setIndex]}
+                            previousWeek={previousWeek}
+                            onSave={(weight, reps) =>
+                                onSaveSet(setIndex, weight, reps)
+                            }
+                        />
+                    </div>
                 ))}
             </div>
         </section>
