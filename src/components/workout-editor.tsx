@@ -139,24 +139,30 @@ export function WorkoutEditor({
 
             {/* Save is the heavy one and takes the row; undoing and adding an
                 exercise sit either side as secondary actions, because neither of
-                them touches anything but the draft. */}
-            <div className="border-line mt-4 flex items-center gap-2 border-t pt-4">
+                them touches anything but the draft.
+
+                Three of them will not share one line on a phone — squeezed
+                between the other two, Save wrapped onto a second line of its
+                own. Below md it takes a full row and the other two split the
+                one under it, so all three keep their words and a whole finger. */}
+            <div className="border-line mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
                 <button
                     type="button"
                     disabled={pending || plan === saved}
                     // Straight back to the last save: the drafts are seeded from
                     // it in the first place.
                     onClick={() => setDrafts(toDrafts(workout.exercises))}
+                    // The full wording stays the accessible name at every width;
+                    // only what is drawn shortens, and the short form is a prefix
+                    // of it, so what is read out still matches what is seen.
                     aria-label={t('exercise.undo')}
-                    title={t('exercise.undo')}
-                    className={`${ghostClass} flex shrink-0 items-center gap-1.5`}
+                    className={`${ghostClass} order-2 flex flex-1 items-center justify-center gap-1.5 md:order-1 md:flex-none`}
                 >
                     <Undo2
                         size={14}
                         aria-hidden
                     />
-                    {/* Three buttons is already a lot for a phone: there, the
-                        arrow carries it on its own. */}
+                    <span className="md:hidden">{t('exercise.undoShort')}</span>
                     <span className="hidden md:inline">
                         {t('exercise.undo')}
                     </span>
@@ -165,7 +171,7 @@ export function WorkoutEditor({
                     type="button"
                     disabled={pending || plan === saved}
                     onClick={save}
-                    className={`${primaryClass} flex flex-1 items-center justify-center gap-2`}
+                    className={`${primaryClass} order-1 flex basis-full items-center justify-center gap-2 md:order-2 md:flex-1 md:basis-auto`}
                 >
                     <Save
                         size={16}
@@ -179,13 +185,17 @@ export function WorkoutEditor({
                     onClick={() =>
                         setDrafts((current) => [...current, emptyExercise])
                     }
-                    className={`${ghostClass} flex shrink-0 items-center gap-1.5`}
+                    aria-label={t('exercise.add')}
+                    className={`${ghostClass} order-3 flex flex-1 items-center justify-center gap-1.5 md:flex-none`}
                 >
                     <Plus
                         size={14}
                         aria-hidden
                     />
-                    {t('exercise.add')}
+                    <span className="md:hidden">{t('exercise.addShort')}</span>
+                    <span className="hidden md:inline">
+                        {t('exercise.add')}
+                    </span>
                 </button>
             </div>
 
@@ -209,7 +219,7 @@ export function WorkoutEditor({
                         // is named exactly as the button reads on a wider screen.
                         aria-label={toggleLabel}
                         title={toggleLabel}
-                        className={`${iconButtonClass} flex shrink-0 items-center gap-1.5`}
+                        className={iconButtonClass}
                     >
                         {highlight ? (
                             <EyeOff

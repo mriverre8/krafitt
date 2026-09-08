@@ -44,14 +44,19 @@ export const cardLinkClass = `${cardClass} lift hover:border-pulse`;
 export const labelClass = 'eyebrow text-muted';
 
 /** The × that drops a row, exercise or set alike. One size for both, so the
-    fields they sit next to end on the same edge instead of a few pixels apart. */
+    fields they sit next to end on the same edge instead of a few pixels apart.
+    A finger-sized box on a phone; from md up a mouse can have the tight one. */
 export const removeButtonClass =
-    'shrink-0 rounded-md p-1.5 text-muted transition-colors hover:text-danger ' +
-    'disabled:opacity-30';
+    'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md ' +
+    'text-muted transition-colors hover:text-danger disabled:opacity-30 ' +
+    'md:min-h-0 md:min-w-0 md:p-1.5';
 
-/** Small text button, for destructive or secondary row actions. */
+/** Small text button, for destructive or secondary row actions. Same story:
+    44px of target on a phone, back to its own size once there is a pointer. */
 export const iconButtonClass =
-    'rounded-md p-2 text-muted transition-colors hover:bg-surface2 hover:text-pulse';
+    'flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-md ' +
+    'p-2 text-muted transition-colors hover:bg-surface2 hover:text-pulse ' +
+    'md:min-h-0 md:min-w-0';
 
 /** Uppercase pill, for a count or a status. */
 export const badgeClass =

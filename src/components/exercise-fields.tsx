@@ -62,9 +62,11 @@ export function toDrafts(exercises: ExerciseView[]): ExerciseDraft[] {
     }));
 }
 
-/** Numbers stay narrow, the technique takes whatever room is left. */
+/** The numbers share out whatever the row has left on a phone, so the line ends
+    flush instead of trailing off; from md up they are a fixed column again. */
 const numberClass = (wrong: boolean) =>
-    `${wrong ? wrongFieldClass : fieldClass} w-16 shrink-0 px-1 text-center md:w-20 md:px-3`;
+    `${wrong ? wrongFieldClass : fieldClass} min-w-0 flex-1 px-1 text-center ` +
+    `md:w-20 md:flex-none md:px-3`;
 
 const noFault = { min: false, max: false };
 
@@ -229,7 +231,10 @@ export function ExerciseFields({
                                     e,
                                     n: setIndex + 1,
                                 })}
-                                className={`${removeButtonClass} md:order-last`}
+                                // Pushed to the right edge on a phone, where the
+                                // technique below it is full width: the block
+                                // ends on one line instead of two ragged ones.
+                                className={`${removeButtonClass} ml-auto md:order-last md:ml-0`}
                             >
                                 <X
                                     size={14}
@@ -249,7 +254,13 @@ export function ExerciseFields({
                                     e,
                                     n: setIndex + 1,
                                 })}
-                                className={`${fieldClass} min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto`}
+                                // On its own line below md, inset to sit under
+                                // the columns rather than under the whole card:
+                                // left clears the set number (w-4 + gap-1.5 =
+                                // 1.375rem), right clears the × (min-w-11 +
+                                // gap-1.5 = 3.125rem), so it starts where the
+                                // rep type does and ends where the name above does.
+                                className={`${fieldClass} mr-[3.125rem] ml-[1.375rem] min-w-40 basis-full md:mr-0 md:ml-0 md:min-w-0 md:flex-1 md:basis-auto`}
                             />
                         </div>
                     );

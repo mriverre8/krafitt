@@ -92,6 +92,8 @@ export const ca: Dict = {
     'exercise.add': 'Afegir exercici',
     'exercise.saveChanges': 'Desar canvis',
     'exercise.undo': 'Desfer canvis',
+    'exercise.undoShort': 'Desfer',
+    'exercise.addShort': 'Afegir',
     'exercise.delete': 'Esborrar exercici {e}',
 
     'reps.range': 'Rang',

@@ -93,6 +93,9 @@ export const en = {
     'exercise.add': 'Add exercise',
     'exercise.saveChanges': 'Save changes',
     'exercise.undo': 'Undo changes',
+    // Short forms: below md these buttons share a row and the full label wraps.
+    'exercise.undoShort': 'Undo',
+    'exercise.addShort': 'Add',
     'exercise.delete': 'Delete exercise {e}',
 
     'reps.range': 'Range',
