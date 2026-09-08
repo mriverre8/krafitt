@@ -11,7 +11,7 @@ import { Dropdown } from './dropdown';
 import { SettingsPanel } from './settings-panel';
 
 const itemClass =
-    'flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-blaze';
+    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-pulse';
 
 /** Every signed-in action behind a single user icon. The app links are
     already in the bar from md up, so the menu only repeats them below it. */

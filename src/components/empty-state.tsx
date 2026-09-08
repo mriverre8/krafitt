@@ -9,17 +9,20 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
     const t = useT();
 
     return (
-        <div className="border-line bg-surface rounded-2xl border p-8">
-            <Dumbbell
-                size={28}
-                aria-hidden
-                className="text-blaze"
-            />
-            <h1 className="display mt-3 text-4xl">{title}</h1>
-            <p className="text-muted mt-2 max-w-sm">{body}</p>
+        <div className="border-line border-l-volt bg-surface rounded-md border border-l-[3px] p-8">
+            {/* The icon gets the volt, not the heading: an orange headline is
+                unreadable on the light background. */}
+            <span className="bg-volt text-on-volt grid h-11 w-11 place-items-center rounded-md">
+                <Dumbbell
+                    size={24}
+                    aria-hidden
+                />
+            </span>
+            <h1 className="display mt-4 text-5xl">{title}</h1>
+            <p className="text-muted mt-3 max-w-sm text-base">{body}</p>
             <Link
                 href="/routines"
-                className={`${primaryClass} mt-6 inline-block`}
+                className={`${primaryClass} mt-7 inline-block`}
             >
                 {t('home.goToRoutines')}
             </Link>

@@ -3,6 +3,7 @@
 import { useT } from '@/i18n/use-t';
 import { CalendarDays, ClipboardList, Dumbbell } from 'lucide-react';
 import { AuthForms } from './auth-forms';
+import { Wordmark } from './wordmark';
 
 const FEATURES = [
     ['landing.feature1', ClipboardList],
@@ -14,28 +15,38 @@ export function Landing() {
     const t = useT();
 
     return (
-        <div className="space-y-10 py-6">
-            <div className="space-y-3">
-                <h1 className="display text-7xl leading-[0.85]">
-                    Kra<span className="text-blaze">fitt</span>
+        <div className="space-y-12 py-4">
+            <div className="space-y-4">
+                {/* The mark runs to the edge of the column: at this size it is
+                    the page's only image, so it gets the room of one. */}
+                <h1 className="text-7xl sm:text-8xl">
+                    <Wordmark />
                 </h1>
-                <p className="text-muted max-w-sm text-lg">
+                <p className="text-ink max-w-md text-xl font-medium text-balance">
                     {t('app.tagline')}
                 </p>
             </div>
 
-            <ul className="grid gap-4">
-                {FEATURES.map(([key, Icon]) => (
+            <ul className="grid gap-3">
+                {FEATURES.map(([key, Icon], index) => (
                     <li
                         key={key}
-                        className="flex gap-3 text-base"
+                        className="border-line flex items-start gap-4 rounded-md border p-4"
                     >
+                        {/* Volt only ever appears as a fill, never as a numeral
+                            in mid-air: on white it would land at 2:1. */}
+                        <span
+                            aria-hidden
+                            className="figure bg-volt text-on-volt grid h-7 w-7 shrink-0 place-items-center rounded-sm text-base leading-none"
+                        >
+                            {index + 1}
+                        </span>
                         <Icon
                             size={20}
                             aria-hidden
-                            className="text-blaze mt-0.5 shrink-0"
+                            className="text-pulse mt-0.5 shrink-0"
                         />
-                        <span className="text-muted">{t(key)}</span>
+                        <span className="text-muted text-base">{t(key)}</span>
                     </li>
                 ))}
             </ul>

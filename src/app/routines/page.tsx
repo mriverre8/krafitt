@@ -14,7 +14,7 @@ export default async function RoutinesPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="display text-5xl">{t('routines.title')}</h1>
+            <h1 className="display text-6xl">{t('routines.title')}</h1>
 
             <ul className="space-y-3">
                 {routines.map((routine) => (
@@ -30,7 +30,7 @@ export default async function RoutinesPage() {
                     />
                 ))}
                 {routines.length === 0 && (
-                    <li className="border-line text-muted rounded-2xl border border-dashed p-6 text-center">
+                    <li className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center">
                         {t('routines.empty')}
                     </li>
                 )}

@@ -25,7 +25,7 @@ export function WorkoutEditor({
     return (
         <div className={cardClass}>
             <div className="flex items-center justify-between gap-2">
-                <h3 className="display text-2xl">{workout.name}</h3>
+                <h3 className="display text-3xl">{workout.name}</h3>
                 <ActionButton
                     action={() => onDeleteWorkout(workout.id)}
                     confirm={t('routine.deleteDayConfirm', {

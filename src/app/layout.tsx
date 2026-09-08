@@ -45,13 +45,19 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                     locale={locale}
                     dict={dict}
                 >
-                    <header className="border-line bg-bg/90 sticky top-0 z-10 border-b backdrop-blur">
+                    {/* Two rules, not one: a hairline for the panel edge and a
+                        volt seam under it, so the bar reads as a lit strip. */}
+                    <header className="border-line bg-bg/80 sticky top-0 z-10 border-b backdrop-blur-md">
                         <NavBar
                             userName={user?.name ?? null}
                             theme={theme}
                         />
+                        <div
+                            aria-hidden
+                            className="from-volt via-pulse h-px bg-gradient-to-r to-transparent opacity-60"
+                        />
                     </header>
-                    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+                    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
                         {children}
                     </main>
                 </I18nProvider>

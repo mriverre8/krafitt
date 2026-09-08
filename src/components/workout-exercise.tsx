@@ -29,7 +29,7 @@ export function WorkoutExercise({
 
     return (
         <section className={cardClass}>
-            <h2 className="display text-2xl">{exercise.name}</h2>
+            <h2 className="display text-3xl">{exercise.name}</h2>
 
             <div className="mt-4 space-y-2.5">
                 {exercise.sets.map((set, setIndex) => (
@@ -38,9 +38,9 @@ export function WorkoutExercise({
                         className="space-y-1"
                     >
                         {/* Each set carries its own prescription. */}
-                        <p className="text-muted pl-10 text-xs">
+                        <p className="text-muted pl-11 text-xs">
                             {formatReps(set, t)}
-                            <span className="text-blaze font-semibold">
+                            <span className="text-pulse font-semibold">
                                 {` · ${set.technique}`}
                             </span>
                         </p>

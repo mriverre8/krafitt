@@ -22,10 +22,10 @@ export function ProgressLadder({
             <div
                 role="img"
                 aria-label={label}
-                className="bg-surface2 h-1.5 w-full overflow-hidden rounded-full"
+                className="bg-surface2 h-2 w-full overflow-hidden rounded-xs"
             >
                 <div
-                    className="bg-blaze h-full rounded-full"
+                    className="bg-volt h-full rounded-xs"
                     style={{
                         width: `${total > 0 ? (filled / total) * 100 : 0}%`,
                     }}
@@ -43,11 +43,11 @@ export function ProgressLadder({
             {Array.from({ length: total }, (_, index) => (
                 <span
                     key={index}
-                    className={`h-1.5 flex-1 rounded-full ${
+                    className={`h-2 flex-1 rounded-xs ${
                         index < filled
-                            ? 'bg-blaze'
+                            ? 'bg-volt'
                             : index === filled
-                              ? 'bg-blaze/30 ring-blaze ring-1'
+                              ? 'bg-volt/50 ring-pulse ring-2'
                               : 'bg-surface2'
                     }`}
                 />

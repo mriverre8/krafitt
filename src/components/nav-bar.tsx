@@ -5,11 +5,13 @@ import type { Theme } from '@/lib/theme';
 import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Dropdown } from './dropdown';
+import { Wordmark } from './wordmark';
 import { SettingsPanel } from './settings-panel';
 import { UserMenu } from './user-menu';
 
 const linkClass =
-    'flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-blaze';
+    'flex items-center gap-1.5 font-display text-sm font-bold uppercase tracking-wide ' +
+    'text-muted transition-colors hover:text-pulse';
 
 export function NavBar({
     userName,
@@ -25,9 +27,10 @@ export function NavBar({
         <nav className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
             <Link
                 href="/"
-                className="display text-ink hover:text-blaze text-3xl transition-colors"
+                aria-label="Krafitt"
+                className="text-ink"
             >
-                Kra<span className="text-blaze">fitt</span>
+                <Wordmark className="text-3xl" />
             </Link>
 
             <div className="flex items-center gap-3">

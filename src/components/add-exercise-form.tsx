@@ -192,7 +192,7 @@ export function AddExerciseForm({
                 type="button"
                 disabled={sets.length >= SETS.max}
                 onClick={() => setSets((current) => [...current, emptySet])}
-                className={`${labelClass} hover:text-blaze flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
+                className={`${labelClass} hover:text-pulse flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
             >
                 <Plus
                     size={14}

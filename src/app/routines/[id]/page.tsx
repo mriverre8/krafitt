@@ -29,8 +29,8 @@ export default async function RoutinePage({
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="display text-5xl">{routine.name}</h1>
-                <p className="text-muted">
+                <h1 className="display text-6xl">{routine.name}</h1>
+                <p className="eyebrow text-muted mt-2">
                     {t('routine.meta', {
                         weeks: routine.durationWeeks,
                         days: routine.workouts.length,
@@ -39,9 +39,7 @@ export default async function RoutinePage({
             </header>
 
             <section className="space-y-4">
-                <h2 className="text-muted text-sm font-semibold">
-                    {t('routine.workouts')}
-                </h2>
+                <h2 className="eyebrow text-muted">{t('routine.workouts')}</h2>
 
                 {routine.workouts.map((workout) => (
                     <WorkoutEditor
@@ -62,7 +60,7 @@ export default async function RoutinePage({
             <ActionButton
                 action={deleteRoutine.bind(null, routine.id)}
                 confirm={t('routine.deleteConfirm', { name: routine.name })}
-                className="text-danger hover:text-danger/80 flex items-center gap-1.5 text-sm font-semibold transition-colors"
+                className="text-danger hover:text-danger/70 font-display flex items-center gap-1.5 text-sm font-bold tracking-wide uppercase transition-colors"
             >
                 <Trash
                     size={14}

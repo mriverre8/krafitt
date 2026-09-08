@@ -27,9 +27,9 @@ describe('ProgressLadder', () => {
         );
         const segments = [...container.querySelectorAll('span')];
         expect(
-            segments.slice(0, 2).every((s) => s.className.includes('bg-blaze'))
+            segments.slice(0, 2).every((s) => s.className.includes('bg-volt'))
         ).toBe(true);
-        expect(segments[2].className).toContain('ring-blaze');
+        expect(segments[2].className).toContain('ring-pulse');
         expect(segments[3].className).toContain('bg-surface2');
     });
 
@@ -42,7 +42,7 @@ describe('ProgressLadder', () => {
             />
         );
         const segments = [...container.querySelectorAll('span')];
-        expect(segments.every((s) => s.className.includes('bg-blaze'))).toBe(
+        expect(segments.every((s) => s.className.includes('bg-volt'))).toBe(
             true
         );
     });

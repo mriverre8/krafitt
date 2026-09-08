@@ -39,8 +39,8 @@ export function AuthForms() {
     }
 
     return (
-        <div className="border-line bg-surface rounded-2xl border p-5">
-            <div className="bg-surface2 mb-4 flex gap-1 rounded-xl p-1">
+        <div className="border-line border-l-volt bg-surface rounded-md border border-l-[3px] p-5">
+            <div className="border-line bg-surface2 mb-5 flex gap-1 rounded-md border p-1">
                 {(['login', 'signup'] as const).map((option) => (
                     <button
                         key={option}
@@ -49,9 +49,10 @@ export function AuthForms() {
                             setMode(option);
                             setError(undefined);
                         }}
-                        className={`flex-1 rounded-lg py-2 font-semibold transition-colors ${
+                        aria-pressed={mode === option}
+                        className={`font-display flex-1 rounded-sm py-2.5 text-base font-bold tracking-wide uppercase transition-colors ${
                             mode === option
-                                ? 'bg-blaze text-on-accent'
+                                ? 'bg-volt text-on-volt'
                                 : 'text-muted hover:text-ink'
                         }`}
                     >
@@ -102,7 +103,7 @@ export function AuthForms() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`${primaryClass} w-full py-3.5 text-lg`}
+                    className={`${primaryClass} w-full py-4 text-xl`}
                 >
                     {mode === 'login'
                         ? t('auth.submitLogin')

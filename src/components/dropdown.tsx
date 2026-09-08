@@ -56,7 +56,7 @@ export function Dropdown({
             {open && (
                 <div
                     aria-label={label}
-                    className="border-line bg-surface absolute top-full right-0 z-50 mt-2 flex w-56 flex-col gap-1 rounded-xl border p-2 shadow-lg"
+                    className="border-line bg-surface absolute top-full right-0 z-50 mt-2 flex w-56 flex-col gap-1 rounded-md border-2 p-2 shadow-2xl"
                 >
                     {children(() => setOpen(false))}
                 </div>

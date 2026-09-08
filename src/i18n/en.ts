@@ -39,6 +39,7 @@ export const en = {
     'home.goToRoutines': 'Go to my routines',
 
     'today.week': 'Week {week} of {total}',
+    'today.progress': '{done}/{total} sets',
     'today.noExercises': 'This workout has no exercises yet.',
     'today.skip': 'Skip to next day',
     'today.set': 'Set {n}',

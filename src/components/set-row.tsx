@@ -44,16 +44,19 @@ export function SetRow({
         (!saved || saved.weight !== parsedWeight || saved.reps !== parsedReps);
     const done = !!saved && !canSave;
 
-    // The left rule is the state: quiet when locked, orange when it is your turn,
-    // green once the set is banked.
+    // The left rule is the state: quiet when locked, volt when it is your turn,
+    // green once the set is banked. Colour is never the only signal — the button
+    // swaps its arrow for a tick at the same moment.
     return (
         <div
-            className={`flex items-center gap-2 border-l-2 pl-2.5 transition-colors ${
-                done ? 'border-surge' : enabled ? 'border-blaze' : 'border-line'
+            className={`flex items-center gap-2 border-l-4 pl-3 transition-colors ${
+                done ? 'border-surge' : enabled ? 'border-volt' : 'border-line'
             }`}
         >
             <span
-                className={`figure w-5 shrink-0 text-lg ${done ? 'text-surge' : 'text-muted'}`}
+                className={`figure w-5 shrink-0 text-xl ${
+                    done ? 'text-surge' : enabled ? 'text-ink' : 'text-muted'
+                }`}
             >
                 <span className="sr-only">{t('today.set', { n: number })}</span>
                 <span aria-hidden>{number}</span>
@@ -80,7 +83,7 @@ export function SetRow({
                 onChange={(event) =>
                     setDraft({ weight: event.target.value, reps })
                 }
-                className={`${inputClass} figure text-center text-base`}
+                className={`${inputClass} figure h-12 text-center text-lg`}
             />
             <input
                 type="number"
@@ -94,7 +97,7 @@ export function SetRow({
                 onChange={(event) =>
                     setDraft({ weight, reps: event.target.value })
                 }
-                className={`${inputClass} figure text-center text-base`}
+                className={`${inputClass} figure h-12 text-center text-lg`}
             />
             <button
                 type="button"
@@ -104,20 +107,20 @@ export function SetRow({
                 data-done={done}
                 // A banked set keeps its green even though the button is done and
                 // disabled; a locked one goes neutral, because faded orange turns muddy.
-                className={`lift grid w-11 shrink-0 place-items-center rounded-xl py-2.5 disabled:pointer-events-none ${
+                className={`lift grid h-12 w-12 shrink-0 place-items-center rounded-md disabled:pointer-events-none ${
                     done
-                        ? 'bg-surge text-on-accent'
-                        : 'bg-blaze text-on-accent hover:bg-ember disabled:bg-surface2 disabled:text-muted'
+                        ? 'bg-surge text-on-surge'
+                        : 'charged bg-volt text-on-volt hover:bg-volt2 disabled:bg-surface2 disabled:text-muted'
                 }`}
             >
                 {done ? (
                     <Check
-                        size={16}
+                        size={20}
                         aria-hidden
                     />
                 ) : (
                     <ArrowRight
-                        size={16}
+                        size={20}
                         aria-hidden
                     />
                 )}

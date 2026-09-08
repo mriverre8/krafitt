@@ -38,11 +38,11 @@ export function ThemeToggle({ theme }: { theme: Theme }) {
             aria-checked={dark}
             onClick={toggle}
             aria-label={t('nav.theme')}
-            className="border-line bg-surface2 hover:border-blaze relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors"
+            className="border-line bg-surface2 hover:border-pulse relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border-2 transition-colors"
         >
             <span
-                className={`bg-blaze text-on-accent flex h-5 w-5 items-center justify-center rounded-full transition-transform ${
-                    dark ? 'translate-x-[22px]' : 'translate-x-[2px]'
+                className={`bg-volt text-on-volt flex h-5 w-5 items-center justify-center rounded-full transition-transform ${
+                    dark ? 'translate-x-[24px]' : 'translate-x-[2px]'
                 }`}
             >
                 {dark ? (

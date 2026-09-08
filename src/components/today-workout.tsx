@@ -2,8 +2,9 @@
 
 import { logSet, skipDay } from '@/app/actions';
 import { useT } from '@/i18n/use-t';
-import { isSetEnabled, type Logs } from '@/lib/progress';
+import { flatSets, isSetEnabled, isSetFilled, type Logs } from '@/lib/progress';
 import { ghostClass } from '@/lib/ui';
+import { ProgressLadder } from './progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
@@ -56,38 +57,68 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         });
     }
 
+    // How much of today is banked. Derived, never stored: the store already
+    // holds the only copy of the logs.
+    const all = flatSets(workout.exercises);
+    const doneSets = all.filter((s) =>
+        isSetFilled(logs, s.exerciseId, s.setIndex)
+    ).length;
+    const sessionProgress = t('today.progress', {
+        done: doneSets,
+        total: all.length,
+    });
+
     return (
         <div className="space-y-4">
-            <header className="border-line bg-surface rounded-2xl border p-5">
+            <header className="border-line border-l-volt bg-surface space-y-5 rounded-md border border-l-[6px] p-5">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <p className="text-muted truncate text-sm">
+                        <p className="eyebrow text-muted truncate">
                             {routineName}
                         </p>
-                        <h1 className="display text-ink text-5xl">
+                        <h1 className="display text-ink mt-2 text-6xl">
                             {workout.name}
                         </h1>
                     </div>
-                    {/* "2 / 8" reads at arm's length; the sentence stays for screen readers. */}
-                    <p className="figure text-blaze shrink-0 text-right text-3xl leading-none">
+                    {/* The week reads at arm's length from a rack. Volt is a fill
+                        here, never a numeral in mid-air. */}
+                    <p className="bg-volt text-on-volt figure grid shrink-0 place-items-center rounded-md px-3 py-2 leading-none">
                         <span className="sr-only">
                             {t('today.week', { week, total: totalWeeks })}
                         </span>
-                        <span aria-hidden>
+                        <span
+                            aria-hidden
+                            className="text-4xl"
+                        >
                             {week}
-                            <span className="text-muted block text-xs font-medium">
-                                / {totalWeeks}
-                            </span>
+                        </span>
+                        <span
+                            aria-hidden
+                            className="eyebrow mt-1 opacity-70"
+                        >
+                            / {totalWeeks}
                         </span>
                     </p>
                 </div>
 
+                {all.length > 0 && (
+                    <div className="space-y-2">
+                        <ProgressLadder
+                            done={doneSets}
+                            total={all.length}
+                            label={sessionProgress}
+                        />
+                        <p className="figure text-muted text-sm">
+                            {sessionProgress}
+                        </p>
+                    </div>
+                )}
             </header>
 
             <FormError message={error} />
 
             {workout.exercises.length === 0 && (
-                <p className="border-line text-muted rounded-2xl border border-dashed p-6 text-center text-sm">
+                <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">
                     {t('today.noExercises')}
                 </p>
             )}

@@ -34,9 +34,9 @@ export function LocaleSwitcher() {
                     type="button"
                     onClick={() => select(option)}
                     aria-pressed={option === locale}
-                    className={`rounded-lg px-1.5 py-1 text-xs font-semibold uppercase transition-colors ${
+                    className={`font-display rounded-sm px-2 py-1 text-xs font-bold tracking-wide uppercase transition-colors ${
                         option === locale
-                            ? 'bg-blaze text-on-accent'
+                            ? 'bg-volt text-on-volt'
                             : 'text-muted hover:text-ink'
                     }`}
                 >

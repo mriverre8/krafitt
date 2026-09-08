@@ -6,7 +6,7 @@ export function FormError({ message }: { message?: string }) {
     return (
         <p
             role="alert"
-            className="text-blaze text-sm font-semibold"
+            className="text-danger text-sm font-semibold"
         >
             {message}
         </p>

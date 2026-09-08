@@ -39,6 +39,7 @@ export const ca: Dict = {
     'home.goToRoutines': 'Anar a les meves rutines',
 
     'today.week': 'Setmana {week} de {total}',
+    'today.progress': '{done}/{total} sèries',
     'today.noExercises': 'Aquest entrenament encara no té exercicis.',
     'today.skip': 'Saltar al dia següent',
     'today.set': 'Sèrie {n}',

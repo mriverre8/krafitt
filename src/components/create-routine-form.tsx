@@ -18,9 +18,9 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
         <form
             action={formAction}
             onInput={(event) => setValid(event.currentTarget.checkValidity())}
-            className="border-line bg-surface space-y-3 rounded-2xl border p-4"
+            className="border-line border-l-volt bg-surface space-y-4 rounded-md border border-l-[3px] p-5"
         >
-            <h2 className="display text-3xl">{t('routines.newTitle')}</h2>
+            <h2 className="display text-4xl">{t('routines.newTitle')}</h2>
             <input
                 name="name"
                 aria-label={t('routines.nameLabel')}

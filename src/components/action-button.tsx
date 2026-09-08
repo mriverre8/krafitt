@@ -6,7 +6,7 @@ import { useTransition } from 'react';
 export function ActionButton({
     action,
     children,
-    className = 'text-sm font-semibold text-muted transition-colors hover:text-blaze',
+    className = 'text-sm font-semibold text-muted transition-colors hover:text-pulse',
     confirm,
     label,
 }: {
