@@ -1,6 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import { NAME_MAX } from '@/lib/constants';
 import type { FormAction } from '@/lib/forms';
 import { ghostClass, inputClass } from '@/lib/ui';
 import { Plus } from 'lucide-react';
@@ -32,6 +33,7 @@ export function AddWorkoutForm({
                     name="name"
                     aria-label={t('routine.dayLabel')}
                     placeholder={t('routine.dayPlaceholder')}
+                    maxLength={NAME_MAX}
                     className={inputClass}
                 />
                 <button

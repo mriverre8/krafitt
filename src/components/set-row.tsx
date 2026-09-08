@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { SetValue } from '@/lib/progress';
+import { REPS, WEIGHT } from '@/lib/constants';
 import { inputClass } from '@/lib/ui';
 import { ArrowRight, Check } from 'lucide-react';
 import { useState } from 'react';
@@ -69,8 +70,9 @@ export function SetRow({
             <input
                 type="number"
                 inputMode="decimal"
-                step="0.5"
-                min="0"
+                step={WEIGHT.step}
+                min={WEIGHT.min}
+                max={WEIGHT.max}
                 placeholder={t('today.kg')}
                 aria-label={t('today.weightLabel', { n: number })}
                 disabled={!enabled}
@@ -83,7 +85,8 @@ export function SetRow({
             <input
                 type="number"
                 inputMode="numeric"
-                min="1"
+                min={REPS.min}
+                max={REPS.max}
                 placeholder={t('today.reps')}
                 aria-label={t('today.repsLabel', { n: number })}
                 disabled={!enabled}

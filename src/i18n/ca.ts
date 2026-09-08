@@ -102,6 +102,8 @@ export const ca: Dict = {
     'error.workoutNotFound': 'Entrenament no trobat',
     'error.exerciseNotFound': 'Exercici no trobat',
     'error.routineName': 'Posa-li un nom a la rutina',
+    'error.nameTooLong':
+        'Aquest nom és massa llarg (màx. 60 caràcters)',
     'error.duration': "La durada ha d'estar entre 1 i 52 setmanes",
     'error.workoutName': 'Posa-li un nom al dia',
     'error.exerciseName': "Posa-li un nom a l'exercici",

@@ -102,6 +102,8 @@ export const es: Dict = {
     'error.workoutNotFound': 'Entrenamiento no encontrado',
     'error.exerciseNotFound': 'Ejercicio no encontrado',
     'error.routineName': 'Ponle un nombre a la rutina',
+    'error.nameTooLong':
+        'Ese nombre es demasiado largo (máx. 60 caracteres)',
     'error.duration': 'La duración debe estar entre 1 y 52 semanas',
     'error.workoutName': 'Ponle un nombre al día',
     'error.exerciseName': 'Ponle un nombre al ejercicio',

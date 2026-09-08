@@ -1,6 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import { NAME_MAX, REPS, SETS, WEIGHT } from '@/lib/constants';
 import type { FormAction } from '@/lib/forms';
 import { inputClass, primaryClass } from '@/lib/ui';
 import { Plus } from 'lucide-react';
@@ -32,14 +33,15 @@ export function AddExerciseForm({
                 name="name"
                 aria-label={t('exercise.nameLabel')}
                 placeholder={t('exercise.namePlaceholder')}
+                maxLength={NAME_MAX}
                 className={inputClass}
             />
             <div className="grid grid-cols-4 gap-2">
                 <input
                     name="sets"
                     type="number"
-                    min="1"
-                    max="20"
+                    min={SETS.min}
+                    max={SETS.max}
                     defaultValue={4}
                     aria-label={t('exercise.sets')}
                     className={inputClass}
@@ -47,7 +49,8 @@ export function AddExerciseForm({
                 <input
                     name="repMin"
                     type="number"
-                    min="1"
+                    min={REPS.min}
+                    max={REPS.max}
                     defaultValue={6}
                     aria-label={t('exercise.repMin')}
                     className={inputClass}
@@ -55,7 +58,8 @@ export function AddExerciseForm({
                 <input
                     name="repMax"
                     type="number"
-                    min="1"
+                    min={REPS.min}
+                    max={REPS.max}
                     defaultValue={8}
                     aria-label={t('exercise.repMax')}
                     className={inputClass}
@@ -63,8 +67,9 @@ export function AddExerciseForm({
                 <input
                     name="targetWeight"
                     type="number"
-                    min="0"
-                    step="0.5"
+                    min={WEIGHT.min}
+                    max={WEIGHT.max}
+                    step={WEIGHT.step}
                     placeholder={t('today.kg')}
                     aria-label={t('exercise.weight')}
                     className={inputClass}

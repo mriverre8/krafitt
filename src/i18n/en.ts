@@ -101,6 +101,7 @@ export const en = {
     'error.workoutNotFound': 'Workout not found',
     'error.exerciseNotFound': 'Exercise not found',
     'error.routineName': 'Give the routine a name',
+    'error.nameTooLong': 'That name is too long (max 60 characters)',
     'error.duration': 'Duration must be between 1 and 52 weeks',
     'error.workoutName': 'Give the day a name',
     'error.exerciseName': 'Give the exercise a name',

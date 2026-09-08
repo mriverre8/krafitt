@@ -8,6 +8,7 @@ import {
 } from '@/lib/access';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { NAME_MAX, REPS, SETS, WEEKS, WEIGHT } from '@/lib/constants';
 import type { FormState } from '@/lib/forms';
 import { isSessionComplete, isSetEnabled, type Logs } from '@/lib/progress';
 import { revalidatePath } from 'next/cache';
@@ -29,10 +30,11 @@ export async function createRoutine(
     const durationWeeks = int(data, 'durationWeeks');
 
     if (!name) return { error: t('error.routineName') };
+    if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
     if (
         !Number.isInteger(durationWeeks) ||
-        durationWeeks < 1 ||
-        durationWeeks > 52
+        durationWeeks < WEEKS.min ||
+        durationWeeks > WEEKS.max
     ) {
         return { error: t('error.duration') };
     }
@@ -82,7 +84,9 @@ export async function addWorkout(
     const user = await requireUser();
     const routineId = str(data, 'routineId');
     const name = str(data, 'name');
-    if (!name) return { error: (await getT())('error.workoutName') };
+    const t = await getT();
+    if (!name) return { error: t('error.workoutName') };
+    if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
     await requireRoutine(routineId, user.id);
 
     const order = await prisma.workout.count({ where: { routineId } });
@@ -107,13 +111,15 @@ export async function addExercise(
     const targetWeight = rawWeight === '' ? null : Number(rawWeight);
 
     if (!name) return { error: t('error.exerciseName') };
-    if (!Number.isInteger(sets) || sets < 1 || sets > 20)
+    if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
+    if (!Number.isInteger(sets) || sets < SETS.min || sets > SETS.max)
         return { error: t('error.sets') };
     if (
         !Number.isInteger(repMin) ||
         !Number.isInteger(repMax) ||
-        repMin < 1 ||
-        repMax < repMin
+        repMin < REPS.min ||
+        repMax < repMin ||
+        repMax > REPS.max
     ) {
         return { error: t('error.repRange') };
     }
@@ -186,9 +192,9 @@ export async function logSet(
     const user = await requireUser();
     const t = await getT();
 
-    if (!Number.isFinite(weight) || weight < 0 || weight > 1000)
+    if (!Number.isFinite(weight) || weight < WEIGHT.min || weight > WEIGHT.max)
         throw new Error(t('error.weight'));
-    if (!Number.isInteger(reps) || reps < 1 || reps > 1000)
+    if (!Number.isInteger(reps) || reps < REPS.min || reps > REPS.max)
         throw new Error(t('error.reps'));
 
     const session = await prisma.workoutSession.findUnique({

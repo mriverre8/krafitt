@@ -22,7 +22,7 @@ export function NavBar({
     const signedIn = userName !== null;
 
     return (
-        <nav className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
+        <nav className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
             <Link
                 href="/"
                 className="display text-ink hover:text-blaze text-3xl transition-colors"
