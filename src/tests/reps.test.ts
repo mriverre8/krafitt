@@ -36,6 +36,13 @@ describe('reps', () => {
         expect(isSetComplete({ repMode: 'range', repMin: 8, repMax: 6 })).toBe(
             false
         );
+        // Same number at both ends: that is the fixed mode, not a range.
+        expect(isSetComplete({ repMode: 'range', repMin: 8, repMax: 8 })).toBe(
+            false
+        );
+        expect(isSetComplete({ repMode: 'fixed', repMin: 8, repMax: 8 })).toBe(
+            true
+        );
         expect(isSetComplete({ repMode: 'fixed', repMin: 0, repMax: 0 })).toBe(
             false
         );

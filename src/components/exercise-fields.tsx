@@ -3,7 +3,15 @@
 import { useT } from '@/i18n/use-t';
 import { NAME_MAX, REPS, SETS } from '@/lib/constants';
 import { isRepMode, REP_MODES, type RepMode } from '@/lib/reps';
-import { fieldClass, inputClass, labelClass } from '@/lib/ui';
+import type { ExerciseFault } from '@/lib/validate';
+import {
+    fieldClass,
+    inputClass,
+    labelClass,
+    removeButtonClass,
+    wrongFieldClass,
+    wrongInputClass,
+} from '@/lib/ui';
 import { Plus, X } from 'lucide-react';
 import { useId } from 'react';
 import type { ExerciseView } from './workout-exercise';
@@ -55,7 +63,10 @@ export function toDrafts(exercises: ExerciseView[]): ExerciseDraft[] {
 }
 
 /** Numbers stay narrow, the technique takes whatever room is left. */
-const numberClass = `${fieldClass} w-16 shrink-0 px-1 text-center md:w-20 md:px-3`;
+const numberClass = (wrong: boolean) =>
+    `${wrong ? wrongFieldClass : fieldClass} w-16 shrink-0 px-1 text-center md:w-20 md:px-3`;
+
+const noFault = { min: false, max: false };
 
 /** A field the mode does not need: gone on a phone, an empty slot from md up,
     where keeping the columns aligned across rows is worth the space. */
@@ -70,12 +81,16 @@ const unusedClass = 'hidden md:invisible md:block';
 export function ExerciseFields({
     exercise,
     index,
+    fault,
     onChange,
     onRemove,
     canRemove,
 }: {
     exercise: ExerciseDraft;
     index: number;
+    /** The fields to paint red, or nothing while the eye is off. Comes from the
+        day's own errors, so it never flags something only the draft knows. */
+    fault?: ExerciseFault;
     onChange: (patch: Partial<ExerciseDraft>) => void;
     onRemove: () => void;
     canRemove: boolean;
@@ -96,14 +111,18 @@ export function ExerciseFields({
 
     return (
         <div className="space-y-3">
-            <div className="flex items-center gap-2">
+            {/* Same gaps and same × as a set row below, so the name field ends
+                where the fields under it do. */}
+            <div className="flex items-center gap-1.5 md:gap-2">
                 <input
                     value={exercise.name}
                     onChange={(event) => onChange({ name: event.target.value })}
                     aria-label={t('exercise.nameLabel', { e })}
                     placeholder={t('exercise.namePlaceholder')}
                     maxLength={NAME_MAX}
-                    className={`${inputClass} display text-xl`}
+                    className={`${
+                        fault?.name ? wrongInputClass : inputClass
+                    } display text-xl`}
                 />
                 <button
                     type="button"
@@ -111,133 +130,135 @@ export function ExerciseFields({
                     disabled={!canRemove}
                     onClick={onRemove}
                     aria-label={t('exercise.delete', { e })}
-                    className="text-muted hover:text-danger shrink-0 rounded-md p-2 transition-colors disabled:opacity-30"
+                    className={removeButtonClass}
                 >
                     <X
-                        size={16}
+                        size={14}
                         aria-hidden
                     />
                 </button>
             </div>
 
             <div className="space-y-2">
-                {exercise.sets.map((set, setIndex) => (
-                    // Wraps on a phone (technique drops to its own line) and sits
-                    // on a single line from md up, where there is room for it.
-                    <div
-                        key={setIndex}
-                        className="flex flex-wrap items-center gap-1.5 md:gap-2"
-                    >
-                        <span className="figure text-muted w-4 shrink-0 text-lg">
-                            {setIndex + 1}
-                        </span>
-                        <select
-                            value={set.mode}
-                            onChange={(event) =>
-                                updateSet(setIndex, {
-                                    mode: event.target.value as RepMode,
-                                })
-                            }
-                            aria-label={t('exercise.repMode', {
-                                e,
-                                n: setIndex + 1,
-                            })}
-                            className={`${fieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
+                {exercise.sets.map((set, setIndex) => {
+                    const wrong = fault?.sets[setIndex] ?? noFault;
+                    return (
+                        // Wraps on a phone (technique drops to its own line) and sits
+                        // on a single line from md up, where there is room for it.
+                        <div
+                            key={setIndex}
+                            className="flex flex-wrap items-center gap-1.5 md:gap-2"
                         >
-                            {REP_MODES.map((mode) => (
-                                <option
-                                    key={mode}
-                                    value={mode}
-                                >
-                                    {t(`reps.${mode}`)}
-                                </option>
-                            ))}
-                        </select>
-                        {/* Both number fields are always rendered, so the columns
+                            <span className="figure text-muted w-4 shrink-0 text-lg">
+                                {setIndex + 1}
+                            </span>
+                            <select
+                                value={set.mode}
+                                onChange={(event) =>
+                                    updateSet(setIndex, {
+                                        mode: event.target.value as RepMode,
+                                    })
+                                }
+                                aria-label={t('exercise.repMode', {
+                                    e,
+                                    n: setIndex + 1,
+                                })}
+                                className={`${fieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
+                            >
+                                {REP_MODES.map((mode) => (
+                                    <option
+                                        key={mode}
+                                        value={mode}
+                                    >
+                                        {t(`reps.${mode}`)}
+                                    </option>
+                                ))}
+                            </select>
+                            {/* Both number fields are always rendered, so the columns
                             stay aligned row by row; the mode says which one counts. */}
-                        <input
-                            type="number"
-                            min={REPS.min}
-                            max={REPS.max}
-                            value={set.repMin}
-                            onChange={(event) =>
-                                updateSet(setIndex, {
-                                    repMin: event.target.value,
-                                })
-                            }
-                            placeholder={t('today.reps')}
-                            aria-label={t('exercise.repMin', {
-                                e,
-                                n: setIndex + 1,
-                            })}
-                            className={`${numberClass} ${
-                                set.mode === 'amrap' ? unusedClass : ''
-                            }`}
-                        />
-                        <input
-                            type="number"
-                            min={REPS.min}
-                            max={REPS.max}
-                            value={set.repMax}
-                            onChange={(event) =>
-                                updateSet(setIndex, {
-                                    repMax: event.target.value,
-                                })
-                            }
-                            placeholder={t('today.reps')}
-                            aria-label={t('exercise.repMax', {
-                                e,
-                                n: setIndex + 1,
-                            })}
-                            className={`${numberClass} ${
-                                set.mode === 'range' ? '' : unusedClass
-                            }`}
-                        />
-                        <button
-                            type="button"
-                            // The exercise needs at least one set, so the last row stays.
-                            disabled={exercise.sets.length === 1}
-                            onClick={() =>
-                                onChange({
-                                    sets: exercise.sets.filter(
-                                        (_, i) => i !== setIndex
-                                    ),
-                                })
-                            }
-                            aria-label={t('exercise.removeSet', {
-                                e,
-                                n: setIndex + 1,
-                            })}
-                            className="text-muted hover:text-danger shrink-0 rounded-lg p-1.5 transition-colors disabled:opacity-30 md:order-last"
-                        >
-                            <X
-                                size={14}
-                                aria-hidden
+                            <input
+                                type="number"
+                                min={REPS.min}
+                                max={REPS.max}
+                                value={set.repMin}
+                                onChange={(event) =>
+                                    updateSet(setIndex, {
+                                        repMin: event.target.value,
+                                    })
+                                }
+                                placeholder={t('today.reps')}
+                                aria-label={t('exercise.repMin', {
+                                    e,
+                                    n: setIndex + 1,
+                                })}
+                                className={`${numberClass(wrong.min)} ${
+                                    set.mode === 'amrap' ? unusedClass : ''
+                                }`}
                             />
-                        </button>
-                        <input
-                            list={techniqueListId}
-                            value={set.technique}
-                            onChange={(event) =>
-                                updateSet(setIndex, {
-                                    technique: event.target.value,
-                                })
-                            }
-                            placeholder={t('exercise.techniquePlaceholder')}
-                            aria-label={t('exercise.technique', {
-                                e,
-                                n: setIndex + 1,
-                            })}
-                            className={`${fieldClass} min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto`}
-                        />
-                    </div>
-                ))}
+                            <input
+                                type="number"
+                                min={REPS.min}
+                                max={REPS.max}
+                                value={set.repMax}
+                                onChange={(event) =>
+                                    updateSet(setIndex, {
+                                        repMax: event.target.value,
+                                    })
+                                }
+                                placeholder={t('today.reps')}
+                                aria-label={t('exercise.repMax', {
+                                    e,
+                                    n: setIndex + 1,
+                                })}
+                                className={`${numberClass(wrong.max)} ${
+                                    set.mode === 'range' ? '' : unusedClass
+                                }`}
+                            />
+                            <button
+                                type="button"
+                                // The exercise needs at least one set, so the last row stays.
+                                disabled={exercise.sets.length === 1}
+                                onClick={() =>
+                                    onChange({
+                                        sets: exercise.sets.filter(
+                                            (_, i) => i !== setIndex
+                                        ),
+                                    })
+                                }
+                                aria-label={t('exercise.removeSet', {
+                                    e,
+                                    n: setIndex + 1,
+                                })}
+                                className={`${removeButtonClass} md:order-last`}
+                            >
+                                <X
+                                    size={14}
+                                    aria-hidden
+                                />
+                            </button>
+                            <input
+                                list={techniqueListId}
+                                value={set.technique}
+                                onChange={(event) =>
+                                    updateSet(setIndex, {
+                                        technique: event.target.value,
+                                    })
+                                }
+                                placeholder={t('exercise.techniquePlaceholder')}
+                                aria-label={t('exercise.technique', {
+                                    e,
+                                    n: setIndex + 1,
+                                })}
+                                className={`${fieldClass} min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto`}
+                            />
+                        </div>
+                    );
+                })}
             </div>
             <datalist id={techniqueListId}>
                 <option value={t('technique.linear')} />
                 <option value={t('technique.topset')} />
                 <option value={t('technique.backoff')} />
-                <option value={t('technique.dropset')} />
             </datalist>
 
             <button

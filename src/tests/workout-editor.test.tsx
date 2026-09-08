@@ -24,11 +24,20 @@ const workout = {
 
 const base = {
     workout,
+    problems: [],
+    faults: {},
     saveExercises: noopAction,
     onDeleteWorkout: async () => {},
 };
 
+/** A day whose only stored exercise has no name. */
+const flagged = {
+    problems: ['Exercise 1: give it a name.'],
+    faults: { e1: { name: true, sets: [{ min: false, max: false }] } },
+};
+
 const save = () => screen.getByRole('button', { name: /Save changes/ });
+const undo = () => screen.getByRole('button', { name: 'Undo changes' });
 const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
 
 describe('WorkoutEditor', () => {
@@ -99,6 +108,33 @@ describe('WorkoutEditor', () => {
         expect(save()).toBeDisabled();
     });
 
+    it('throws the unsaved changes away on undo', () => {
+        render(<WorkoutEditor {...base} />);
+        expect(undo()).toBeDisabled();
+
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(addExercise());
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Add set to exercise 1' })
+        );
+        expect(undo()).toBeEnabled();
+
+        fireEvent.click(undo());
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+        expect(
+            screen.queryByLabelText('Exercise 2 name')
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Exercise 1, min reps set 2')
+        ).not.toBeInTheDocument();
+        expect(save()).toBeDisabled();
+        expect(undo()).toBeDisabled();
+    });
+
     it('submits the whole day as one plan', async () => {
         const saveExercises = vi.fn().mockResolvedValue({ ok: true as const });
         render(
@@ -144,6 +180,103 @@ describe('WorkoutEditor', () => {
         ]);
     });
 
+    // Dispatching the action by hand only reports `pending` from inside a
+    // transition, and the button leans on it to keep a save from being sent twice.
+    it('holds the button down while the save is in flight', async () => {
+        let finish!: (state: { ok: true }) => void;
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={() =>
+                    new Promise((resolve) => {
+                        finish = resolve;
+                    })
+                }
+            />
+        );
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(save());
+
+        await waitFor(() => expect(save()).toBeDisabled());
+        finish({ ok: true });
+        // Still unsaved as far as the props know, so it comes back for another go.
+        await waitFor(() => expect(save()).toBeEnabled());
+    });
+
+    // The action can answer before the revalidated day reaches the props: going
+    // back to the props then would undo the save on screen until a reload.
+    it('holds on to what was saved while the day catches up', async () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={async () => ({ ok: true as const })}
+            />
+        );
+        const mode = screen.getByLabelText('Exercise 1, reps type set 1');
+        fireEvent.change(mode, { target: { value: 'fixed' } });
+        fireEvent.click(save());
+
+        await waitFor(() => expect(save()).toBeEnabled());
+        expect(mode).toHaveValue('fixed');
+    });
+
+    // Clearing the technique stores the default instead, which can leave the day
+    // byte for byte as it was: there is nothing in the props for the editor to
+    // notice, so it has to take the answer the save itself came back with.
+    it('takes back the defaults the save filled in', async () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={async () => ({
+                    ok: true as const,
+                    saved: workout.exercises,
+                })}
+            />
+        );
+        const technique = screen.getByLabelText('Exercise 1, technique set 1');
+        fireEvent.change(technique, { target: { value: '' } });
+        expect(save()).toBeEnabled();
+
+        fireEvent.click(save());
+        await waitFor(() => expect(technique).toHaveValue('Top set'));
+        expect(save()).toBeDisabled();
+    });
+
+    it('picks up the id a brand new exercise was given', async () => {
+        const saveExercises = vi.fn().mockResolvedValue({
+            ok: true as const,
+            saved: [
+                ...workout.exercises,
+                { id: 'e2', name: 'Dips', sets: workout.exercises[0].sets },
+            ],
+        });
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={saveExercises}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+        fireEvent.click(save());
+        await waitFor(() => expect(save()).toBeDisabled());
+
+        // Saving again must update that exercise, not create a second one.
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Weighted dips' },
+        });
+        fireEvent.click(save());
+        await waitFor(() => expect(saveExercises).toHaveBeenCalledTimes(2));
+        const plan = JSON.parse(
+            String((saveExercises.mock.calls[1][1] as FormData).get('plan'))
+        );
+        expect(plan[1].id).toBe('e2');
+    });
+
     it('keeps what was typed when the save is rejected', async () => {
         render(
             <WorkoutEditor
@@ -161,6 +294,74 @@ describe('WorkoutEditor', () => {
             'Incline press'
         );
         expect(save()).toBeEnabled();
+    });
+
+    it('lists what this day is still missing', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        expect(
+            screen.getByText('Exercise 1: give it a name.')
+        ).toBeInTheDocument();
+    });
+
+    it('points at the offending fields, and stops when asked again', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        const name = screen.getByLabelText('Exercise 1 name');
+        expect(name).not.toHaveClass('border-danger');
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Show errors',
+            })
+        );
+        expect(name).toHaveClass('border-danger');
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Hide errors',
+            })
+        );
+        expect(name).not.toHaveClass('border-danger');
+    });
+
+    it('leaves an exercise the errors say nothing about alone', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        // Added to the draft, so it is in no error yet.
+        fireEvent.click(addExercise());
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Show errors',
+            })
+        );
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveClass(
+            'border-danger'
+        );
+        expect(screen.getByLabelText('Exercise 2 name')).not.toHaveClass(
+            'border-danger'
+        );
+    });
+
+    it('has nothing to point at when the day is fine', () => {
+        render(<WorkoutEditor {...base} />);
+        expect(
+            screen.queryByRole('button', {
+                name: 'Show errors',
+            })
+        ).not.toBeInTheDocument();
     });
 
     it('confirms before deleting a day', async () => {

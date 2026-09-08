@@ -144,16 +144,52 @@ describe('ExerciseFields', () => {
         ).toBeDisabled();
     });
 
+    describe('with a fault to point at', () => {
+        it('marks exactly the fields the fault names', () => {
+            fields({
+                fault: {
+                    name: true,
+                    sets: [
+                        { min: false, max: true },
+                        { min: false, max: false },
+                    ],
+                },
+            });
+            expect(screen.getByLabelText('Exercise 1 name')).toHaveClass(
+                'border-danger'
+            );
+            expect(
+                screen.getByLabelText('Exercise 1, min reps set 1')
+            ).not.toHaveClass('border-danger');
+            expect(
+                screen.getByLabelText('Exercise 1, max reps set 1')
+            ).toHaveClass('border-danger');
+            expect(
+                screen.getByLabelText('Exercise 1, max reps set 2')
+            ).not.toHaveClass('border-danger');
+        });
+
+        it('marks nothing without one', () => {
+            fields({ exercise: { ...draft, name: '' } });
+            expect(screen.getByLabelText('Exercise 1 name')).not.toHaveClass(
+                'border-danger'
+            );
+        });
+
+        // A set the draft has added since the fault was worked out.
+        it('leaves a set the fault says nothing about alone', () => {
+            fields({ fault: { name: false, sets: [] } });
+            expect(
+                screen.getByLabelText('Exercise 1, min reps set 1')
+            ).not.toHaveClass('border-danger');
+        });
+    });
+
     it('suggests the known techniques', () => {
         const { container } = fields();
         const options = [...container.querySelectorAll('datalist option')].map(
             (option) => option.getAttribute('value')
         );
-        expect(options).toEqual([
-            'Straight sets',
-            'Top set',
-            'Back off',
-            'Drop set',
-        ]);
+        expect(options).toEqual(['Straight sets', 'Top set', 'Back off']);
     });
 });

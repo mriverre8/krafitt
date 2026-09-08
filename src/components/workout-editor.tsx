@@ -2,10 +2,11 @@
 
 import { useT } from '@/i18n/use-t';
 import { EXERCISES } from '@/lib/constants';
-import type { FormAction } from '@/lib/forms';
+import type { DayAction } from '@/lib/forms';
+import type { ExerciseFault } from '@/lib/validate';
 import { cardClass, ghostClass, iconButtonClass, primaryClass } from '@/lib/ui';
-import { Plus, Save, Trash } from 'lucide-react';
-import { useActionState, useState } from 'react';
+import { Eye, EyeOff, Plus, Save, Trash, Undo2 } from 'lucide-react';
+import { startTransition, useActionState, useState } from 'react';
 import { ActionButton } from './action-button';
 import {
     emptyExercise,
@@ -23,11 +24,17 @@ import type { ExerciseView } from './workout-exercise';
  */
 export function WorkoutEditor({
     workout,
+    problems,
+    faults,
     saveExercises,
     onDeleteWorkout,
 }: {
     workout: { id: string; name: string; exercises: ExerciseView[] };
-    saveExercises: FormAction;
+    /** What this day is still missing, as last saved. */
+    problems: string[];
+    /** The same holes as fields to paint, by exercise id. */
+    faults: Record<string, ExerciseFault>;
+    saveExercises: DayAction;
     onDeleteWorkout: (workoutId: string) => Promise<void>;
 }) {
     const t = useT();
@@ -35,18 +42,25 @@ export function WorkoutEditor({
     const [drafts, setDrafts] = useState<ExerciseDraft[]>(() =>
         toDrafts(workout.exercises)
     );
+    const [highlight, setHighlight] = useState(false);
+    const toggleLabel = t(
+        highlight ? 'validate.hideFields' : 'validate.showFields'
+    );
 
-    // What the server holds, in the exact shape the drafts take: comparing the
-    // two strings is both the dirty check and the payload we submit.
-    const saved = JSON.stringify(toDrafts(workout.exercises));
+    // What the server holds. Its own answer to the last save outranks the props,
+    // which lag behind it and sometimes never move at all: a technique left blank
+    // is stored as the default, which can leave the day exactly as it was.
+    const server = state.saved ?? workout.exercises;
+    const saved = JSON.stringify(toDrafts(server));
     const plan = JSON.stringify(drafts);
 
-    // Adjusting state while rendering rather than in an effect: a save answers
-    // with the revalidated day, so the drafts pick up the ids it just handed out.
+    // Adjusting state while rendering rather than in an effect: the drafts start
+    // again from the day the server sends back, defaults filled in and ids handed
+    // out to whatever was new.
     const [lastState, setLastState] = useState(state);
     if (state !== lastState) {
         setLastState(state);
-        if (state.ok) setDrafts(toDrafts(workout.exercises));
+        if (state.saved) setDrafts(toDrafts(state.saved));
     }
 
     function update(index: number, patch: Partial<ExerciseDraft>) {
@@ -57,22 +71,25 @@ export function WorkoutEditor({
         );
     }
 
-    return (
-        <form
-            action={formAction}
-            className={cardClass}
-        >
-            <input
-                type="hidden"
-                name="workoutId"
-                value={workout.id}
-            />
-            <input
-                type="hidden"
-                name="plan"
-                value={plan}
-            />
+    /**
+     * The action is dispatched by hand rather than through `<form action>`.
+     * React resets the form once the action settles, and that reset drops a
+     * controlled `<select>` back onto its first option — the rep type would
+     * spring back to Range on every save until the page was reloaded. Nothing
+     * is lost by leaving the form out: the day travels as one JSON field.
+     *
+     * A `<form action>` opens the transition for you; dispatching by hand has to
+     * open it here, or `pending` never flips and the button stays live mid-save.
+     */
+    function save() {
+        const data = new FormData();
+        data.set('workoutId', workout.id);
+        data.set('plan', plan);
+        startTransition(() => formAction(data));
+    }
 
+    return (
+        <div className={cardClass}>
             <div className="flex items-center justify-between gap-2">
                 <h3 className="display text-3xl">{workout.name}</h3>
                 <ActionButton
@@ -99,6 +116,13 @@ export function WorkoutEditor({
                         <ExerciseFields
                             exercise={draft}
                             index={index}
+                            // An exercise the draft has only just added has no
+                            // id, so no error names it and nothing lights up.
+                            fault={
+                                highlight && draft.id
+                                    ? faults[draft.id]
+                                    : undefined
+                            }
                             onChange={(patch) => update(index, patch)}
                             onRemove={() =>
                                 setDrafts((current) =>
@@ -113,12 +137,34 @@ export function WorkoutEditor({
 
             <FormError message={state.error} />
 
-            {/* Save is the heavy one and takes the row; adding an exercise sits
-                next to it as a secondary action, because it only edits the draft. */}
+            {/* Save is the heavy one and takes the row; undoing and adding an
+                exercise sit either side as secondary actions, because neither of
+                them touches anything but the draft. */}
             <div className="border-line mt-4 flex items-center gap-2 border-t pt-4">
                 <button
-                    type="submit"
+                    type="button"
                     disabled={pending || plan === saved}
+                    // Straight back to the last save: the drafts are seeded from
+                    // it in the first place.
+                    onClick={() => setDrafts(toDrafts(workout.exercises))}
+                    aria-label={t('exercise.undo')}
+                    title={t('exercise.undo')}
+                    className={`${ghostClass} flex shrink-0 items-center gap-1.5`}
+                >
+                    <Undo2
+                        size={14}
+                        aria-hidden
+                    />
+                    {/* Three buttons is already a lot for a phone: there, the
+                        arrow carries it on its own. */}
+                    <span className="hidden md:inline">
+                        {t('exercise.undo')}
+                    </span>
+                </button>
+                <button
+                    type="button"
+                    disabled={pending || plan === saved}
+                    onClick={save}
                     className={`${primaryClass} flex flex-1 items-center justify-center gap-2`}
                 >
                     <Save
@@ -142,6 +188,48 @@ export function WorkoutEditor({
                     {t('exercise.add')}
                 </button>
             </div>
-        </form>
+
+            {/* What the day is missing, as it currently stands on the server:
+                the next save is what clears it. The eye points at the fields
+                behind it, reading the draft, so the red goes as they are fixed. */}
+            {problems.length > 0 && (
+                <div className="mt-4 flex items-start justify-between gap-2">
+                    {/* Nudged down by the eye button's own padding, so the first
+                        error sits level with the words next to it. */}
+                    <ul className="text-danger list-disc space-y-1 pt-1.5 pl-5 text-sm">
+                        {problems.map((problem, index) => (
+                            <li key={index}>{problem}</li>
+                        ))}
+                    </ul>
+                    <button
+                        type="button"
+                        onClick={() => setHighlight((shown) => !shown)}
+                        aria-pressed={highlight}
+                        // Same string as the label below, so the icon on its own
+                        // is named exactly as the button reads on a wider screen.
+                        aria-label={toggleLabel}
+                        title={toggleLabel}
+                        className={`${iconButtonClass} flex shrink-0 items-center gap-1.5`}
+                    >
+                        {highlight ? (
+                            <EyeOff
+                                size={16}
+                                aria-hidden
+                            />
+                        ) : (
+                            <Eye
+                                size={16}
+                                aria-hidden
+                            />
+                        )}
+                        {/* Room for the words only from md up; on a phone the
+                            eye has to carry it alone. */}
+                        <span className="eyebrow hidden md:inline">
+                            {toggleLabel}
+                        </span>
+                    </button>
+                </div>
+            )}
+        </div>
     );
 }

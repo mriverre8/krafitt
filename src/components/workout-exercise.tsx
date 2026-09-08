@@ -1,14 +1,13 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import type { SavedExercise } from '@/lib/forms';
 import type { SetValue } from '@/lib/progress';
-import { formatReps, type RepSpec } from '@/lib/reps';
+import { formatReps } from '@/lib/reps';
 import { cardClass } from '@/lib/ui';
 import { SetRow } from './set-row';
 
-export type SetPlan = RepSpec & { technique: string };
-
-export type ExerciseView = { id: string; name: string; sets: SetPlan[] };
+export type ExerciseView = SavedExercise;
 
 export function WorkoutExercise({
     exercise,

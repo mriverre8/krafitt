@@ -7,12 +7,20 @@
 
 // Width lives outside the field styling: a row that sizes its own columns
 // cannot win against a w-full baked into the shared string.
-export const fieldClass =
-    'rounded-md border-2 border-line bg-surface2 px-3 py-2.5 text-sm font-medium text-ink ' +
-    'transition-colors placeholder:text-muted placeholder:font-normal hover:border-muted ' +
+const fieldBase =
+    'rounded-md border-2 bg-surface2 px-3 py-2.5 text-sm font-medium text-ink ' +
+    'transition-colors placeholder:text-muted placeholder:font-normal ' +
     'focus:border-pulse focus:outline-none disabled:opacity-30';
 
+export const fieldClass = `${fieldBase} border-line hover:border-muted`;
+
+/** The same field, flagged as wrong. The border colour is swapped, not added:
+    two border-colour utilities on one element and the winner comes down to the
+    order Tailwind emits them, which is not the order they are written in. */
+export const wrongFieldClass = `${fieldBase} border-danger hover:border-danger`;
+
 export const inputClass = `w-full min-w-0 ${fieldClass}`;
+export const wrongInputClass = `w-full min-w-0 ${wrongFieldClass}`;
 
 /** The one button that means "go". Volt only ever appears as a fill. */
 export const primaryClass =
@@ -34,6 +42,12 @@ export const cardClass =
 export const cardLinkClass = `${cardClass} lift hover:border-pulse`;
 
 export const labelClass = 'eyebrow text-muted';
+
+/** The × that drops a row, exercise or set alike. One size for both, so the
+    fields they sit next to end on the same edge instead of a few pixels apart. */
+export const removeButtonClass =
+    'shrink-0 rounded-md p-1.5 text-muted transition-colors hover:text-danger ' +
+    'disabled:opacity-30';
 
 /** Small text button, for destructive or secondary row actions. */
 export const iconButtonClass =

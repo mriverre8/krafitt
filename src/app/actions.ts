@@ -14,10 +14,10 @@ import {
     WEIGHT,
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
-import type { FormState } from '@/lib/forms';
+import type { DayState, FormState } from '@/lib/forms';
 import { isSessionComplete, isSetEnabled, type Logs } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
-import { routineProblems } from '@/lib/validate';
+import { isRoutineComplete } from '@/lib/validate';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -63,7 +63,7 @@ export async function setActiveRoutine(routineId: string) {
     // prescribe a set whose reps were never filled in.
     const t = await getT();
     const routine = await routineDetail(routineId);
-    if (!routine || routineProblems(routine, t).length > 0) {
+    if (!routine || !isRoutineComplete(routine, t)) {
         throw new Error(t('error.routineIncomplete'));
     }
 
@@ -192,9 +192,9 @@ function readPlan(raw: string, t: Translate) {
  * user dropped from the list are the only ones deleted.
  */
 export async function saveExercises(
-    _previous: FormState,
+    _previous: DayState,
     data: FormData
-): Promise<FormState> {
+): Promise<DayState> {
     const user = await requireUser();
     const t = await getT();
     const workoutId = str(data, 'workoutId');
@@ -249,7 +249,27 @@ export async function saveExercises(
 
     revalidatePath(`/routines/${routineId}`);
     revalidatePath('/');
-    return { ok: true };
+
+    // Handed straight back to the editor: it is the only thing that knows what
+    // the defaults filled in and which ids the new exercises ended up with.
+    const saved = await prisma.exercise.findMany({
+        where: { workoutId },
+        orderBy: { order: 'asc' },
+        select: {
+            id: true,
+            name: true,
+            sets: {
+                orderBy: { order: 'asc' },
+                select: {
+                    repMode: true,
+                    repMin: true,
+                    repMax: true,
+                    technique: true,
+                },
+            },
+        },
+    });
+    return { ok: true, saved };
 }
 
 export async function deleteWorkout(workoutId: string) {

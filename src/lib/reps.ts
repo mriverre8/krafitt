@@ -26,12 +26,27 @@ const inRange = (value: number | null) =>
     value >= REPS.min &&
     value <= REPS.max;
 
+/**
+ * Which of the two rep fields this mode still needs sorting out. The editor
+ * paints exactly these red, so the check lives here rather than being restated
+ * as a boolean in one place and a highlight in another.
+ */
+export function badRepFields({ repMode, repMin, repMax }: RepSpec): {
+    min: boolean;
+    max: boolean;
+} {
+    if (repMode === 'amrap') return { min: false, max: false };
+    const min = !inRange(repMin);
+    if (repMode === 'fixed') return { min, max: false };
+    // A range that starts and ends on the same number is not a range: that
+    // prescription is what the fixed mode is for.
+    return { min, max: !inRange(repMax) || (!min && repMax! <= repMin!) };
+}
+
 /** Everything this mode needs is filled in, and the numbers make sense. */
-export function isSetComplete({ repMode, repMin, repMax }: RepSpec): boolean {
-    if (repMode === 'amrap') return true;
-    if (!inRange(repMin)) return false;
-    if (repMode === 'fixed') return true;
-    return inRange(repMax) && repMax! >= repMin!;
+export function isSetComplete(set: RepSpec): boolean {
+    const bad = badRepFields(set);
+    return !bad.min && !bad.max;
 }
 
 export function formatReps(set: RepSpec, t: Translate): string {

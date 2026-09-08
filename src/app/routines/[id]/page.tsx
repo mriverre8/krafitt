@@ -6,14 +6,18 @@ import {
 } from '@/app/actions';
 import { ActionButton } from '@/components/action-button';
 import { AddWorkoutForm } from '@/components/add-workout-form';
-import { ValidateRoutine } from '@/components/validate-routine';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { routineDetail } from '@/lib/queries';
-import { routineProblems } from '@/lib/validate';
-import { Trash } from 'lucide-react';
+import { badgeClass } from '@/lib/ui';
+import {
+    isRoutineComplete,
+    workoutFaults,
+    workoutProblems,
+} from '@/lib/validate';
+import { CircleCheck, Flame, Trash } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutinePage({
@@ -27,6 +31,10 @@ export default async function RoutinePage({
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
     if (!routine) notFound();
 
+    // Recomputed with the page, so it is already up to date after every save.
+    // Each day carries its own list; only the verdict is routine-wide.
+    const complete = isRoutineComplete(routine, t);
+
     return (
         <div className="space-y-6">
             <header>
@@ -39,6 +47,33 @@ export default async function RoutinePage({
                 </p>
             </header>
 
+            {/* Already active: the volt flame, the same badge the routine wears
+                in the list, rather than an invitation to activate it. */}
+            {routine.isActive ? (
+                <p className={`${badgeClass} bg-volt text-on-volt`}>
+                    <Flame
+                        size={13}
+                        aria-hidden
+                    />
+                    {t('routines.active')}
+                </p>
+            ) : (
+                complete && (
+                    <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
+                        <CircleCheck
+                            size={16}
+                            aria-hidden
+                        />
+                        {t('validate.ok')}
+                    </p>
+                )
+            )}
+            {routine.workouts.length === 0 && (
+                <p className="text-danger text-sm">
+                    {t('validate.noWorkouts')}
+                </p>
+            )}
+
             <section className="space-y-4">
                 <h2 className="eyebrow text-muted">{t('routine.workouts')}</h2>
 
@@ -46,6 +81,8 @@ export default async function RoutinePage({
                     <WorkoutEditor
                         key={workout.id}
                         workout={workout}
+                        problems={workoutProblems(workout, t)}
+                        faults={workoutFaults(workout.exercises)}
                         saveExercises={saveExercises}
                         onDeleteWorkout={deleteWorkout}
                     />
@@ -56,8 +93,6 @@ export default async function RoutinePage({
                     routineId={routine.id}
                 />
             </section>
-
-            <ValidateRoutine problems={routineProblems(routine, t)} />
 
             <ActionButton
                 action={deleteRoutine.bind(null, routine.id)}

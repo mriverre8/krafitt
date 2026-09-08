@@ -92,6 +92,7 @@ export const en = {
     'exercise.removeSet': 'Exercise {e}, remove set {n}',
     'exercise.add': 'Add exercise',
     'exercise.saveChanges': 'Save changes',
+    'exercise.undo': 'Undo changes',
     'exercise.delete': 'Delete exercise {e}',
 
     'reps.range': 'Range',
@@ -99,19 +100,19 @@ export const en = {
     'reps.amrap': 'AMRAP',
     'reps.unset': 'Reps to define',
 
-    'validate.button': 'Validate routine',
     'validate.ok': 'The routine is complete. You can set it as active.',
-    'validate.title': 'Finish this before activating:',
     'validate.noWorkouts': 'The routine has no days.',
-    'validate.emptyDay': '{day}: no exercises yet.',
-    'validate.exerciseN': 'exercise {n}',
+    // Shown inside the day's own card, so they never name the day.
+    'validate.emptyDay': 'No exercises yet.',
+    'validate.exerciseN': 'Exercise {n}',
     'validate.noName': '{where}: give it a name.',
-    'validate.badSets': '{where}: the sets are not fully defined.',
+    'validate.badSets': '{where}: the sets are not properly defined.',
+    'validate.showFields': 'Show errors',
+    'validate.hideFields': 'Hide errors',
 
     'technique.linear': 'Straight sets',
     'technique.topset': 'Top set',
     'technique.backoff': 'Back off',
-    'technique.dropset': 'Drop set',
 
     'error.notSignedIn': 'You are not signed in',
     'error.routineNotFound': 'Routine not found',
