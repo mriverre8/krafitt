@@ -12,6 +12,7 @@ export const es: Dict = {
     'nav.language': 'Idioma',
     'nav.settings': 'Configuración',
     'nav.menu': 'Menú',
+    'nav.profile': 'Perfil',
 
     'landing.feature1':
         'Monta rutinas con sus días, ejercicios, series, rango de repeticiones y técnica.',
@@ -54,11 +55,18 @@ export const es: Dict = {
     'today.noPrevious': '—',
     'today.genericError': 'Algo ha fallado',
 
+    'profile.memberSince': 'Miembro desde {date}',
+    'profile.stats': '{routines} rutinas · {workouts} entrenamientos hechos',
+    'profile.activeTitle': 'Rutina activa',
+    'profile.finishedTitle': 'Terminadas',
+    'profile.noFinished': 'Aún no has terminado ninguna rutina.',
+
     'routines.title': 'Mis rutinas',
     'routines.empty': 'Aún no tienes rutinas.',
     'routines.active': 'Activa',
     'routines.markActive': 'Marcar activa',
     'routines.incomplete': 'Incompleta',
+    'routines.finished': 'Terminada',
     'routines.meta': '{weeks} semanas · {days} días',
     'routines.progress': '{done}/{total} entrenamientos',
     'routines.newTitle': 'Nueva rutina',
@@ -123,6 +131,7 @@ export const es: Dict = {
     'error.duration': 'La duración debe estar entre 1 y 52 semanas',
     'error.workoutName': 'Ponle un nombre al día',
     'error.routineIncomplete': 'Completa la rutina antes de marcarla activa',
+    'error.routineFinished': 'Esta rutina ya está terminada',
     'error.sets': 'Series: entre 1 y 20',
     'error.exercises': 'Ejercicios: entre 1 y 30',
     'error.repRange': 'El rango de repeticiones no es válido',

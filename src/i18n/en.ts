@@ -12,6 +12,7 @@ export const en = {
     'nav.language': 'Language',
     'nav.settings': 'Settings',
     'nav.menu': 'Menu',
+    'nav.profile': 'Profile',
 
     'landing.feature1':
         'Build routines with their days, exercises, sets, rep ranges and technique.',
@@ -54,11 +55,18 @@ export const en = {
     'today.noPrevious': '—',
     'today.genericError': 'Something went wrong',
 
+    'profile.memberSince': 'Member since {date}',
+    'profile.stats': '{routines} routines · {workouts} workouts done',
+    'profile.activeTitle': 'Active routine',
+    'profile.finishedTitle': 'Finished',
+    'profile.noFinished': 'No finished routines yet.',
+
     'routines.title': 'My routines',
     'routines.empty': 'You have no routines yet.',
     'routines.active': 'Active',
     'routines.markActive': 'Set active',
     'routines.incomplete': 'Incomplete',
+    'routines.finished': 'Finished',
     'routines.meta': '{weeks} weeks · {days} days',
     'routines.progress': '{done}/{total} workouts',
     'routines.newTitle': 'New routine',
@@ -126,6 +134,7 @@ export const en = {
     'error.duration': 'Duration must be between 1 and 52 weeks',
     'error.workoutName': 'Give the day a name',
     'error.routineIncomplete': 'Finish the routine before setting it active',
+    'error.routineFinished': 'This routine is already finished',
     'error.sets': 'Sets: between 1 and 20',
     'error.exercises': 'Exercises: between 1 and 30',
     'error.repRange': 'The rep range is not valid',

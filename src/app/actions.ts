@@ -15,7 +15,12 @@ import {
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
 import type { DayState, FormState } from '@/lib/forms';
-import { isSessionComplete, isSetEnabled, type Logs } from '@/lib/progress';
+import {
+    isRoutineFinished,
+    isSessionComplete,
+    isSetEnabled,
+    type Logs,
+} from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import { revalidatePath } from 'next/cache';
@@ -65,6 +70,17 @@ export async function setActiveRoutine(routineId: string) {
     const routine = await routineDetail(routineId);
     if (!routine || !isRoutineComplete(routine, t)) {
         throw new Error(t('error.routineIncomplete'));
+    }
+    // Nothing left to train: activating it would land the home screen straight
+    // on "you finished this". Starting it over means a new routine.
+    if (
+        isRoutineFinished(
+            routine.cursor,
+            routine.workouts.length,
+            routine.durationWeeks
+        )
+    ) {
+        throw new Error(t('error.routineFinished'));
     }
 
     await prisma.$transaction([

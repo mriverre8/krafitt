@@ -9,6 +9,7 @@ const props: RoutineCardProps = {
     workoutCount: 3,
     cursor: 6,
     isActive: false,
+    finished: false,
     canActivate: true,
     onSetActive: async () => {},
 };
@@ -54,6 +55,33 @@ describe('RoutineCard', () => {
         expect(
             screen.queryByRole('button', { name: 'Set active' })
         ).not.toBeInTheDocument();
+    });
+
+    it('will not offer to activate a routine that is over', () => {
+        render(
+            <RoutineCard
+                {...props}
+                finished
+            />
+        );
+        expect(screen.getByText('Finished')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Set active' })
+        ).not.toBeInTheDocument();
+    });
+
+    // The flag survives the last workout, but the card has to stop calling it
+    // the one being trained: the home screen already says it is over.
+    it('reads as finished even while it still holds the active flag', () => {
+        render(
+            <RoutineCard
+                {...props}
+                isActive
+                finished
+            />
+        );
+        expect(screen.getByText('Finished')).toBeInTheDocument();
+        expect(screen.queryByText('Active')).not.toBeInTheDocument();
     });
 
     it('shows a badge instead of the button when already active', () => {

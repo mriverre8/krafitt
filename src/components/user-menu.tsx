@@ -37,6 +37,19 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
         >
             {(close) => (
                 <>
+                    {/* The account itself, at every width: the bar only ever
+                        carries the two app links. */}
+                    <Link
+                        href="/profile"
+                        onClick={close}
+                        className={itemClass}
+                    >
+                        <User
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.profile')}
+                    </Link>
                     <Link
                         href="/"
                         onClick={close}

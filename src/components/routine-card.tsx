@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
-import { Flame } from 'lucide-react';
+import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { ActionButton } from './action-button';
 import { ProgressLadder } from './progress-ladder';
@@ -14,6 +14,8 @@ export type RoutineCardProps = {
     workoutCount: number;
     cursor: number;
     isActive: boolean;
+    /** Every week of it is behind the cursor: there is nothing left to train. */
+    finished: boolean;
     /** A routine with holes in it cannot be trained, so it cannot go active. */
     canActivate: boolean;
     onSetActive: (routineId: string) => Promise<void>;
@@ -25,12 +27,15 @@ export function RoutineCard(props: RoutineCardProps) {
     const done = Math.min(props.cursor, total);
     const progress = t('routines.progress', { done, total });
 
-    // The active routine is the only card with a volt edge: one lit card in the
-    // list, so the eye lands on it before reading a word.
+    // The routine being trained is the only card with a volt edge: one lit card
+    // in the list, so the eye lands on it before reading a word. A finished one
+    // is not being trained any more, whatever its flag still says.
+    const training = props.isActive && !props.finished;
+
     return (
         <li
             className={`${cardLinkClass} ${
-                props.isActive ? 'border-l-volt border-l-[6px]' : ''
+                training ? 'border-l-volt border-l-[6px]' : ''
             }`}
         >
             <div className="flex items-start justify-between gap-3">
@@ -49,7 +54,19 @@ export function RoutineCard(props: RoutineCardProps) {
                     </p>
                 </div>
 
-                {props.isActive ? (
+                {/* Finished comes first: it is the one state that rules out
+                    going active again, so it must not hide behind the flag. */}
+                {props.finished ? (
+                    <span
+                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
+                    >
+                        <CircleCheck
+                            size={13}
+                            aria-hidden
+                        />
+                        {t('routines.finished')}
+                    </span>
+                ) : props.isActive ? (
                     <span
                         className={`${badgeClass} bg-volt text-on-volt shrink-0`}
                     >

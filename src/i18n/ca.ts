@@ -12,6 +12,7 @@ export const ca: Dict = {
     'nav.language': 'Idioma',
     'nav.settings': 'Configuració',
     'nav.menu': 'Menú',
+    'nav.profile': 'Perfil',
 
     'landing.feature1':
         'Munta rutines amb els seus dies, exercicis, sèries, rang de repeticions i tècnica.',
@@ -54,11 +55,18 @@ export const ca: Dict = {
     'today.noPrevious': '—',
     'today.genericError': 'Alguna cosa ha fallat',
 
+    'profile.memberSince': 'Membre des de {date}',
+    'profile.stats': '{routines} rutines · {workouts} entrenaments fets',
+    'profile.activeTitle': 'Rutina activa',
+    'profile.finishedTitle': 'Acabades',
+    'profile.noFinished': 'Encara no has acabat cap rutina.',
+
     'routines.title': 'Les meves rutines',
     'routines.empty': 'Encara no tens rutines.',
     'routines.active': 'Activa',
     'routines.markActive': 'Marcar activa',
     'routines.incomplete': 'Incompleta',
+    'routines.finished': 'Acabada',
     'routines.meta': '{weeks} setmanes · {days} dies',
     'routines.progress': '{done}/{total} entrenaments',
     'routines.newTitle': 'Nova rutina',
@@ -123,6 +131,7 @@ export const ca: Dict = {
     'error.duration': "La durada ha d'estar entre 1 i 52 setmanes",
     'error.workoutName': 'Posa-li un nom al dia',
     'error.routineIncomplete': 'Completa la rutina abans de marcar-la activa',
+    'error.routineFinished': 'Aquesta rutina ja està acabada',
     'error.sets': 'Sèries: entre 1 i 20',
     'error.exercises': 'Exercicis: entre 1 i 30',
     'error.repRange': 'El rang de repeticions no és vàlid',

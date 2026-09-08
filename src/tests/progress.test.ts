@@ -1,4 +1,5 @@
 import {
+    isRoutineFinished,
     isSessionComplete,
     isSetEnabled,
     positionFromCursor,
@@ -37,6 +38,19 @@ describe('positionFromCursor', () => {
     it('returns null once the routine is over, or when it has no workouts', () => {
         expect(positionFromCursor(6, 2, 3)).toBeNull();
         expect(positionFromCursor(0, 0, 3)).toBeNull();
+    });
+});
+
+describe('isRoutineFinished', () => {
+    it('is done once the cursor has walked every week', () => {
+        expect(isRoutineFinished(5, 2, 3)).toBe(false);
+        expect(isRoutineFinished(6, 2, 3)).toBe(true);
+        expect(isRoutineFinished(99, 2, 3)).toBe(true);
+    });
+
+    it('never calls an empty routine finished', () => {
+        expect(isRoutineFinished(0, 0, 3)).toBe(false);
+        expect(isRoutineFinished(10, 0, 3)).toBe(false);
     });
 });
 

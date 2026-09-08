@@ -33,6 +33,17 @@ export function positionFromCursor(
     };
 }
 
+/** Every workout of every week is behind the cursor. An empty routine is never
+    finished, however far the cursor has been pushed. */
+export function isRoutineFinished(
+    cursor: number,
+    workoutCount: number,
+    durationWeeks: number
+): boolean {
+    const total = workoutCount * durationWeeks;
+    return total > 0 && cursor >= total;
+}
+
 /** Every set of the workout, in the order they must be filled in. */
 export function flatSets(exercises: ExercisePlan[]): FlatSet[] {
     return exercises.flatMap((e, exerciseIndex) =>
