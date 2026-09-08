@@ -4,6 +4,7 @@ import { RoutineCard } from '@/components/routine-card';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { myRoutines } from '@/lib/queries';
+import { routineProblems } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
 export default async function RoutinesPage() {
@@ -26,6 +27,7 @@ export default async function RoutinesPage() {
                         workoutCount={routine._count.workouts}
                         cursor={routine.cursor}
                         isActive={routine.isActive}
+                        canActivate={routineProblems(routine, t).length === 0}
                         onSetActive={setActiveRoutine}
                     />
                 ))}

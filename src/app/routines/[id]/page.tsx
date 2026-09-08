@@ -1,17 +1,18 @@
 import {
-    addExercise,
     addWorkout,
-    deleteExercise,
     deleteRoutine,
     deleteWorkout,
+    saveExercises,
 } from '@/app/actions';
 import { ActionButton } from '@/components/action-button';
 import { AddWorkoutForm } from '@/components/add-workout-form';
+import { ValidateRoutine } from '@/components/validate-routine';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { routineDetail } from '@/lib/queries';
+import { routineProblems } from '@/lib/validate';
 import { Trash } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
@@ -45,9 +46,8 @@ export default async function RoutinePage({
                     <WorkoutEditor
                         key={workout.id}
                         workout={workout}
-                        addExercise={addExercise}
+                        saveExercises={saveExercises}
                         onDeleteWorkout={deleteWorkout}
-                        onDeleteExercise={deleteExercise}
                     />
                 ))}
 
@@ -56,6 +56,8 @@ export default async function RoutinePage({
                     routineId={routine.id}
                 />
             </section>
+
+            <ValidateRoutine problems={routineProblems(routine, t)} />
 
             <ActionButton
                 action={deleteRoutine.bind(null, routine.id)}

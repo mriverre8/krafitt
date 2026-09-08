@@ -14,6 +14,8 @@ export type RoutineCardProps = {
     workoutCount: number;
     cursor: number;
     isActive: boolean;
+    /** A routine with holes in it cannot be trained, so it cannot go active. */
+    canActivate: boolean;
     onSetActive: (routineId: string) => Promise<void>;
 };
 
@@ -57,13 +59,19 @@ export function RoutineCard(props: RoutineCardProps) {
                         />
                         {t('routines.active')}
                     </span>
-                ) : (
+                ) : props.canActivate ? (
                     <ActionButton
                         action={() => props.onSetActive(props.id)}
                         className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse shrink-0 border-2`}
                     >
                         {t('routines.markActive')}
                     </ActionButton>
+                ) : (
+                    <span
+                        className={`${badgeClass} border-line text-muted shrink-0 border-2 border-dashed`}
+                    >
+                        {t('routines.incomplete')}
+                    </span>
                 )}
             </div>
 

@@ -23,12 +23,3 @@ export async function routineIdOfWorkout(workoutId: string) {
     if (!workout) throw new Error((await getT())('error.workoutNotFound'));
     return workout.routineId;
 }
-
-export async function routineIdOfExercise(exerciseId: string) {
-    const exercise = await prisma.exercise.findUnique({
-        where: { id: exerciseId },
-        select: { workout: { select: { routineId: true } } },
-    });
-    if (!exercise) throw new Error((await getT())('error.exerciseNotFound'));
-    return exercise.workout.routineId;
-}

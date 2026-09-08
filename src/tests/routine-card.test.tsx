@@ -9,6 +9,7 @@ const props: RoutineCardProps = {
     workoutCount: 3,
     cursor: 6,
     isActive: false,
+    canActivate: true,
     onSetActive: async () => {},
 };
 
@@ -40,6 +41,19 @@ describe('RoutineCard', () => {
         );
         fireEvent.click(screen.getByRole('button', { name: 'Set active' }));
         await waitFor(() => expect(onSetActive).toHaveBeenCalledWith('r1'));
+    });
+
+    it('withholds the button until the routine is fully defined', () => {
+        render(
+            <RoutineCard
+                {...props}
+                canActivate={false}
+            />
+        );
+        expect(screen.getByText('Incomplete')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Set active' })
+        ).not.toBeInTheDocument();
     });
 
     it('shows a badge instead of the button when already active', () => {

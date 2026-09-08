@@ -115,7 +115,9 @@ model ExerciseSet {
   exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   order      Int
-  /// Both null means AMRAP; equal values mean a fixed number of reps.
+  /// range | fixed | amrap. Stored rather than derived from the columns below,
+  /// so a blank repMin/repMax means "not written yet" instead of reading as AMRAP.
+  repMode    String   @default("range")
   repMin     Int?
   repMax     Int?
   technique  String

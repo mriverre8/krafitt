@@ -9,9 +9,9 @@ const exercise: ExerciseView = {
     id: 'e1',
     name: 'Bench press',
     sets: [
-        { repMin: 4, repMax: 6, technique: 'Top set' },
-        { repMin: 8, repMax: 10, technique: 'Back off' },
-        { repMin: 8, repMax: 10, technique: 'Back off' },
+        { repMode: 'range', repMin: 4, repMax: 6, technique: 'Top set' },
+        { repMode: 'range', repMin: 8, repMax: 10, technique: 'Back off' },
+        { repMode: 'range', repMin: 8, repMax: 10, technique: 'Back off' },
     ],
 };
 

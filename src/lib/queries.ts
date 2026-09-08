@@ -76,11 +76,32 @@ export async function todayWorkout(userId: string) {
     };
 }
 
+/** The list also carries the plan itself, so each card knows if it can go active. */
 export async function myRoutines(userId: string) {
     return prisma.routine.findMany({
         where: { creatorId: userId },
         orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { workouts: true } } },
+        include: {
+            _count: { select: { workouts: true } },
+            workouts: {
+                orderBy: { order: 'asc' },
+                select: {
+                    name: true,
+                    exercises: {
+                        select: {
+                            name: true,
+                            sets: {
+                                select: {
+                                    repMode: true,
+                                    repMin: true,
+                                    repMax: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     });
 }
 
