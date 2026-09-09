@@ -6,7 +6,6 @@ import { renderWithLocale } from './setup-helpers';
 const base = {
     setIndex: 0,
     enabled: true,
-    previousWeek: null,
     onSave: () => {},
 };
 
@@ -74,8 +73,7 @@ describe('SetRow', () => {
         render(
             <SetRow
                 {...base}
-                previous={{ weight: 80, reps: 8 }}
-                previousWeek={1}
+                previous={{ weight: 80, reps: 8, week: 1 }}
             />
         );
         expect(screen.getByText('W1: 80×8')).toBeInTheDocument();

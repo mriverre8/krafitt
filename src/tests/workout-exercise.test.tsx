@@ -19,7 +19,6 @@ const base = {
     exercise,
     logs: {},
     previous: {},
-    previousWeek: null,
     isSetEnabled: () => false,
     onSaveSet: () => {},
 };

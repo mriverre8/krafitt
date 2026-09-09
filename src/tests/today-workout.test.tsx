@@ -3,10 +3,13 @@ import {
     type TodayWorkoutProps,
 } from '@/components/today-workout';
 import { useSessionStore } from '@/store/session';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { skipDay } from '@/app/actions';
 
 vi.mock('@/app/actions', () => ({ logSet: vi.fn(), skipDay: vi.fn() }));
+const refresh = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
 
 const props: TodayWorkoutProps = {
     routineId: 'r1',
@@ -39,11 +42,17 @@ const props: TodayWorkoutProps = {
     },
     logs: {},
     previous: {},
-    previousWeek: null,
+};
+
+const full = {
+    e1: { 0: { weight: 80, reps: 8 }, 1: { weight: 60, reps: 10 } },
 };
 
 describe('TodayWorkout', () => {
-    beforeEach(() => useSessionStore.setState({ logs: {} }));
+    beforeEach(() => {
+        useSessionStore.setState({ logs: {} });
+        vi.clearAllMocks();
+    });
 
     it('shows the routine, day and week', () => {
         render(<TodayWorkout {...props} />);
@@ -67,6 +76,28 @@ describe('TodayWorkout', () => {
             />
         );
         expect(screen.getByLabelText('Weight set 2')).toBeEnabled();
+    });
+
+    it('confirms before skipping an unfinished day', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(false);
+        render(<TodayWorkout {...props} />);
+        fireEvent.click(screen.getByText('Skip to next day'));
+        expect(window.confirm).toHaveBeenCalled();
+        expect(skipDay).not.toHaveBeenCalled();
+    });
+
+    // The finished day is left behind by the next fetch, so skipping it too
+    // would cost the user the day after it.
+    it('only refreshes when the day is already finished', () => {
+        render(
+            <TodayWorkout
+                {...props}
+                logs={full}
+            />
+        );
+        fireEvent.click(screen.getByText('Skip to next day'));
+        expect(skipDay).not.toHaveBeenCalled();
+        expect(refresh).toHaveBeenCalled();
     });
 
     it('says so when the day has no exercises', () => {

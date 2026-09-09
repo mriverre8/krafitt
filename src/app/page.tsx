@@ -38,7 +38,6 @@ export default async function HomePage() {
             workout={today.workout}
             logs={today.logs}
             previous={today.previous}
-            previousWeek={today.previousWeek}
         />
     );
 }

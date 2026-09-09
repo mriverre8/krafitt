@@ -2,11 +2,18 @@
 
 import { logSet, skipDay } from '@/app/actions';
 import { useT } from '@/i18n/use-t';
-import { flatSets, isSetEnabled, isSetFilled, type Logs } from '@/lib/progress';
+import {
+    flatSets,
+    isSetEnabled,
+    isSetFilled,
+    type Logs,
+    type PreviousLogs,
+} from '@/lib/progress';
 import { ghostClass } from '@/lib/ui';
 import { ProgressLadder } from './progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { FormError } from './form-error';
 import { WorkoutExercise, type ExerciseView } from './workout-exercise';
@@ -18,21 +25,14 @@ export type TodayWorkoutProps = {
     totalWeeks: number;
     workout: { id: string; name: string; exercises: ExerciseView[] };
     logs: Logs;
-    previous: Logs;
-    previousWeek: number | null;
+    previous: PreviousLogs;
 };
 
 export function TodayWorkout(props: TodayWorkoutProps) {
-    const {
-        routineId,
-        routineName,
-        week,
-        totalWeeks,
-        workout,
-        previous,
-        previousWeek,
-    } = props;
+    const { routineId, routineName, week, totalWeeks, workout, previous } =
+        props;
     const t = useT();
+    const router = useRouter();
     const { logs, hydrate } = useSessionStore();
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | undefined>();
@@ -65,10 +65,19 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     ).length;
     // The day stays on screen after the last set, so the counter says so instead
     // of reading n/n.
-    const sessionProgress =
-        all.length > 0 && doneSets === all.length
-            ? t('today.done')
-            : t('today.progress', { done: doneSets, total: all.length });
+    const complete = all.length > 0 && doneSets === all.length;
+    const sessionProgress = complete
+        ? t('today.done')
+        : t('today.progress', { done: doneSets, total: all.length });
+
+    // A finished day is already behind us: the next fetch moves the cursor past
+    // it on its own, so skipping it too would cost the user the day after.
+    // Anything else is a real skip, and the sets left blank are lost for good.
+    function onSkip() {
+        if (complete) return router.refresh();
+        if (!window.confirm(t('today.skipConfirm'))) return;
+        run(() => skipDay(routineId));
+    }
 
     return (
         <div className="space-y-4">
@@ -131,7 +140,6 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     exercise={exercise}
                     logs={logs[exercise.id] ?? {}}
                     previous={previous[exercise.id] ?? {}}
-                    previousWeek={previousWeek}
                     isSetEnabled={(setIndex) =>
                         !pending &&
                         isSetEnabled(
@@ -162,7 +170,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
             <button
                 type="button"
                 disabled={pending}
-                onClick={() => run(() => skipDay(routineId))}
+                onClick={onSkip}
                 className={`${ghostClass} flex w-full items-center justify-center gap-2`}
             >
                 <SkipForward

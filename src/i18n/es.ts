@@ -44,6 +44,8 @@ export const es: Dict = {
     'today.done': 'Entrenamiento completado',
     'today.noExercises': 'Este entrenamiento aún no tiene ejercicios.',
     'today.skip': 'Saltar al siguiente día',
+    'today.skipConfirm':
+        'Este día no está terminado. Las series en blanco se quedan en blanco. ¿Saltarlo?',
     'today.set': 'Serie {n}',
     'today.weightLabel': 'Peso serie {n}',
     'today.repsLabel': 'Repeticiones serie {n}',

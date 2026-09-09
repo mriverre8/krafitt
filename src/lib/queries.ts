@@ -1,5 +1,5 @@
 import { prisma } from './db';
-import { positionFromCursor, type Logs } from './progress';
+import { positionFromCursor, type Logs, type PreviousLogs } from './progress';
 
 function toLogs(
     logs: {
@@ -15,6 +15,34 @@ function toLogs(
             weight: l.weight,
             reps: l.reps,
         };
+    return out;
+}
+
+/**
+ * The last value every set was given, week by week. Sessions come in oldest
+ * first so the newest week wins, and unfinished ones count too: a day skipped
+ * half-done still leaves its numbers behind for the sets that were logged, and
+ * the sets that were not keep whatever the week before them left.
+ */
+function toPrevious(
+    sessions: {
+        week: number;
+        logs: {
+            exerciseId: string;
+            setIndex: number;
+            weight: number;
+            reps: number;
+        }[];
+    }[]
+): PreviousLogs {
+    const out: PreviousLogs = {};
+    for (const session of sessions)
+        for (const l of session.logs)
+            (out[l.exerciseId] ??= {})[l.setIndex] = {
+                weight: l.weight,
+                reps: l.reps,
+                week: session.week,
+            };
     return out;
 }
 
@@ -46,21 +74,16 @@ export async function todayWorkout(userId: string) {
     const workout = routine.workouts[position.workoutIndex];
     const week = position.week;
 
-    const [session, previousSession] = await Promise.all([
+    const [session, previousSessions] = await Promise.all([
         prisma.workoutSession.findUnique({
             where: {
                 userId_workoutId_week: { userId, workoutId: workout.id, week },
             },
             include: { logs: true },
         }),
-        prisma.workoutSession.findFirst({
-            where: {
-                userId,
-                workoutId: workout.id,
-                week: { lt: week },
-                completedAt: { not: null },
-            },
-            orderBy: { week: 'desc' },
+        prisma.workoutSession.findMany({
+            where: { userId, workoutId: workout.id, week: { lt: week } },
+            orderBy: { week: 'asc' },
             include: { logs: true },
         }),
     ]);
@@ -82,8 +105,7 @@ export async function todayWorkout(userId: string) {
         workout,
         week,
         logs: toLogs(session?.logs ?? []),
-        previous: toLogs(previousSession?.logs ?? []),
-        previousWeek: previousSession?.week ?? null,
+        previous: toPrevious(previousSessions),
     };
 }
 

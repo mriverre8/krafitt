@@ -7,6 +7,13 @@ export type Logs = Record<
     string,
     Record<number, SetValue | undefined> | undefined
 >;
+/** What a set was last given, and the week it came from. Weeks differ per set:
+    a day skipped half-done leaves newer numbers on some sets than on others. */
+export type PreviousValue = SetValue & { week: number };
+export type PreviousLogs = Record<
+    string,
+    Record<number, PreviousValue | undefined> | undefined
+>;
 
 export type FlatSet = {
     exerciseId: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import type { SetValue } from '@/lib/progress';
+import type { PreviousValue, SetValue } from '@/lib/progress';
 import { REPS, WEIGHT } from '@/lib/constants';
 import { inputClass } from '@/lib/ui';
 import { ArrowRight, Check } from 'lucide-react';
@@ -12,14 +12,12 @@ export function SetRow({
     enabled,
     saved,
     previous,
-    previousWeek,
     onSave,
 }: {
     setIndex: number;
     enabled: boolean;
     saved?: SetValue;
-    previous?: SetValue;
-    previousWeek: number | null;
+    previous?: PreviousValue;
     onSave: (weight: number, reps: number) => void;
 }) {
     const t = useT();
@@ -62,9 +60,9 @@ export function SetRow({
                 <span aria-hidden>{number}</span>
             </span>
             <span className="text-muted w-16 shrink-0 text-xs tabular-nums md:text-sm">
-                {previous && previousWeek !== null
+                {previous
                     ? t('today.previous', {
-                          week: previousWeek,
+                          week: previous.week,
                           weight: previous.weight,
                           reps: previous.reps,
                       })

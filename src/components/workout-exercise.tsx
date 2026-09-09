@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { SavedExercise } from '@/lib/forms';
-import type { SetValue } from '@/lib/progress';
+import type { PreviousValue, SetValue } from '@/lib/progress';
 import { formatReps } from '@/lib/reps';
 import { cardClass } from '@/lib/ui';
 import { SetRow } from './set-row';
@@ -13,14 +13,12 @@ export function WorkoutExercise({
     exercise,
     logs,
     previous,
-    previousWeek,
     isSetEnabled,
     onSaveSet,
 }: {
     exercise: ExerciseView;
     logs: Record<number, SetValue | undefined>;
-    previous: Record<number, SetValue | undefined>;
-    previousWeek: number | null;
+    previous: Record<number, PreviousValue | undefined>;
     isSetEnabled: (setIndex: number) => boolean;
     onSaveSet: (setIndex: number, weight: number, reps: number) => void;
 }) {
@@ -48,7 +46,6 @@ export function WorkoutExercise({
                             enabled={isSetEnabled(setIndex)}
                             saved={logs[setIndex]}
                             previous={previous[setIndex]}
-                            previousWeek={previousWeek}
                             onSave={(weight, reps) =>
                                 onSaveSet(setIndex, weight, reps)
                             }

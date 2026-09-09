@@ -44,6 +44,8 @@ export const ca: Dict = {
     'today.done': 'Entrenament completat',
     'today.noExercises': 'Aquest entrenament encara no té exercicis.',
     'today.skip': 'Saltar al dia següent',
+    'today.skipConfirm':
+        'Aquest dia no està acabat. Les sèries en blanc es queden en blanc. Saltar-lo?',
     'today.set': 'Sèrie {n}',
     'today.weightLabel': 'Pes sèrie {n}',
     'today.repsLabel': 'Repeticions sèrie {n}',
