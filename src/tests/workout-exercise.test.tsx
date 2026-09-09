@@ -29,8 +29,8 @@ describe('WorkoutExercise', () => {
         render(<WorkoutExercise {...base} />);
         expect(screen.getByText('Bench press')).toBeInTheDocument();
         expect(screen.getByText(/4-6 reps/)).toBeInTheDocument();
-        expect(screen.getByText('· Top set')).toBeInTheDocument();
-        expect(screen.getAllByText('· Back off')).toHaveLength(2);
+        expect(screen.getByText('Top set ·')).toBeInTheDocument();
+        expect(screen.getAllByText('Back off ·')).toHaveLength(2);
     });
 
     it('renders one row per set', () => {

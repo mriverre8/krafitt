@@ -131,6 +131,11 @@ body {
   letter-spacing: 0.12em;
   line-height: 1.2;
 }
+@media (width >= 48rem) {
+  .eyebrow {
+    font-size: 0.8125rem;
+  }
+}
 
 /* One hover language for the whole app: a 2px lift plus a colour commitment.
    Transform and colour only, so it stays off the layout and on the compositor. */

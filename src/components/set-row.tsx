@@ -61,7 +61,7 @@ export function SetRow({
                 <span className="sr-only">{t('today.set', { n: number })}</span>
                 <span aria-hidden>{number}</span>
             </span>
-            <span className="text-muted w-16 shrink-0 text-xs tabular-nums">
+            <span className="text-muted w-16 shrink-0 text-xs md:text-sm tabular-nums">
                 {previous && previousWeek !== null
                     ? t('today.previous', {
                           week: previousWeek,

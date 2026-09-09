@@ -34,14 +34,14 @@ export function WorkoutExercise({
                 {exercise.sets.map((set, setIndex) => (
                     <div
                         key={setIndex}
-                        className="space-y-1"
+                        className="space-y-1.5"
                     >
                         {/* Each set carries its own prescription. */}
-                        <p className="text-muted pl-11 text-xs">
-                            {formatReps(set, t)}
+                        <p className="text-muted  text-xs md:text-sm">
                             <span className="text-pulse font-semibold">
-                                {` · ${set.technique}`}
+                                {`${set.technique} · `}
                             </span>
+                            {formatReps(set, t)}
                         </p>
                         <SetRow
                             setIndex={setIndex}
