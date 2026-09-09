@@ -22,6 +22,22 @@ export const wrongFieldClass = `${fieldBase} border-danger hover:border-danger`;
 export const inputClass = `w-full min-w-0 ${fieldClass}`;
 export const wrongInputClass = `w-full min-w-0 ${wrongFieldClass}`;
 
+/** The one field that titles the card it sits in, rather than collecting a
+    value inside it: no box and no fill, just a rule underneath. `ruled`
+    (globals.css) stands the shared focus ring down — a ring would draw the
+    rectangle this field exists to not have — and the rule going pulse is the
+    focus indicator in its place. */
+const titleBase =
+    'ruled w-full min-w-0 border-b-2 bg-transparent px-0 py-1.5 text-ink ' +
+    'transition-colors placeholder:text-muted placeholder:font-normal ' +
+    'focus:border-pulse focus:outline-none disabled:opacity-30';
+
+/** Rests a step darker than a boxed field does: `line` is an edge between two
+    surfaces, and with no box around it this rule has to read on its own as a
+    line you write on. */
+export const titleInputClass = `${titleBase} border-muted hover:border-ink`;
+export const wrongTitleInputClass = `${titleBase} border-danger hover:border-danger`;
+
 /** The one button that means "go". Volt only ever appears as a fill. */
 export const primaryClass =
     'lift charged rounded-md bg-volt px-5 py-3 font-display text-lg font-extrabold uppercase ' +

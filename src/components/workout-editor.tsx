@@ -4,7 +4,12 @@ import { useT } from '@/i18n/use-t';
 import { EXERCISES } from '@/lib/constants';
 import type { DayAction } from '@/lib/forms';
 import type { ExerciseFault } from '@/lib/validate';
-import { cardClass, ghostClass, iconButtonClass, primaryClass } from '@/lib/ui';
+import {
+    ghostClass,
+    iconButtonClass,
+    labelClass,
+    primaryClass,
+} from '@/lib/ui';
 import { Eye, EyeOff, Plus, Save, Trash, Undo2 } from 'lucide-react';
 import { startTransition, useActionState, useState } from 'react';
 import { ActionButton } from './action-button';
@@ -18,9 +23,13 @@ import { FormError } from './form-error';
 import type { ExerciseView } from './workout-exercise';
 
 /**
- * A whole training day is one form. Adding, editing and removing exercises all
- * happen in the draft below; nothing reaches the database until Save changes,
- * which is why that button is the only thing that talks to the server here.
+ * One training day, and the whole of it is a single form: adding, editing and
+ * removing exercises all happen in the draft below, and nothing reaches the
+ * database until Save changes, the only thing here that talks to the server.
+ *
+ * The day owns the screen, so its name is the heading and each exercise gets a
+ * card of its own. Save follows you down the page rather than waiting at the
+ * bottom of a column of cards you would have to scroll back past.
  */
 export function WorkoutEditor({
     workout,
@@ -89,120 +98,52 @@ export function WorkoutEditor({
     }
 
     return (
-        <div className={cardClass}>
-            <div className="flex items-center justify-between gap-2">
-                <h3 className="display text-3xl">{workout.name}</h3>
+        <div>
+            {/* The day names the screen under the routine, so it is set at
+                heading scale rather than as another card title. */}
+            <div className="flex items-center justify-between gap-3">
+                {/* Two lines and then an ellipsis. leading-none rather than the
+                    .display 0.9 it would otherwise inherit: clamping brings
+                    overflow:hidden with it, and at 0.9 the descenders on the
+                    second line get sliced off. The full name stays in the DOM,
+                    so only the drawing is cut. */}
+                <h3 className="display line-clamp-2 min-w-0 text-4xl leading-none">
+                    {workout.name}
+                </h3>
+                {/* Worded, and set like the card-level delete inside a day, so
+                    the two destructive moves on this screen read the same.
+                    Muted until hovered, and then danger rather than the pulse
+                    an icon button would take — nothing that deletes should
+                    light up in the colour every other control uses. */}
                 <ActionButton
                     action={() => onDeleteWorkout(workout.id)}
                     confirm={t('routine.deleteDayConfirm', {
                         name: workout.name,
                     })}
-                    label={t('routine.deleteDay')}
-                    className={iconButtonClass}
+                    className={`${labelClass} hover:text-danger flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
                 >
                     <Trash
-                        size={16}
+                        size={14}
                         aria-hidden
                     />
+                    {t('routine.deleteDay')}
                 </ActionButton>
             </div>
 
-            <div className="mt-4 space-y-4">
-                {drafts.map((draft, index) => (
-                    <div
-                        key={index}
-                        className="border-line border-t pt-4"
-                    >
-                        <ExerciseFields
-                            exercise={draft}
-                            index={index}
-                            // An exercise the draft has only just added has no
-                            // id, so no error names it and nothing lights up.
-                            fault={
-                                highlight && draft.id
-                                    ? faults[draft.id]
-                                    : undefined
-                            }
-                            onChange={(patch) => update(index, patch)}
-                            onRemove={() =>
-                                setDrafts((current) =>
-                                    current.filter((_, i) => i !== index)
-                                )
-                            }
-                            canRemove={drafts.length > 1}
-                        />
-                    </div>
-                ))}
-            </div>
-
-            <FormError message={state.error} />
-
-            {/* Undo and adding an exercise are the secondary actions, since
-                neither touches anything but the draft; Save is the heavy one
-                and always comes last, on its own full-width row below them,
-                same on every width. */}
-            <div className="border-line mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
-                <button
-                    type="button"
-                    disabled={pending || plan === saved}
-                    // Straight back to the last save: the drafts are seeded from
-                    // it in the first place.
-                    onClick={() => setDrafts(toDrafts(workout.exercises))}
-                    // The full wording stays the accessible name at every width;
-                    // only what is drawn shortens, and the short form is a prefix
-                    // of it, so what is read out still matches what is seen.
-                    aria-label={t('exercise.undo')}
-                    className={`${ghostClass} order-1 flex flex-1 items-center justify-center gap-1.5`}
-                >
-                    <Undo2
-                        size={14}
-                        aria-hidden
-                    />
-                    <span className="md:hidden">{t('exercise.undoShort')}</span>
-                    <span className="hidden md:inline">
-                        {t('exercise.undo')}
-                    </span>
-                </button>
-                <button
-                    type="button"
-                    disabled={drafts.length >= EXERCISES.max}
-                    onClick={() =>
-                        setDrafts((current) => [...current, emptyExercise])
-                    }
-                    aria-label={t('exercise.add')}
-                    className={`${ghostClass} order-2 flex flex-1 items-center justify-center gap-1.5`}
-                >
-                    <Plus
-                        size={14}
-                        aria-hidden
-                    />
-                    <span className="md:hidden">{t('exercise.addShort')}</span>
-                    <span className="hidden md:inline">
-                        {t('exercise.add')}
-                    </span>
-                </button>
-                <button
-                    type="button"
-                    disabled={pending || plan === saved}
-                    onClick={save}
-                    className={`${primaryClass} order-3 flex basis-full items-center justify-center gap-2`}
-                >
-                    <Save
-                        size={16}
-                        aria-hidden
-                    />
-                    {t('exercise.saveChanges')}
-                </button>
-            </div>
-
             {/* What the day is missing, as it currently stands on the server:
-                the next save is what clears it. The eye points at the fields
-                behind it, reading the draft, so the red goes as they are fixed. */}
+                the next save is what clears it. Read before the cards rather
+                than after them — it says which ones to go and look at. The eye
+                points at the fields below, reading the draft, so the red goes
+                as they are fixed. The eye sits beside the list where there is
+                room and under it on a phone, where a narrow column of errors
+                and a button competing for the same line leaves neither enough
+                of it. */}
             {problems.length > 0 && (
-                <div className="mt-4 flex items-start justify-between gap-2">
+                <div className="mt-3 flex flex-col items-start gap-2 md:flex-row md:justify-between">
                     {/* Nudged down by the eye button's own padding, so the first
-                        error sits level with the words next to it. */}
-                    <ul className="text-danger list-disc space-y-1 pt-1.5 pl-5 text-sm">
+                        error sits level with the words next to it — only while
+                        the two share a line. */}
+                    <ul className="text-danger list-disc space-y-1 pl-5 text-sm md:pt-1.5">
                         {problems.map((problem, index) => (
                             <li key={index}>{problem}</li>
                         ))}
@@ -211,11 +152,15 @@ export function WorkoutEditor({
                         type="button"
                         onClick={() => setHighlight((shown) => !shown)}
                         aria-pressed={highlight}
-                        // Same string as the label below, so the icon on its own
-                        // is named exactly as the button reads on a wider screen.
+                        // Same string as the words inside, so what is read out
+                        // is what the button says.
                         aria-label={toggleLabel}
                         title={toggleLabel}
-                        className={iconButtonClass}
+                        // self-end rather than items-end on the row: in column
+                        // mode that would drag the error list over to the right
+                        // edge too. md:self-auto hands it back to the row's own
+                        // items-start once the two share a line.
+                        className={`${iconButtonClass} shrink-0 self-end md:self-auto`}
                     >
                         {highlight ? (
                             <EyeOff
@@ -228,14 +173,107 @@ export function WorkoutEditor({
                                 aria-hidden
                             />
                         )}
-                        {/* Room for the words only from md up; on a phone the
-                            eye has to carry it alone. */}
-                        <span className="eyebrow hidden md:inline">
-                            {toggleLabel}
-                        </span>
+                        {/* On its own line below md, so it has room for the
+                            words there too: an eye alone under a list of errors
+                            reads as an icon someone forgot to label. */}
+                        <span className="eyebrow">{toggleLabel}</span>
                     </button>
                 </div>
             )}
+
+            {/* Tighter under the error block on a phone: the eye is stacked
+                below the list there and carries a 44px touch target, so its own
+                padding already puts most of a gap under it. Nothing to make up
+                for when there are no errors, or once the eye is back on the
+                list's line. */}
+            <div
+                className={`space-y-3 ${
+                    problems.length > 0 ? 'mt-2 md:mt-4' : 'mt-4'
+                }`}
+            >
+                {drafts.map((draft, index) => (
+                    <ExerciseFields
+                        key={index}
+                        exercise={draft}
+                        index={index}
+                        // An exercise the draft has only just added has no
+                        // id, so no error names it and nothing lights up.
+                        fault={
+                            highlight && draft.id ? faults[draft.id] : undefined
+                        }
+                        onChange={(patch) => update(index, patch)}
+                        onRemove={() =>
+                            setDrafts((current) =>
+                                current.filter((_, i) => i !== index)
+                            )
+                        }
+                        canRemove={drafts.length > 1}
+                    />
+                ))}
+
+                {/* Shaped like the card it will become, and empty, so the place
+                    a new exercise lands is where the button already is. */}
+                <button
+                    type="button"
+                    disabled={drafts.length >= EXERCISES.max}
+                    onClick={() =>
+                        setDrafts((current) => [...current, emptyExercise])
+                    }
+                    className="lift border-line text-muted hover:border-pulse hover:text-pulse font-display flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed p-4 text-sm font-bold tracking-wide uppercase disabled:pointer-events-none disabled:opacity-40"
+                >
+                    <Plus
+                        size={14}
+                        aria-hidden
+                    />
+                    {t('exercise.add')}
+                </button>
+            </div>
+
+            <FormError message={state.error} />
+
+            {/* A day is now a column of cards, so Save rides along at the foot
+                of the screen instead of waiting at the end of the scroll. It
+                bleeds to the page edges: the blur has to cover the gutters or
+                the cards show through beside it. */}
+            {/* items-stretch, not items-center: Save is the taller button by
+                design (bigger type, more padding) and each button would
+                otherwise size itself. Letting the row govern keeps the two
+                level without pinning a height that the type could outgrow. */}
+            <div className="border-line bg-bg/85 sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t px-4 py-3 backdrop-blur-md">
+                <button
+                    type="button"
+                    disabled={pending || plan === saved}
+                    // Straight back to the last save: the drafts are seeded from
+                    // it in the first place.
+                    onClick={() => setDrafts(toDrafts(workout.exercises))}
+                    // The full wording stays the accessible name at every width;
+                    // only what is drawn shortens, and the short form is a prefix
+                    // of it, so what is read out still matches what is seen.
+                    aria-label={t('exercise.undo')}
+                    className={`${ghostClass} flex flex-1 items-center justify-center gap-1.5`}
+                >
+                    <Undo2
+                        size={14}
+                        aria-hidden
+                    />
+                    <span className="md:hidden">{t('exercise.undoShort')}</span>
+                    <span className="hidden md:inline">
+                        {t('exercise.undo')}
+                    </span>
+                </button>
+                <button
+                    type="button"
+                    disabled={pending || plan === saved}
+                    onClick={save}
+                    className={`${primaryClass} flex flex-[2] items-center justify-center gap-2`}
+                >
+                    <Save
+                        size={16}
+                        aria-hidden
+                    />
+                    {t('exercise.saveChanges')}
+                </button>
+            </div>
         </div>
     );
 }

@@ -81,6 +81,9 @@ export const ca: Dict = {
 
     'routine.meta': '{weeks} setmanes · {days} dies per setmana',
     'routine.workouts': 'Entrenaments',
+    'routine.dayTab': 'Dia {n}, {name}',
+    'routine.prevDay': 'Dia anterior',
+    'routine.nextDay': 'Dia següent',
     'routine.deleteDay': 'Esborrar dia',
     'routine.deleteDayConfirm': 'Esborrar {name} i els seus exercicis?',
     'routine.noWorkouts': 'Aquesta rutina encara no té entrenaments.',
@@ -105,7 +108,6 @@ export const ca: Dict = {
     'exercise.saveChanges': 'Desar canvis',
     'exercise.undo': 'Desfer canvis',
     'exercise.undoShort': 'Desfer',
-    'exercise.addShort': 'Afegir',
     'exercise.delete': 'Esborrar exercici {e}',
     'exercise.removeShort': 'Esborrar exercici',
     'exercise.removeSetShort': 'Treure sèrie',

@@ -81,6 +81,9 @@ export const es: Dict = {
 
     'routine.meta': '{weeks} semanas · {days} días por semana',
     'routine.workouts': 'Entrenamientos',
+    'routine.dayTab': 'Día {n}, {name}',
+    'routine.prevDay': 'Día anterior',
+    'routine.nextDay': 'Día siguiente',
     'routine.deleteDay': 'Borrar día',
     'routine.deleteDayConfirm': '¿Borrar {name} y sus ejercicios?',
     'routine.noWorkouts': 'Esta rutina aún no tiene entrenamientos.',
@@ -105,7 +108,6 @@ export const es: Dict = {
     'exercise.saveChanges': 'Guardar cambios',
     'exercise.undo': 'Deshacer cambios',
     'exercise.undoShort': 'Deshacer',
-    'exercise.addShort': 'Añadir',
     'exercise.delete': 'Borrar ejercicio {e}',
     'exercise.removeShort': 'Borrar ejercicio',
     'exercise.removeSetShort': 'Quitar serie',

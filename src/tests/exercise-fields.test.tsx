@@ -139,21 +139,16 @@ describe('ExerciseFields', () => {
     it('removes the whole exercise, unless it is the only one', () => {
         const onRemove = vi.fn();
         const { unmount } = fields({ onRemove });
-        // Same action exists as both a desktop icon button and a mobile text
-        // link; only one is ever visible, but jsdom does not evaluate the
-        // media query that hides the other.
         fireEvent.click(
-            screen.getAllByRole('button', { name: 'Delete exercise 1' })[0]
+            screen.getByRole('button', { name: 'Delete exercise 1' })
         );
         expect(onRemove).toHaveBeenCalled();
         unmount();
 
         fields({ canRemove: false });
-        for (const button of screen.getAllByRole('button', {
-            name: 'Delete exercise 1',
-        })) {
-            expect(button).toBeDisabled();
-        }
+        expect(
+            screen.getByRole('button', { name: 'Delete exercise 1' })
+        ).toBeDisabled();
     });
 
     describe('with a fault to point at', () => {

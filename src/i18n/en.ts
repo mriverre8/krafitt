@@ -81,6 +81,10 @@ export const en = {
 
     'routine.meta': '{weeks} weeks · {days} days per week',
     'routine.workouts': 'Workouts',
+    // The day strip shows numbers only; the name travels in the tab's label.
+    'routine.dayTab': 'Day {n}, {name}',
+    'routine.prevDay': 'Previous day',
+    'routine.nextDay': 'Next day',
     'routine.deleteDay': 'Delete day',
     'routine.deleteDayConfirm': 'Delete {name} and its exercises?',
     'routine.noWorkouts': 'This routine has no workouts yet.',
@@ -105,9 +109,8 @@ export const en = {
     'exercise.add': 'Add exercise',
     'exercise.saveChanges': 'Save changes',
     'exercise.undo': 'Undo changes',
-    // Short forms: below md these buttons share a row and the full label wraps.
+    // Short form: below md, Undo shares the save bar and the full label wraps.
     'exercise.undoShort': 'Undo',
-    'exercise.addShort': 'Add',
     'exercise.delete': 'Delete exercise {e}',
     'exercise.removeShort': 'Delete exercise',
     'exercise.removeSetShort': 'Remove set',

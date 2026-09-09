@@ -39,11 +39,8 @@ const flagged = {
 const save = () => screen.getByRole('button', { name: /Save changes/ });
 const undo = () => screen.getByRole('button', { name: 'Undo changes' });
 const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
-// Same action exists as both a desktop icon button and a mobile text link;
-// only one is ever visible, but jsdom does not evaluate the media query that
-// hides the other, so either one works to fire the click.
 const deleteExercise = (e: number) =>
-    screen.getAllByRole('button', { name: `Delete exercise ${e}` })[0];
+    screen.getByRole('button', { name: `Delete exercise ${e}` });
 
 describe('WorkoutEditor', () => {
     it('shows one form per exercise of the day', () => {

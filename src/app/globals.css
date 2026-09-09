@@ -176,11 +176,21 @@ body {
 }
 
 /* Pulse, not volt: a volt hairline sits at 2.9:1 on the light background and
-   would be an invisible focus ring exactly where it matters most. */
-:where(a, button, input, select, [tabindex]):focus-visible {
+   would be an invisible focus ring exactly where it matters most.
+   .ruled opts out — see below. */
+:where(a, button, input, select, [tabindex]):not(.ruled):focus-visible {
   outline: 3px solid var(--pulse);
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+/* A field drawn as a single rule rather than a box has nothing for a ring to
+   sit around: the ring would draw the very rectangle the field exists to not
+   have. Its own rule turning pulse is the focus indicator instead.
+   The opt-out has to live here, in the rule itself: everything in this file is
+   unlayered and beats any utility, so focus:outline-none cannot reach it. */
+.ruled:focus {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

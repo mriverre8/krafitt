@@ -7,7 +7,7 @@ import {
 import { ActionButton } from '@/components/action-button';
 import { AddWorkoutForm } from '@/components/add-workout-form';
 import { BackButton } from '@/components/back-button';
-import { WorkoutEditor } from '@/components/workout-editor';
+import { RoutineDays } from '@/components/routine-days';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
@@ -40,13 +40,34 @@ export default async function RoutinePage({
         <div className="space-y-6">
             <header>
                 <BackButton fallback="/routines" />
-                <h1 className="display text-6xl mt-5">{routine.name}</h1>
-                <p className="eyebrow text-muted mt-2">
-                    {t('routine.meta', {
-                        weeks: routine.durationWeeks,
-                        days: routine.workouts.length,
-                    })}
-                </p>
+                <h1 className="display mt-5 text-6xl">{routine.name}</h1>
+                {/* Deleting the routine rides the subtitle line, at the far
+                    end: it belongs to the routine as a whole, so it sits with
+                    the line that describes the routine as a whole rather than
+                    below whichever day is open. Set in the same eyebrow as the
+                    text it shares the line with, and danger-coloured because
+                    nothing else here destroys anything. */}
+                <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="eyebrow text-muted min-w-0">
+                        {t('routine.meta', {
+                            weeks: routine.durationWeeks,
+                            days: routine.workouts.length,
+                        })}
+                    </p>
+                    <ActionButton
+                        action={deleteRoutine.bind(null, routine.id)}
+                        confirm={t('routine.deleteConfirm', {
+                            name: routine.name,
+                        })}
+                        className="text-danger hover:text-danger/70 eyebrow flex shrink-0 items-center gap-1.5 transition-colors"
+                    >
+                        <Trash
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('routine.delete')}
+                    </ActionButton>
+                </div>
             </header>
 
             {/* Already active: the volt flame, the same badge the routine wears
@@ -76,37 +97,28 @@ export default async function RoutinePage({
                 </p>
             )}
 
-            <section className="space-y-4">
-                <h2 className="eyebrow text-muted">{t('routine.workouts')}</h2>
+            {/* Above the rack it feeds: adding a day is a routine-level move,
+                like naming the routine or deleting it, not something you do
+                from inside whichever day happens to be on screen. */}
+            <AddWorkoutForm
+                action={addWorkout}
+                routineId={routine.id}
+            />
 
-                {routine.workouts.map((workout) => (
-                    <WorkoutEditor
-                        key={workout.id}
-                        workout={workout}
-                        problems={workoutProblems(workout, t)}
-                        faults={workoutFaults(workout.exercises)}
-                        saveExercises={saveExercises}
-                        onDeleteWorkout={deleteWorkout}
-                    />
-                ))}
-
-                <AddWorkoutForm
-                    action={addWorkout}
-                    routineId={routine.id}
-                />
-            </section>
-
-            <ActionButton
-                action={deleteRoutine.bind(null, routine.id)}
-                confirm={t('routine.deleteConfirm', { name: routine.name })}
-                className="text-danger hover:text-danger/70 font-display flex items-center gap-1.5 text-sm font-bold tracking-wide uppercase transition-colors"
-            >
-                <Trash
-                    size={14}
-                    aria-hidden
-                />
-                {t('routine.delete')}
-            </ActionButton>
+            {/* One day at a time. Everything the switcher needs to mark a day
+                as trainable is worked out here, next to the routine-wide
+                verdict above, so both answer to the same rules. */}
+            <RoutineDays
+                days={routine.workouts.map((workout) => ({
+                    id: workout.id,
+                    name: workout.name,
+                    exercises: workout.exercises,
+                    problems: workoutProblems(workout, t),
+                    faults: workoutFaults(workout.exercises),
+                }))}
+                saveExercises={saveExercises}
+                onDeleteWorkout={deleteWorkout}
+            />
         </div>
     );
 }
