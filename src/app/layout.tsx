@@ -23,6 +23,9 @@ const body = Barlow({
 export const metadata: Metadata = {
     title: 'Krafitt',
     description: 'Track your gym progress',
+    appleWebApp: {
+        title: 'Krafitt',
+    },
 };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
