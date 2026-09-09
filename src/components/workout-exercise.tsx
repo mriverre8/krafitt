@@ -37,7 +37,7 @@ export function WorkoutExercise({
                         className="space-y-1.5"
                     >
                         {/* Each set carries its own prescription. */}
-                        <p className="text-muted  text-xs md:text-sm">
+                        <p className="text-muted text-xs md:text-sm">
                             <span className="text-pulse font-semibold">
                                 {`${set.technique} · `}
                             </span>
