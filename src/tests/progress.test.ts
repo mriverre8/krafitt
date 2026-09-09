@@ -55,24 +55,27 @@ describe('isRoutineFinished', () => {
 });
 
 describe('isSetEnabled', () => {
-    it('only opens the first set when nothing is logged', () => {
+    it('opens the first set of every exercise when nothing is logged', () => {
         const logs: Logs = {};
         expect(isSetEnabled(exercises, logs, 'a', 0)).toBe(true);
         expect(isSetEnabled(exercises, logs, 'a', 1)).toBe(false);
-        expect(isSetEnabled(exercises, logs, 'b', 0)).toBe(false);
+        expect(isSetEnabled(exercises, logs, 'b', 0)).toBe(true);
     });
 
     it('moves on to the next field once the previous one is filled', () => {
         const logs: Logs = { a: { 0: { weight: 60, reps: 8 } } };
         expect(isSetEnabled(exercises, logs, 'a', 1)).toBe(true);
-        expect(isSetEnabled(exercises, logs, 'b', 0)).toBe(false);
     });
 
-    it('crosses into the next exercise only once the previous one is complete', () => {
-        const logs: Logs = {
-            a: { 0: { weight: 60, reps: 8 }, 1: { weight: 60, reps: 7 } },
-        };
-        expect(isSetEnabled(exercises, logs, 'b', 0)).toBe(true);
+    it('keeps exercises independent', () => {
+        const logs: Logs = { b: { 0: { weight: 20, reps: 12 } } };
+        expect(isSetEnabled(exercises, logs, 'a', 1)).toBe(false);
+        expect(isSetEnabled(exercises, logs, 'a', 0)).toBe(true);
+    });
+
+    it('rejects a set that does not exist', () => {
+        expect(isSetEnabled(exercises, {}, 'a', 99)).toBe(false);
+        expect(isSetEnabled(exercises, {}, 'nope', 0)).toBe(false);
     });
 
     it('accepts 0 kg (bodyweight) but not 0 reps', () => {

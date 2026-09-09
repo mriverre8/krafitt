@@ -65,8 +65,8 @@ export function isSetFilled(
 }
 
 /**
- * A set is only enabled when every previous one (same exercise and earlier
- * exercises) has been filled in.
+ * A set is only enabled when every earlier set of the *same* exercise has been
+ * filled in. Exercises are independent: each one opens its first set right away.
  */
 export function isSetEnabled(
     exercises: ExercisePlan[],
@@ -74,14 +74,12 @@ export function isSetEnabled(
     exerciseId: string,
     setIndex: number
 ): boolean {
-    const flat = flatSets(exercises);
-    const i = flat.findIndex(
-        (s) => s.exerciseId === exerciseId && s.setIndex === setIndex
+    const exercise = exercises.find((e) => e.id === exerciseId);
+    if (!exercise || setIndex < 0 || setIndex >= exercise.sets.length)
+        return false;
+    return Array.from({ length: setIndex }, (_, i) => i).every((i) =>
+        isSetFilled(logs, exerciseId, i)
     );
-    if (i < 0) return false;
-    return flat
-        .slice(0, i)
-        .every((s) => isSetFilled(logs, s.exerciseId, s.setIndex));
 }
 
 /** The workout is done once the last set is filled in. */
