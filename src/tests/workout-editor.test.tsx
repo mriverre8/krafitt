@@ -262,7 +262,15 @@ describe('WorkoutEditor', () => {
             target: { value: 'Dips' },
         });
         fireEvent.click(save());
-        await waitFor(() => expect(save()).toBeDisabled());
+        // Save is disabled the moment it is pressed, so waiting on that would
+        // wait on nothing: the drafts are only back from the server once
+        // exercise 2 is showing the sets the save gave it.
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText('Exercise 2, min reps set 1')
+            ).toHaveValue(4)
+        );
+        expect(save()).toBeDisabled();
 
         // Saving again must update that exercise, not create a second one.
         fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
