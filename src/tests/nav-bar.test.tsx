@@ -87,6 +87,23 @@ describe('NavBar', () => {
         ).toBeVisible();
     });
 
+    // On a phone this menu is the whole navigation, so the order is the spec:
+    // where you go, then whose account it is, then what you do to it.
+    it('lists the menu in navigation order', () => {
+        render(
+            <NavBar
+                userName="Ada"
+                theme="dark"
+            />
+        );
+        const menu = openMenu('Menu');
+        expect(
+            Array.from(menu.querySelectorAll('a, button')).map(
+                (item) => item.textContent
+            )
+        ).toEqual(['Today', 'Routines', 'Profile', 'Settings', 'Sign out']);
+    });
+
     it('expands language and theme inside the user menu', () => {
         render(
             <NavBar

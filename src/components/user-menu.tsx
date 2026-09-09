@@ -37,19 +37,11 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
         >
             {(close) => (
                 <>
-                    {/* The account itself, at every width: the bar only ever
-                        carries the two app links. */}
-                    <Link
-                        href="/profile"
-                        onClick={close}
-                        className={itemClass}
-                    >
-                        <User
-                            size={14}
-                            aria-hidden
-                        />
-                        {t('nav.profile')}
-                    </Link>
+                    {/* Where you go, then whose account it is, then what you do
+                        to it. On a phone this menu is the whole navigation, so
+                        the two app links lead; from md up they are already in
+                        the bar and drop out, leaving the account items in the
+                        same order they were always in. */}
                     <Link
                         href="/"
                         onClick={close}
@@ -71,6 +63,17 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
                             aria-hidden
                         />
                         {t('nav.routines')}
+                    </Link>
+                    <Link
+                        href="/profile"
+                        onClick={close}
+                        className={itemClass}
+                    >
+                        <User
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.profile')}
                     </Link>
 
                     <button
