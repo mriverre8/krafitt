@@ -103,6 +103,8 @@ export const es: Dict = {
     'exercise.undoShort': 'Deshacer',
     'exercise.addShort': 'Añadir',
     'exercise.delete': 'Borrar ejercicio {e}',
+    'exercise.removeShort': 'Borrar ejercicio',
+    'exercise.removeSetShort': 'Quitar serie',
 
     'reps.range': 'Rango',
     'reps.fixed': 'Fijas',

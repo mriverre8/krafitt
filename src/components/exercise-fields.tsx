@@ -114,30 +114,55 @@ export function ExerciseFields({
     return (
         <div className="space-y-3">
             {/* Same gaps and same × as a set row below, so the name field ends
-                where the fields under it do. */}
-            <div className="flex items-center gap-1.5 md:gap-2">
-                <input
-                    value={exercise.name}
-                    onChange={(event) => onChange({ name: event.target.value })}
-                    aria-label={t('exercise.nameLabel', { e })}
-                    placeholder={t('exercise.namePlaceholder')}
-                    maxLength={NAME_MAX}
-                    className={`${
-                        fault?.name ? wrongInputClass : inputClass
-                    } display text-xl`}
-                />
+                where the fields under it do. The × itself is a mouse-only
+                target from md down it is a full-width text link instead, same
+                shape as "Add set" below, so a thumb has something to land on. */}
+            <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                    <input
+                        value={exercise.name}
+                        onChange={(event) =>
+                            onChange({ name: event.target.value })
+                        }
+                        aria-label={t('exercise.nameLabel', { e })}
+                        placeholder={t('exercise.namePlaceholder')}
+                        maxLength={NAME_MAX}
+                        className={`${
+                            fault?.name ? wrongInputClass : inputClass
+                        } display text-xl`}
+                    />
+                    {/* Wrapped rather than toggled on the button itself: the
+                        button's own class already sets flex, and "hidden"
+                        next to it would compete for the same display
+                        property with no guaranteed winner. */}
+                    <div className="hidden md:block">
+                        <button
+                            type="button"
+                            // The day needs at least one exercise, so the last one stays.
+                            disabled={!canRemove}
+                            onClick={onRemove}
+                            aria-label={t('exercise.delete', { e })}
+                            className={removeButtonClass}
+                        >
+                            <X
+                                size={14}
+                                aria-hidden
+                            />
+                        </button>
+                    </div>
+                </div>
                 <button
                     type="button"
-                    // The day needs at least one exercise, so the last one stays.
                     disabled={!canRemove}
                     onClick={onRemove}
                     aria-label={t('exercise.delete', { e })}
-                    className={removeButtonClass}
+                    className={`${labelClass} hover:text-danger flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30 md:hidden`}
                 >
                     <X
                         size={14}
                         aria-hidden
                     />
+                    {t('exercise.removeShort')}
                 </button>
             </div>
 
@@ -145,80 +170,133 @@ export function ExerciseFields({
                 {exercise.sets.map((set, setIndex) => {
                     const wrong = fault?.sets[setIndex] ?? noFault;
                     return (
-                        // Wraps on a phone (technique drops to its own line) and sits
-                        // on a single line from md up, where there is room for it.
                         <div
                             key={setIndex}
-                            className="flex flex-wrap items-center gap-1.5 md:gap-2"
+                            className="space-y-1.5"
                         >
-                            <span className="figure text-muted w-4 shrink-0 text-lg">
-                                {setIndex + 1}
-                            </span>
-                            <select
-                                value={set.mode}
-                                onChange={(event) =>
-                                    updateSet(setIndex, {
-                                        mode: event.target.value as RepMode,
-                                    })
-                                }
-                                aria-label={t('exercise.repMode', {
-                                    e,
-                                    n: setIndex + 1,
-                                })}
-                                className={`${fieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
-                            >
-                                {REP_MODES.map((mode) => (
-                                    <option
-                                        key={mode}
-                                        value={mode}
-                                    >
-                                        {t(`reps.${mode}`)}
-                                    </option>
-                                ))}
-                            </select>
-                            {/* Both number fields are always rendered, so the columns
+                            {/* Wraps on a phone (technique drops to its own line) and sits
+                            on a single line from md up, where there is room for it. */}
+                            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                                <span className="figure text-muted w-4 shrink-0 text-lg">
+                                    {setIndex + 1}
+                                </span>
+                                <select
+                                    value={set.mode}
+                                    onChange={(event) =>
+                                        updateSet(setIndex, {
+                                            mode: event.target.value as RepMode,
+                                        })
+                                    }
+                                    aria-label={t('exercise.repMode', {
+                                        e,
+                                        n: setIndex + 1,
+                                    })}
+                                    className={`${fieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
+                                >
+                                    {REP_MODES.map((mode) => (
+                                        <option
+                                            key={mode}
+                                            value={mode}
+                                        >
+                                            {t(`reps.${mode}`)}
+                                        </option>
+                                    ))}
+                                </select>
+                                {/* Both number fields are always rendered, so the columns
                             stay aligned row by row; the mode says which one counts. */}
-                            <input
-                                type="number"
-                                min={REPS.min}
-                                max={REPS.max}
-                                value={set.repMin}
-                                onChange={(event) =>
-                                    updateSet(setIndex, {
-                                        repMin: event.target.value,
-                                    })
-                                }
-                                placeholder={t('today.reps')}
-                                aria-label={t('exercise.repMin', {
-                                    e,
-                                    n: setIndex + 1,
-                                })}
-                                className={`${numberClass(wrong.min)} ${
-                                    set.mode === 'amrap' ? unusedClass : ''
-                                }`}
-                            />
-                            <input
-                                type="number"
-                                min={REPS.min}
-                                max={REPS.max}
-                                value={set.repMax}
-                                onChange={(event) =>
-                                    updateSet(setIndex, {
-                                        repMax: event.target.value,
-                                    })
-                                }
-                                placeholder={t('today.reps')}
-                                aria-label={t('exercise.repMax', {
-                                    e,
-                                    n: setIndex + 1,
-                                })}
-                                className={`${numberClass(wrong.max)} ${
-                                    set.mode === 'range' ? '' : unusedClass
-                                }`}
-                            />
+                                <input
+                                    type="number"
+                                    min={REPS.min}
+                                    max={REPS.max}
+                                    value={set.repMin}
+                                    onChange={(event) =>
+                                        updateSet(setIndex, {
+                                            repMin: event.target.value,
+                                        })
+                                    }
+                                    placeholder={t('today.reps')}
+                                    aria-label={t('exercise.repMin', {
+                                        e,
+                                        n: setIndex + 1,
+                                    })}
+                                    className={`${numberClass(wrong.min)} ${
+                                        set.mode === 'amrap' ? unusedClass : ''
+                                    }`}
+                                />
+                                <input
+                                    type="number"
+                                    min={REPS.min}
+                                    max={REPS.max}
+                                    value={set.repMax}
+                                    onChange={(event) =>
+                                        updateSet(setIndex, {
+                                            repMax: event.target.value,
+                                        })
+                                    }
+                                    placeholder={t('today.reps')}
+                                    aria-label={t('exercise.repMax', {
+                                        e,
+                                        n: setIndex + 1,
+                                    })}
+                                    className={`${numberClass(wrong.max)} ${
+                                        set.mode === 'range' ? '' : unusedClass
+                                    }`}
+                                />
+                                {/* Wrapped rather than "hidden" bolted onto
+                                removeButtonClass, which already sets flex:
+                                two display utilities on one element and the
+                                winner is whatever order Tailwind emits them
+                                in, not the order written here. */}
+                                <div className="hidden md:order-last md:block">
+                                    <button
+                                        type="button"
+                                        // The exercise needs at least one set, so the last row stays.
+                                        disabled={exercise.sets.length === 1}
+                                        onClick={() =>
+                                            onChange({
+                                                sets: exercise.sets.filter(
+                                                    (_, i) => i !== setIndex
+                                                ),
+                                            })
+                                        }
+                                        aria-label={t('exercise.removeSet', {
+                                            e,
+                                            n: setIndex + 1,
+                                        })}
+                                        className={removeButtonClass}
+                                    >
+                                        <X
+                                            size={14}
+                                            aria-hidden
+                                        />
+                                    </button>
+                                </div>
+                                <input
+                                    list={techniqueListId}
+                                    value={set.technique}
+                                    onChange={(event) =>
+                                        updateSet(setIndex, {
+                                            technique: event.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        'exercise.techniquePlaceholder'
+                                    )}
+                                    aria-label={t('exercise.technique', {
+                                        e,
+                                        n: setIndex + 1,
+                                    })}
+                                    // On its own line below md, inset to sit under
+                                    // the columns rather than under the whole card:
+                                    // left clears the set number (w-4 + gap-1.5 =
+                                    // 1.375rem), so it starts where the rep type
+                                    // does; from md up the removed × no longer
+                                    // needs clearing on the right.
+                                    className={`${fieldClass} ml-[1.375rem] min-w-40 basis-full md:ml-0 md:min-w-0 md:flex-1 md:basis-auto`}
+                                />
+                            </div>
                             <button
                                 type="button"
-                                // The exercise needs at least one set, so the last row stays.
                                 disabled={exercise.sets.length === 1}
                                 onClick={() =>
                                     onChange({
@@ -231,37 +309,15 @@ export function ExerciseFields({
                                     e,
                                     n: setIndex + 1,
                                 })}
-                                // Pushed to the right edge on a phone, where the
-                                // technique below it is full width: the block
-                                // ends on one line instead of two ragged ones.
-                                className={`${removeButtonClass} ml-auto md:order-last md:ml-0`}
+                                // Same left inset as the technique input above it.
+                                className={`${labelClass} hover:text-danger ml-[1.375rem] flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30 md:hidden`}
                             >
                                 <X
                                     size={14}
                                     aria-hidden
                                 />
+                                {t('exercise.removeSetShort')}
                             </button>
-                            <input
-                                list={techniqueListId}
-                                value={set.technique}
-                                onChange={(event) =>
-                                    updateSet(setIndex, {
-                                        technique: event.target.value,
-                                    })
-                                }
-                                placeholder={t('exercise.techniquePlaceholder')}
-                                aria-label={t('exercise.technique', {
-                                    e,
-                                    n: setIndex + 1,
-                                })}
-                                // On its own line below md, inset to sit under
-                                // the columns rather than under the whole card:
-                                // left clears the set number (w-4 + gap-1.5 =
-                                // 1.375rem), right clears the × (min-w-11 +
-                                // gap-1.5 = 3.125rem), so it starts where the
-                                // rep type does and ends where the name above does.
-                                className={`${fieldClass} mr-[3.125rem] ml-[1.375rem] min-w-40 basis-full md:mr-0 md:ml-0 md:min-w-0 md:flex-1 md:basis-auto`}
-                            />
                         </div>
                     );
                 })}

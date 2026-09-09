@@ -39,6 +39,11 @@ const flagged = {
 const save = () => screen.getByRole('button', { name: /Save changes/ });
 const undo = () => screen.getByRole('button', { name: 'Undo changes' });
 const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
+// Same action exists as both a desktop icon button and a mobile text link;
+// only one is ever visible, but jsdom does not evaluate the media query that
+// hides the other, so either one works to fire the click.
+const deleteExercise = (e: number) =>
+    screen.getAllByRole('button', { name: `Delete exercise ${e}` })[0];
 
 describe('WorkoutEditor', () => {
     it('shows one form per exercise of the day', () => {
@@ -60,9 +65,7 @@ describe('WorkoutEditor', () => {
             />
         );
         expect(screen.getByLabelText('Exercise 1 name')).toHaveValue('');
-        expect(
-            screen.getByRole('button', { name: 'Delete exercise 1' })
-        ).toBeDisabled();
+        expect(deleteExercise(1)).toBeDisabled();
     });
 
     it('adds an exercise to the draft without saving anything', () => {
@@ -77,9 +80,7 @@ describe('WorkoutEditor', () => {
         expect(screen.getByLabelText('Exercise 2 name')).toHaveValue('');
         expect(saveExercises).not.toHaveBeenCalled();
         // Two of them now, so either can go.
-        expect(
-            screen.getByRole('button', { name: 'Delete exercise 1' })
-        ).toBeEnabled();
+        expect(deleteExercise(1)).toBeEnabled();
     });
 
     it('only offers to save once something has changed', () => {
@@ -102,9 +103,7 @@ describe('WorkoutEditor', () => {
         render(<WorkoutEditor {...base} />);
         fireEvent.click(addExercise());
         expect(save()).toBeEnabled();
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Delete exercise 2' })
-        );
+        fireEvent.click(deleteExercise(2));
         expect(save()).toBeDisabled();
     });
 

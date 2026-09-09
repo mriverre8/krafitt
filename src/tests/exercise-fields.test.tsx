@@ -105,17 +105,24 @@ describe('ExerciseFields', () => {
         );
         expect(onChange.mock.calls[0][0].sets).toHaveLength(3);
 
+        // Same action exists as both a desktop icon button and a mobile text
+        // link; only one is ever visible, but jsdom does not evaluate the
+        // media query that hides the other.
         fireEvent.click(
-            screen.getByRole('button', { name: 'Exercise 1, remove set 2' })
+            screen.getAllByRole('button', {
+                name: 'Exercise 1, remove set 2',
+            })[0]
         );
         expect(onChange.mock.calls[1][0].sets).toEqual([draft.sets[0]]);
     });
 
     it('keeps the last set of the exercise', () => {
         fields({ exercise: { ...draft, sets: [draft.sets[0]] } });
-        expect(
-            screen.getByRole('button', { name: 'Exercise 1, remove set 1' })
-        ).toBeDisabled();
+        for (const button of screen.getAllByRole('button', {
+            name: 'Exercise 1, remove set 1',
+        })) {
+            expect(button).toBeDisabled();
+        }
     });
 
     // jsdom has no Tailwind, so the utility class is what we can assert on.
@@ -132,16 +139,21 @@ describe('ExerciseFields', () => {
     it('removes the whole exercise, unless it is the only one', () => {
         const onRemove = vi.fn();
         const { unmount } = fields({ onRemove });
+        // Same action exists as both a desktop icon button and a mobile text
+        // link; only one is ever visible, but jsdom does not evaluate the
+        // media query that hides the other.
         fireEvent.click(
-            screen.getByRole('button', { name: 'Delete exercise 1' })
+            screen.getAllByRole('button', { name: 'Delete exercise 1' })[0]
         );
         expect(onRemove).toHaveBeenCalled();
         unmount();
 
         fields({ canRemove: false });
-        expect(
-            screen.getByRole('button', { name: 'Delete exercise 1' })
-        ).toBeDisabled();
+        for (const button of screen.getAllByRole('button', {
+            name: 'Delete exercise 1',
+        })) {
+            expect(button).toBeDisabled();
+        }
     });
 
     describe('with a fault to point at', () => {

@@ -105,6 +105,8 @@ export const en = {
     'exercise.undoShort': 'Undo',
     'exercise.addShort': 'Add',
     'exercise.delete': 'Delete exercise {e}',
+    'exercise.removeShort': 'Delete exercise',
+    'exercise.removeSetShort': 'Remove set',
 
     'reps.range': 'Range',
     'reps.fixed': 'Fixed',

@@ -137,14 +137,10 @@ export function WorkoutEditor({
 
             <FormError message={state.error} />
 
-            {/* Save is the heavy one and takes the row; undoing and adding an
-                exercise sit either side as secondary actions, because neither of
-                them touches anything but the draft.
-
-                Three of them will not share one line on a phone — squeezed
-                between the other two, Save wrapped onto a second line of its
-                own. Below md it takes a full row and the other two split the
-                one under it, so all three keep their words and a whole finger. */}
+            {/* Undo and adding an exercise are the secondary actions, since
+                neither touches anything but the draft; Save is the heavy one
+                and always comes last, on its own full-width row below them,
+                same on every width. */}
             <div className="border-line mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
                 <button
                     type="button"
@@ -156,7 +152,7 @@ export function WorkoutEditor({
                     // only what is drawn shortens, and the short form is a prefix
                     // of it, so what is read out still matches what is seen.
                     aria-label={t('exercise.undo')}
-                    className={`${ghostClass} order-2 flex flex-1 items-center justify-center gap-1.5 md:order-1 md:flex-none`}
+                    className={`${ghostClass} order-1 flex flex-1 items-center justify-center gap-1.5`}
                 >
                     <Undo2
                         size={14}
@@ -169,24 +165,12 @@ export function WorkoutEditor({
                 </button>
                 <button
                     type="button"
-                    disabled={pending || plan === saved}
-                    onClick={save}
-                    className={`${primaryClass} order-1 flex basis-full items-center justify-center gap-2 md:order-2 md:flex-1 md:basis-auto`}
-                >
-                    <Save
-                        size={16}
-                        aria-hidden
-                    />
-                    {t('exercise.saveChanges')}
-                </button>
-                <button
-                    type="button"
                     disabled={drafts.length >= EXERCISES.max}
                     onClick={() =>
                         setDrafts((current) => [...current, emptyExercise])
                     }
                     aria-label={t('exercise.add')}
-                    className={`${ghostClass} order-3 flex flex-1 items-center justify-center gap-1.5 md:flex-none`}
+                    className={`${ghostClass} order-2 flex flex-1 items-center justify-center gap-1.5`}
                 >
                     <Plus
                         size={14}
@@ -196,6 +180,18 @@ export function WorkoutEditor({
                     <span className="hidden md:inline">
                         {t('exercise.add')}
                     </span>
+                </button>
+                <button
+                    type="button"
+                    disabled={pending || plan === saved}
+                    onClick={save}
+                    className={`${primaryClass} order-3 flex basis-full items-center justify-center gap-2`}
+                >
+                    <Save
+                        size={16}
+                        aria-hidden
+                    />
+                    {t('exercise.saveChanges')}
                 </button>
             </div>
 
