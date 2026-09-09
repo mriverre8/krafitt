@@ -65,6 +65,17 @@ export async function todayWorkout(userId: string) {
         }),
     ]);
 
+    // The day the user finished stays on screen until the next fetch: this is
+    // where it is left behind, not in `logSet`. Guarded on the cursor we read, so
+    // a concurrent skip cannot make it jump two days.
+    if (session?.completedAt) {
+        await prisma.routine.updateMany({
+            where: { id: routine.id, cursor: routine.cursor },
+            data: { cursor: { increment: 1 } },
+        });
+        return todayWorkout(userId);
+    }
+
     return {
         routine,
         finished: false as const,

@@ -63,10 +63,12 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     const doneSets = all.filter((s) =>
         isSetFilled(logs, s.exerciseId, s.setIndex)
     ).length;
-    const sessionProgress = t('today.progress', {
-        done: doneSets,
-        total: all.length,
-    });
+    // The day stays on screen after the last set, so the counter says so instead
+    // of reading n/n.
+    const sessionProgress =
+        all.length > 0 && doneSets === all.length
+            ? t('today.done')
+            : t('today.progress', { done: doneSets, total: all.length });
 
     return (
         <div className="space-y-4">

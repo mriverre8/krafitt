@@ -374,20 +374,15 @@ export async function logSet(
     });
 
     (logs[exerciseId] ??= {})[setIndex] = { weight, reps };
+    // Only the session is closed here. Moving the cursor is `todayWorkout`'s job
+    // on the next fetch, so finishing a day costs no extra round trip: the client
+    // already holds the logs, and revalidating would refetch the whole screen.
     if (isSessionComplete(session.workout.exercises, logs)) {
-        await prisma.$transaction([
-            prisma.workoutSession.update({
-                where: { id: session.id },
-                data: { completedAt: new Date() },
-            }),
-            prisma.routine.update({
-                where: { id: session.routineId },
-                data: { cursor: { increment: 1 } },
-            }),
-        ]);
+        await prisma.workoutSession.update({
+            where: { id: session.id },
+            data: { completedAt: new Date() },
+        });
     }
-
-    revalidatePath('/');
 }
 
 /** Move to the next day without training. */

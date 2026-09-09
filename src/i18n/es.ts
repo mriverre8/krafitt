@@ -41,6 +41,7 @@ export const es: Dict = {
 
     'today.week': 'Semana {week} de {total}',
     'today.progress': '{done}/{total} series',
+    'today.done': 'Entrenamiento completado',
     'today.noExercises': 'Este entrenamiento aún no tiene ejercicios.',
     'today.skip': 'Saltar al siguiente día',
     'today.set': 'Serie {n}',

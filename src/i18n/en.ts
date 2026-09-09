@@ -41,6 +41,7 @@ export const en = {
 
     'today.week': 'Week {week} of {total}',
     'today.progress': '{done}/{total} sets',
+    'today.done': 'Workout complete',
     'today.noExercises': 'This workout has no exercises yet.',
     'today.skip': 'Skip to next day',
     'today.set': 'Set {n}',
