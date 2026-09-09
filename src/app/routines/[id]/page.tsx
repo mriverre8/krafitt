@@ -6,6 +6,7 @@ import {
 } from '@/app/actions';
 import { ActionButton } from '@/components/action-button';
 import { AddWorkoutForm } from '@/components/add-workout-form';
+import { BackButton } from '@/components/back-button';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
@@ -38,7 +39,8 @@ export default async function RoutinePage({
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="display text-6xl">{routine.name}</h1>
+                <BackButton fallback="/routines" />
+                <h1 className="display text-6xl mt-5">{routine.name}</h1>
                 <p className="eyebrow text-muted mt-2">
                     {t('routine.meta', {
                         weeks: routine.durationWeeks,

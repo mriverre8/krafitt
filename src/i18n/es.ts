@@ -13,6 +13,7 @@ export const es: Dict = {
     'nav.settings': 'Configuración',
     'nav.menu': 'Menú',
     'nav.profile': 'Perfil',
+    'nav.back': 'Volver',
 
     'landing.feature1':
         'Monta rutinas con sus días, ejercicios, series, rango de repeticiones y técnica.',

@@ -13,6 +13,7 @@ export const ca: Dict = {
     'nav.settings': 'Configuració',
     'nav.menu': 'Menú',
     'nav.profile': 'Perfil',
+    'nav.back': 'Tornar',
 
     'landing.feature1':
         'Munta rutines amb els seus dies, exercicis, sèries, rang de repeticions i tècnica.',

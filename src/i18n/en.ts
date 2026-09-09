@@ -13,6 +13,7 @@ export const en = {
     'nav.settings': 'Settings',
     'nav.menu': 'Menu',
     'nav.profile': 'Profile',
+    'nav.back': 'Back',
 
     'landing.feature1':
         'Build routines with their days, exercises, sets, rep ranges and technique.',
