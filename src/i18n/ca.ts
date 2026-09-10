@@ -145,6 +145,7 @@ export const ca: Dict = {
     'error.workoutName': 'Posa-li un nom al dia',
     'error.routineIncomplete': 'Completa la rutina abans de marcar-la activa',
     'error.routineFinished': 'Aquesta rutina ja està acabada',
+    'error.routineStarted': 'Una rutina ja començada no es pot editar',
     'error.sets': 'Sèries: entre 1 i 20',
     'error.exercises': 'Exercicis: entre 1 i 30',
     'error.repRange': 'El rang de repeticions no és vàlid',

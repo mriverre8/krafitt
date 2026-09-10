@@ -51,6 +51,20 @@ export function isRoutineFinished(
     return total > 0 && cursor >= total;
 }
 
+/**
+ * A routine that has been lived in is frozen: its plan is what the sessions
+ * were logged against, and what the cursor is counting. Being active is enough
+ * on its own — training starts the moment it goes live. Only a routine still on
+ * the shelf, untouched, can be rewritten.
+ */
+export function isRoutineLocked(routine: {
+    isActive: boolean;
+    cursor: number;
+    sessionCount: number;
+}): boolean {
+    return routine.isActive || routine.cursor > 0 || routine.sessionCount > 0;
+}
+
 /** Every set of the workout, in the order they must be filled in. */
 export function flatSets(exercises: ExercisePlan[]): FlatSet[] {
     return exercises.flatMap((e, exerciseIndex) =>

@@ -149,6 +149,7 @@ export const en = {
     'error.workoutName': 'Give the day a name',
     'error.routineIncomplete': 'Finish the routine before setting it active',
     'error.routineFinished': 'This routine is already finished',
+    'error.routineStarted': 'A routine you have started cannot be edited',
     'error.sets': 'Sets: between 1 and 20',
     'error.exercises': 'Exercises: between 1 and 30',
     'error.repRange': 'The rep range is not valid',

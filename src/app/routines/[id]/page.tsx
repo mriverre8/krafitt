@@ -3,7 +3,9 @@ import {
     deleteRoutine,
     deleteWorkout,
     saveExercises,
+    setActiveRoutine,
 } from '@/app/actions';
+import { ActionButton } from '@/components/action-button';
 import { AddWorkoutForm } from '@/components/add-workout-form';
 import { BackButton } from '@/components/back-button';
 import { DeleteRoutineButton } from '@/components/delete-routine-button';
@@ -11,12 +13,13 @@ import {
     EditModeProvider,
     EditModeToggle,
     WhenEditing,
+    WhenNotEditing,
 } from '@/components/edit-mode';
 import { RoutineDays } from '@/components/routine-days';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
-import { isRoutineFinished } from '@/lib/progress';
+import { isRoutineFinished, isRoutineLocked } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
 import {
@@ -39,15 +42,15 @@ export default async function RoutinePage({
     if (!routine) notFound();
 
     const complete = isRoutineComplete(routine, t);
-    // Nothing left to train: the plan is what those sessions were logged
-    // against, so it is read-only from here on. Deleting it whole still stands,
-    // and this page is the only place that offers it — so the delete link comes
-    // out of edit mode rather than leaving with it.
     const finished = isRoutineFinished(
         routine.cursor,
         routine.workouts.length,
         routine.durationWeeks
     );
+    const locked = isRoutineLocked({
+        ...routine,
+        sessionCount: routine._count.sessions,
+    });
 
     return (
         <EditModeProvider>
@@ -63,7 +66,7 @@ export default async function RoutinePage({
                             })}
                         </p>
                         <div className="flex shrink-0 items-center gap-4">
-                            {finished ? (
+                            {locked ? (
                                 <DeleteRoutineButton
                                     name={routine.name}
                                     onDelete={deleteRoutine.bind(
@@ -107,16 +110,32 @@ export default async function RoutinePage({
                         />
                         {t('routines.active')}
                     </p>
+                ) : !complete ? (
+                    <p
+                        className={`${badgeClass} border-line text-muted border-2 border-dashed`}
+                    >
+                        {t('routines.incomplete')}
+                    </p>
                 ) : (
-                    complete && (
-                        <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
-                            <CircleCheck
-                                size={16}
-                                aria-hidden
-                            />
-                            {t('validate.ok')}
-                        </p>
-                    )
+                    <div className="flex flex-wrap items-center gap-4">
+                        {!locked && (
+                            <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
+                                <CircleCheck
+                                    size={16}
+                                    aria-hidden
+                                />
+                                {t('validate.ok')}
+                            </p>
+                        )}
+                        <WhenNotEditing>
+                            <ActionButton
+                                action={setActiveRoutine.bind(null, routine.id)}
+                                className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
+                            >
+                                {t('routines.markActive')}
+                            </ActionButton>
+                        </WhenNotEditing>
+                    </div>
                 )}
                 {routine.workouts.length === 0 && (
                     <p className="text-danger text-sm">

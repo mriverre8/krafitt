@@ -1,5 +1,6 @@
 import {
     isRoutineFinished,
+    isRoutineLocked,
     isSessionComplete,
     isSetEnabled,
     positionFromCursor,
@@ -51,6 +52,25 @@ describe('isRoutineFinished', () => {
     it('never calls an empty routine finished', () => {
         expect(isRoutineFinished(0, 0, 3)).toBe(false);
         expect(isRoutineFinished(10, 0, 3)).toBe(false);
+    });
+});
+
+describe('isRoutineLocked', () => {
+    const shelved = { isActive: false, cursor: 0, sessionCount: 0 };
+
+    it('leaves an untouched routine editable', () => {
+        expect(isRoutineLocked(shelved)).toBe(false);
+    });
+
+    it('locks it as soon as it is being trained', () => {
+        expect(isRoutineLocked({ ...shelved, isActive: true })).toBe(true);
+        expect(isRoutineLocked({ ...shelved, cursor: 1 })).toBe(true);
+    });
+
+    // Activated, the first day half logged, then another routine took over:
+    // the cursor never moved, but those sets point at these exercises.
+    it('locks one that was left behind with sets logged against it', () => {
+        expect(isRoutineLocked({ ...shelved, sessionCount: 1 })).toBe(true);
     });
 });
 

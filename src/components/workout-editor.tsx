@@ -58,6 +58,8 @@ export function WorkoutEditor({
         highlight ? 'validate.hideFields' : 'validate.showFields'
     );
 
+    const showProblems = editing && problems.length > 0;
+
     // What the server holds. Its own answer to the last save outranks the props,
     // which lag behind it and sometimes never move at all: a technique left blank
     // is stored as the default, which can leave the day exactly as it was.
@@ -132,7 +134,7 @@ export function WorkoutEditor({
                 )}
             </div>
 
-            {problems.length > 0 && (
+            {showProblems && (
                 <div className="mt-3 flex flex-col items-start gap-2 md:flex-row md:justify-between">
                     <ul className="text-danger list-disc space-y-1 pl-5 text-sm md:pt-1.5">
                         {problems.map((problem, index) => (
@@ -165,7 +167,7 @@ export function WorkoutEditor({
 
             <div
                 className={`space-y-3 ${
-                    problems.length > 0 ? 'mt-2 md:mt-4' : 'mt-4'
+                    showProblems ? 'mt-2 md:mt-4' : 'mt-4'
                 }`}
             >
                 {drafts.map((draft, index) => (
@@ -174,7 +176,9 @@ export function WorkoutEditor({
                         exercise={draft}
                         index={index}
                         fault={
-                            highlight && draft.id ? faults[draft.id] : undefined
+                            showProblems && highlight && draft.id
+                                ? faults[draft.id]
+                                : undefined
                         }
                         readOnly={!editing}
                         onChange={(patch) => update(index, patch)}

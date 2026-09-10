@@ -433,6 +433,25 @@ describe('WorkoutEditor, before Edit is pressed', () => {
         ).toHaveAttribute('aria-readonly', 'true');
     });
 
+    // Nothing to act on here: the list is a note to whoever writes the day.
+    it('keeps what the day is missing out of sight', () => {
+        rtlRender(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        expect(
+            screen.queryByText('Exercise 1: give it a name.')
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Show errors' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Exercise 1 name')).not.toHaveClass(
+            'border-danger'
+        );
+    });
+
     it('hides everything that would change the day', () => {
         rtlRender(<WorkoutEditor {...base} />);
         for (const name of [

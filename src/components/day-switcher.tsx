@@ -4,6 +4,7 @@ import { useT } from '@/i18n/use-t';
 import { iconButtonClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
+import { useEditMode } from './edit-mode';
 
 export type DayTab = {
     id: string;
@@ -22,7 +23,8 @@ export type DayTab = {
  * volt fills the plate you are on, and the rule underneath — drawn outside the
  * fill, always against the page — says whether that day is trainable yet, or
  * yellow while it is edited and unsaved. Colour is never the only carrier: the
- * state is in the tab's label too.
+ * state is in the tab's label too. Both appear only while editing; the rule is
+ * a verdict on a draft, and reading a routine there is no draft to judge.
  *
  * Numbers only. The day's name is the heading right below, so printing it here
  * as well would say the same thing twice and make the rack too wide to scan.
@@ -40,6 +42,7 @@ export function DaySwitcher({
     onSelect: (index: number) => void;
 }) {
     const t = useT();
+    const editing = useEditMode();
     const listRef = useRef<HTMLDivElement>(null);
     const last = days.length - 1;
 
@@ -133,11 +136,13 @@ export function DaySwitcher({
                                     n: position + 1,
                                     name: day.name,
                                 }) +
-                                (day.unsaved
-                                    ? `, ${t('routine.unsaved')}`
-                                    : day.ready
-                                      ? ''
-                                      : `, ${t('routines.incomplete')}`)
+                                (!editing
+                                    ? ''
+                                    : day.unsaved
+                                      ? `, ${t('routine.unsaved')}`
+                                      : day.ready
+                                        ? ''
+                                        : `, ${t('routines.incomplete')}`)
                             }
                             title={day.name}
                             className="lift group shrink-0 rounded-md"
@@ -152,16 +157,18 @@ export function DaySwitcher({
                             >
                                 {position + 1}
                             </span>
-                            <span
-                                aria-hidden
-                                className={`mt-1 block h-[3px] rounded-xs ${
-                                    day.unsaved
-                                        ? 'bg-draft'
-                                        : day.ready
-                                          ? 'bg-surge'
-                                          : 'bg-danger'
-                                }`}
-                            />
+                            {editing && (
+                                <span
+                                    aria-hidden
+                                    className={`mt-1 block h-[3px] rounded-xs ${
+                                        day.unsaved
+                                            ? 'bg-draft'
+                                            : day.ready
+                                              ? 'bg-surge'
+                                              : 'bg-danger'
+                                    }`}
+                                />
+                            )}
                         </button>
                     );
                 })}

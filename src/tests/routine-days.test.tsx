@@ -40,6 +40,16 @@ const panelOf = (name: string) =>
 const tab = (n: number) =>
     screen.getByRole('tab', { name: new RegExp(`^Day ${n},`) });
 
+/** The rack with the real toggle above it: everything it says about a day is
+    said while editing only. */
+const renderEditing = () =>
+    render(
+        <EditModeProvider>
+            <EditModeToggle />
+            <RoutineDays {...base} />
+        </EditModeProvider>
+    );
+
 describe('RoutineDays', () => {
     it('shows the first day and hides the rest', () => {
         render(<RoutineDays {...base} />);
@@ -100,20 +110,24 @@ describe('RoutineDays', () => {
 
     // The rack is a status board, and the colour on it is never the only teller.
     it('names the days that are not trainable yet', () => {
-        render(<RoutineDays {...base} />);
+        renderEditing();
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
         expect(tab(2)).toHaveAccessibleName('Day 2, Pull A, Incomplete');
         expect(tab(1)).toHaveAccessibleName('Day 1, Push A');
+    });
+
+    // Reading a routine, the rack is only a way to walk between the days: no
+    // rule under the plates and no verdict in their names.
+    it('keeps the verdicts out of read mode', () => {
+        render(<RoutineDays {...base} />);
+        expect(tab(2)).toHaveAccessibleName('Day 2, Pull A');
+        expect(tab(2).lastElementChild).toHaveTextContent('2');
     });
 
     // Trainable-or-not is a verdict on what was saved, so an edited day drops
     // both colours until it is saved again.
     it('marks a day yellow while its draft is unsaved', () => {
-        render(
-            <EditModeProvider>
-                <EditModeToggle />
-                <RoutineDays {...base} />
-            </EditModeProvider>
-        );
+        renderEditing();
         fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
 
         const rule = (n: number) => tab(n).lastElementChild;

@@ -120,6 +120,11 @@ export function WhenEditing({ children }: { children: ReactNode }) {
     return useEditMode() ? children : null;
 }
 
+/** Its children step aside while editing. */
+export function WhenNotEditing({ children }: { children: ReactNode }) {
+    return useEditMode() ? null : children;
+}
+
 /** Set like the delete link it shares a line with, so the two read as one pair
     of routine-level moves — pulse rather than danger: this one breaks nothing
     that was saved. */
