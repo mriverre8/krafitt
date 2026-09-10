@@ -4,6 +4,7 @@ import type { DayAction } from '@/lib/forms';
 import type { ExerciseFault } from '@/lib/validate';
 import { useId, useState } from 'react';
 import { DaySwitcher } from './day-switcher';
+import { useDirtyDays } from './edit-mode';
 import type { ExerciseView } from './workout-exercise';
 import { WorkoutEditor } from './workout-editor';
 
@@ -35,6 +36,7 @@ export function RoutineDays({
     onDeleteWorkout: (workoutId: string) => Promise<void>;
 }) {
     const baseId = useId();
+    const dirtyDays = useDirtyDays();
     const [selected, setSelected] = useState(0);
     // Deleting a day can leave the selection past the end of a shorter list.
     const index = Math.min(selected, Math.max(days.length - 1, 0));
@@ -48,6 +50,7 @@ export function RoutineDays({
                     id: day.id,
                     name: day.name,
                     ready: day.problems.length === 0,
+                    unsaved: dirtyDays.has(day.id),
                 }))}
                 index={index}
                 baseId={baseId}

@@ -10,7 +10,9 @@
    background. So every accent that has to be *read* — links, focus rings,
    errors, hover — is pulse, a cold blue that clears 4.5:1 in both themes and
    sits opposite volt on the wheel, so the two never blur together.
-   Surge (green) is reserved for a set you already own, and nothing else. */
+   Surge (green) is reserved for a set you already own, and nothing else.
+   Draft (yellow) is the one "not finished with this yet" colour: a day you
+   have edited and not saved. It is never text — only a rule or a fill. */
 :root {
   --bg: #f7f5f2;
   --surface: #ffffff;
@@ -31,6 +33,12 @@
 
   --danger: #c01722;
   --on-danger: #ffffff;
+
+  /* Gold rather than the darker goldenrod the other light-theme accents would
+     suggest: at that value yellow just reads brown against this background.
+     Kept clear of volt's red-orange so the rule never blurs into the filled
+     plate above it. */
+  --draft: #dca000;
 
   --glow: color-mix(in oklab, var(--volt) 18%, transparent);
 }
@@ -58,6 +66,8 @@
   --danger: #ff5c72;
   --on-danger: #1a0508;
 
+  --draft: #ffd24d;
+
   --glow: color-mix(in oklab, var(--volt) 14%, transparent);
 }
 
@@ -78,6 +88,7 @@
   --color-on-surge: var(--on-surge);
   --color-danger: var(--danger);
   --color-on-danger: var(--on-danger);
+  --color-draft: var(--draft);
 
   --font-display: var(--font-barlow-condensed), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;

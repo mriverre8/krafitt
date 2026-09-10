@@ -85,12 +85,17 @@ export const en = {
     'routine.dayTab': 'Day {n}, {name}',
     'routine.prevDay': 'Previous day',
     'routine.nextDay': 'Next day',
+    'routine.unsaved': 'unsaved changes',
     'routine.deleteDay': 'Delete day',
     'routine.deleteDayConfirm': 'Delete {name} and its exercises?',
     'routine.noWorkouts': 'This routine has no workouts yet.',
     'routine.dayPlaceholder': 'New day (e.g. Push A)',
     'routine.dayLabel': 'Day name',
     'routine.addDay': 'Add',
+    'routine.edit': 'Edit',
+    'routine.doneEditing': 'Done',
+    'routine.discardConfirm':
+        'You have changes that were never saved. Leave editing and lose them?',
     'routine.delete': 'Delete routine',
     'routine.deleteConfirm': 'Delete the routine {name}? All progress is lost.',
 

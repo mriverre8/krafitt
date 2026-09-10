@@ -5,7 +5,14 @@ import { iconButtonClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
 
-export type DayTab = { id: string; name: string; ready: boolean };
+export type DayTab = {
+    id: string;
+    name: string;
+    ready: boolean;
+    /** Edited and not saved yet, so `ready` describes a day that no longer
+        exists anywhere but the draft. */
+    unsaved: boolean;
+};
 
 /**
  * The days of a routine as a rack of numbered plates: one is on screen at a
@@ -13,8 +20,9 @@ export type DayTab = { id: string; name: string; ready: boolean };
  *
  * Two channels, deliberately kept apart so neither has to fight the other:
  * volt fills the plate you are on, and the rule underneath — drawn outside the
- * fill, always against the page — says whether that day is trainable yet.
- * Colour is never the only carrier: the state is in the tab's label too.
+ * fill, always against the page — says whether that day is trainable yet, or
+ * yellow while it is edited and unsaved. Colour is never the only carrier: the
+ * state is in the tab's label too.
  *
  * Numbers only. The day's name is the heading right below, so printing it here
  * as well would say the same thing twice and make the rack too wide to scan.
@@ -134,9 +142,11 @@ export function DaySwitcher({
                                     n: position + 1,
                                     name: day.name,
                                 }) +
-                                (day.ready
-                                    ? ''
-                                    : `, ${t('routines.incomplete')}`)
+                                (day.unsaved
+                                    ? `, ${t('routine.unsaved')}`
+                                    : day.ready
+                                      ? ''
+                                      : `, ${t('routines.incomplete')}`)
                             }
                             title={day.name}
                             className="lift group shrink-0 rounded-md"
@@ -151,10 +161,19 @@ export function DaySwitcher({
                             >
                                 {position + 1}
                             </span>
+                            {/* Yellow outranks both: while a day is unsaved,
+                                trainable-or-not is a verdict on something the
+                                server no longer holds, so the rule says "you
+                                are not finished here" instead of answering a
+                                question that is out of date. */}
                             <span
                                 aria-hidden
                                 className={`mt-1 block h-[3px] rounded-xs ${
-                                    day.ready ? 'bg-surge' : 'bg-danger'
+                                    day.unsaved
+                                        ? 'bg-draft'
+                                        : day.ready
+                                          ? 'bg-surge'
+                                          : 'bg-danger'
                                 }`}
                             />
                         </button>

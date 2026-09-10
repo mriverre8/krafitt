@@ -92,6 +92,7 @@ export function ExerciseFields({
     exercise,
     index,
     fault,
+    readOnly,
     onChange,
     onRemove,
     canRemove,
@@ -101,6 +102,9 @@ export function ExerciseFields({
     /** The fields to paint red, or nothing while the eye is off. Comes from the
         day's own errors, so it never flags something only the draft knows. */
     fault?: ExerciseFault;
+    /** The routine is being read, not edited: the fields are locked and the
+        buttons that add or drop rows are gone. */
+    readOnly?: boolean;
     onChange: (patch: Partial<ExerciseDraft>) => void;
     onRemove: () => void;
     canRemove: boolean;
@@ -139,6 +143,7 @@ export function ExerciseFields({
                 a card-level action and waits at the foot with the other one. */}
             <input
                 value={exercise.name}
+                readOnly={readOnly}
                 onChange={(event) => onChange({ name: event.target.value })}
                 aria-label={t('exercise.nameLabel', { e })}
                 placeholder={t('exercise.namePlaceholder')}
@@ -182,29 +187,31 @@ export function ExerciseFields({
                                 >
                                     {t('today.set', { n: setIndex + 1 })}
                                 </p>
-                                <button
-                                    type="button"
-                                    // The exercise needs at least one set, so the last row stays.
-                                    disabled={exercise.sets.length === 1}
-                                    onClick={() =>
-                                        onChange({
-                                            sets: exercise.sets.filter(
-                                                (_, i) => i !== setIndex
-                                            ),
-                                        })
-                                    }
-                                    aria-label={t('exercise.removeSet', {
-                                        e,
-                                        n: setIndex + 1,
-                                    })}
-                                    className={`${labelClass} hover:text-danger flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
-                                >
-                                    <X
-                                        size={14}
-                                        aria-hidden
-                                    />
-                                    {t('exercise.removeSetShort')}
-                                </button>
+                                {!readOnly && (
+                                    <button
+                                        type="button"
+                                        // The exercise needs at least one set, so the last row stays.
+                                        disabled={exercise.sets.length === 1}
+                                        onClick={() =>
+                                            onChange({
+                                                sets: exercise.sets.filter(
+                                                    (_, i) => i !== setIndex
+                                                ),
+                                            })
+                                        }
+                                        aria-label={t('exercise.removeSet', {
+                                            e,
+                                            n: setIndex + 1,
+                                        })}
+                                        className={`${labelClass} hover:text-danger flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
+                                    >
+                                        <X
+                                            size={14}
+                                            aria-hidden
+                                        />
+                                        {t('exercise.removeSetShort')}
+                                    </button>
+                                )}
                             </div>
                             {/* Wraps on a phone (technique drops to its own line) and sits
                             on a single line from md up, where there is room for it. */}
@@ -215,8 +222,15 @@ export function ExerciseFields({
                                 >
                                     {setIndex + 1}
                                 </span>
+                                {/* A <select> has no readOnly, and `disabled`
+                                    would grey it out among fields that only
+                                    stop taking typing — so it is sealed the way
+                                    the others are: nothing to click, nothing to
+                                    tab to, and it still reads as a value. */}
                                 <select
                                     value={set.mode}
+                                    tabIndex={readOnly ? -1 : undefined}
+                                    aria-readonly={readOnly}
                                     onChange={(event) =>
                                         updateSet(setIndex, {
                                             mode: event.target.value as RepMode,
@@ -226,7 +240,9 @@ export function ExerciseFields({
                                         e,
                                         n: setIndex + 1,
                                     })}
-                                    className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
+                                    className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3 ${
+                                        readOnly ? 'pointer-events-none' : ''
+                                    }`}
                                 >
                                     {REP_MODES.map((mode) => (
                                         <option
@@ -244,6 +260,7 @@ export function ExerciseFields({
                                     min={REPS.min}
                                     max={REPS.max}
                                     value={set.repMin}
+                                    readOnly={readOnly}
                                     onChange={(event) =>
                                         updateSet(setIndex, {
                                             repMin: event.target.value,
@@ -263,6 +280,7 @@ export function ExerciseFields({
                                     min={REPS.min}
                                     max={REPS.max}
                                     value={set.repMax}
+                                    readOnly={readOnly}
                                     onChange={(event) =>
                                         updateSet(setIndex, {
                                             repMax: event.target.value,
@@ -282,33 +300,40 @@ export function ExerciseFields({
                                 two display utilities on one element and the
                                 winner is whatever order Tailwind emits them
                                 in, not the order written here. */}
-                                <div className="hidden md:order-last md:block">
-                                    <button
-                                        type="button"
-                                        // The exercise needs at least one set, so the last row stays.
-                                        disabled={exercise.sets.length === 1}
-                                        onClick={() =>
-                                            onChange({
-                                                sets: exercise.sets.filter(
-                                                    (_, i) => i !== setIndex
-                                                ),
-                                            })
-                                        }
-                                        aria-label={t('exercise.removeSet', {
-                                            e,
-                                            n: setIndex + 1,
-                                        })}
-                                        className={removeButtonClass}
-                                    >
-                                        <X
-                                            size={14}
-                                            aria-hidden
-                                        />
-                                    </button>
-                                </div>
+                                {!readOnly && (
+                                    <div className="hidden md:order-last md:block">
+                                        <button
+                                            type="button"
+                                            // The exercise needs at least one set, so the last row stays.
+                                            disabled={
+                                                exercise.sets.length === 1
+                                            }
+                                            onClick={() =>
+                                                onChange({
+                                                    sets: exercise.sets.filter(
+                                                        (_, i) => i !== setIndex
+                                                    ),
+                                                })
+                                            }
+                                            aria-label={t(
+                                                'exercise.removeSet',
+                                                { e, n: setIndex + 1 }
+                                            )}
+                                            className={removeButtonClass}
+                                        >
+                                            <X
+                                                size={14}
+                                                aria-hidden
+                                            />
+                                        </button>
+                                    </div>
+                                )}
                                 <input
-                                    list={techniqueListId}
+                                    list={
+                                        readOnly ? undefined : techniqueListId
+                                    }
                                     value={set.technique}
+                                    readOnly={readOnly}
                                     onChange={(event) =>
                                         updateSet(setIndex, {
                                             technique: event.target.value,
@@ -342,39 +367,42 @@ export function ExerciseFields({
                 one adds to the exercise, one takes the whole thing away. One
                 control at every width now — a full text button is thumb-sized
                 on its own, so the phone no longer needs a second copy. */}
-            <div className="flex items-center justify-between gap-2">
-                <button
-                    type="button"
-                    disabled={exercise.sets.length >= SETS.max}
-                    onClick={() =>
-                        onChange({ sets: [...exercise.sets, emptySet] })
-                    }
-                    aria-label={t('exercise.addSetLabel', { e })}
-                    className={`${labelClass} hover:text-pulse flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
-                >
-                    <Plus
-                        size={14}
-                        aria-hidden
-                    />
-                    {t('exercise.addSet')}
-                </button>
-                <button
-                    type="button"
-                    // The day needs at least one exercise, so the last one stays.
-                    disabled={!canRemove}
-                    onClick={onRemove}
-                    // The number stays in the accessible name: several of these
-                    // cards are on screen and "Delete exercise" names them all.
-                    aria-label={t('exercise.delete', { e })}
-                    className={`${labelClass} hover:text-danger flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
-                >
-                    <X
-                        size={14}
-                        aria-hidden
-                    />
-                    {t('exercise.removeShort')}
-                </button>
-            </div>
+            {!readOnly && (
+                <div className="flex items-center justify-between gap-2">
+                    <button
+                        type="button"
+                        disabled={exercise.sets.length >= SETS.max}
+                        onClick={() =>
+                            onChange({ sets: [...exercise.sets, emptySet] })
+                        }
+                        aria-label={t('exercise.addSetLabel', { e })}
+                        className={`${labelClass} hover:text-pulse flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
+                    >
+                        <Plus
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('exercise.addSet')}
+                    </button>
+                    <button
+                        type="button"
+                        // The day needs at least one exercise, so the last one stays.
+                        disabled={!canRemove}
+                        onClick={onRemove}
+                        // The number stays in the accessible name: several of
+                        // these cards are on screen and "Delete exercise" names
+                        // them all.
+                        aria-label={t('exercise.delete', { e })}
+                        className={`${labelClass} hover:text-danger flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
+                    >
+                        <X
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('exercise.removeShort')}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

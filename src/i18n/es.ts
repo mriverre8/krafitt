@@ -84,12 +84,17 @@ export const es: Dict = {
     'routine.dayTab': 'Día {n}, {name}',
     'routine.prevDay': 'Día anterior',
     'routine.nextDay': 'Día siguiente',
+    'routine.unsaved': 'cambios sin guardar',
     'routine.deleteDay': 'Borrar día',
     'routine.deleteDayConfirm': '¿Borrar {name} y sus ejercicios?',
     'routine.noWorkouts': 'Esta rutina aún no tiene entrenamientos.',
     'routine.dayPlaceholder': 'Nuevo día (ej. Push A)',
     'routine.dayLabel': 'Nombre del día',
     'routine.addDay': 'Añadir',
+    'routine.edit': 'Editar',
+    'routine.doneEditing': 'Listo',
+    'routine.discardConfirm':
+        'Tienes cambios sin guardar. ¿Salir de la edición y perderlos?',
     'routine.delete': 'Borrar rutina',
     'routine.deleteConfirm':
         '¿Borrar la rutina {name}? Se pierde todo el progreso.',

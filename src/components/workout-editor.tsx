@@ -13,6 +13,7 @@ import {
 import { Eye, EyeOff, Plus, Save, Trash, Undo2 } from 'lucide-react';
 import { startTransition, useActionState, useState } from 'react';
 import { ActionButton } from './action-button';
+import { useDiscardSignal, useEditMode } from './edit-mode';
 import {
     emptyExercise,
     ExerciseFields,
@@ -47,6 +48,7 @@ export function WorkoutEditor({
     onDeleteWorkout: (workoutId: string) => Promise<void>;
 }) {
     const t = useT();
+    const editing = useEditMode();
     const [state, formAction, pending] = useActionState(saveExercises, {});
     const [drafts, setDrafts] = useState<ExerciseDraft[]>(() =>
         toDrafts(workout.exercises)
@@ -70,6 +72,16 @@ export function WorkoutEditor({
     if (state !== lastState) {
         setLastState(state);
         if (state.saved) setDrafts(toDrafts(state.saved));
+    }
+
+    // Leaving edit mode throws unsaved work away, having asked first — the
+    // routine does the asking, since it is the whole set of days that is in
+    // question and not this one. Same trick as above: back to the last save.
+    const discarded = useDiscardSignal(workout.id, plan !== saved);
+    const [lastDiscarded, setLastDiscarded] = useState(discarded);
+    if (discarded !== lastDiscarded) {
+        setLastDiscarded(discarded);
+        setDrafts(toDrafts(server));
     }
 
     function update(index: number, patch: Partial<ExerciseDraft>) {
@@ -115,19 +127,21 @@ export function WorkoutEditor({
                     Muted until hovered, and then danger rather than the pulse
                     an icon button would take — nothing that deletes should
                     light up in the colour every other control uses. */}
-                <ActionButton
-                    action={() => onDeleteWorkout(workout.id)}
-                    confirm={t('routine.deleteDayConfirm', {
-                        name: workout.name,
-                    })}
-                    className={`${labelClass} hover:text-danger flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
-                >
-                    <Trash
-                        size={14}
-                        aria-hidden
-                    />
-                    {t('routine.deleteDay')}
-                </ActionButton>
+                {editing && (
+                    <ActionButton
+                        action={() => onDeleteWorkout(workout.id)}
+                        confirm={t('routine.deleteDayConfirm', {
+                            name: workout.name,
+                        })}
+                        className={`${labelClass} hover:text-danger flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
+                    >
+                        <Trash
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('routine.deleteDay')}
+                    </ActionButton>
+                )}
             </div>
 
             {/* What the day is missing, as it currently stands on the server:
@@ -201,6 +215,7 @@ export function WorkoutEditor({
                         fault={
                             highlight && draft.id ? faults[draft.id] : undefined
                         }
+                        readOnly={!editing}
                         onChange={(patch) => update(index, patch)}
                         onRemove={() =>
                             setDrafts((current) =>
@@ -213,20 +228,22 @@ export function WorkoutEditor({
 
                 {/* Shaped like the card it will become, and empty, so the place
                     a new exercise lands is where the button already is. */}
-                <button
-                    type="button"
-                    disabled={drafts.length >= EXERCISES.max}
-                    onClick={() =>
-                        setDrafts((current) => [...current, emptyExercise])
-                    }
-                    className="lift border-line text-muted hover:border-pulse hover:text-pulse font-display flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed p-4 text-sm font-bold tracking-wide uppercase disabled:pointer-events-none disabled:opacity-40"
-                >
-                    <Plus
-                        size={14}
-                        aria-hidden
-                    />
-                    {t('exercise.add')}
-                </button>
+                {editing && (
+                    <button
+                        type="button"
+                        disabled={drafts.length >= EXERCISES.max}
+                        onClick={() =>
+                            setDrafts((current) => [...current, emptyExercise])
+                        }
+                        className="lift border-line text-muted hover:border-pulse hover:text-pulse font-display flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed p-4 text-sm font-bold tracking-wide uppercase disabled:pointer-events-none disabled:opacity-40"
+                    >
+                        <Plus
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('exercise.add')}
+                    </button>
+                )}
             </div>
 
             <FormError message={state.error} />
@@ -239,41 +256,46 @@ export function WorkoutEditor({
                 design (bigger type, more padding) and each button would
                 otherwise size itself. Letting the row govern keeps the two
                 level without pinning a height that the type could outgrow. */}
-            <div className="border-line bg-bg/85 sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t px-4 py-3 backdrop-blur-md">
-                <button
-                    type="button"
-                    disabled={pending || plan === saved}
-                    // Straight back to the last save: the drafts are seeded from
-                    // it in the first place.
-                    onClick={() => setDrafts(toDrafts(workout.exercises))}
-                    // The full wording stays the accessible name at every width;
-                    // only what is drawn shortens, and the short form is a prefix
-                    // of it, so what is read out still matches what is seen.
-                    aria-label={t('exercise.undo')}
-                    className={`${ghostClass} flex flex-1 items-center justify-center gap-1.5`}
-                >
-                    <Undo2
-                        size={14}
-                        aria-hidden
-                    />
-                    <span className="md:hidden">{t('exercise.undoShort')}</span>
-                    <span className="hidden md:inline">
-                        {t('exercise.undo')}
-                    </span>
-                </button>
-                <button
-                    type="button"
-                    disabled={pending || plan === saved}
-                    onClick={save}
-                    className={`${primaryClass} flex flex-[2] items-center justify-center gap-2`}
-                >
-                    <Save
-                        size={16}
-                        aria-hidden
-                    />
-                    {t('exercise.saveChanges')}
-                </button>
-            </div>
+            {editing && (
+                <div className="border-line bg-bg/85 sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t px-4 py-3 backdrop-blur-md">
+                    <button
+                        type="button"
+                        disabled={pending || plan === saved}
+                        // Straight back to the last save: the drafts are seeded
+                        // from it in the first place.
+                        onClick={() => setDrafts(toDrafts(workout.exercises))}
+                        // The full wording stays the accessible name at every
+                        // width; only what is drawn shortens, and the short form
+                        // is a prefix of it, so what is read out still matches
+                        // what is seen.
+                        aria-label={t('exercise.undo')}
+                        className={`${ghostClass} flex flex-1 items-center justify-center gap-1.5`}
+                    >
+                        <Undo2
+                            size={14}
+                            aria-hidden
+                        />
+                        <span className="md:hidden">
+                            {t('exercise.undoShort')}
+                        </span>
+                        <span className="hidden md:inline">
+                            {t('exercise.undo')}
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        disabled={pending || plan === saved}
+                        onClick={save}
+                        className={`${primaryClass} flex flex-[2] items-center justify-center gap-2`}
+                    >
+                        <Save
+                            size={16}
+                            aria-hidden
+                        />
+                        {t('exercise.saveChanges')}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

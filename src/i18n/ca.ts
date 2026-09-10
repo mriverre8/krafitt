@@ -84,12 +84,17 @@ export const ca: Dict = {
     'routine.dayTab': 'Dia {n}, {name}',
     'routine.prevDay': 'Dia anterior',
     'routine.nextDay': 'Dia següent',
+    'routine.unsaved': 'canvis sense desar',
     'routine.deleteDay': 'Esborrar dia',
     'routine.deleteDayConfirm': 'Esborrar {name} i els seus exercicis?',
     'routine.noWorkouts': 'Aquesta rutina encara no té entrenaments.',
     'routine.dayPlaceholder': 'Nou dia (ex. Push A)',
     'routine.dayLabel': 'Nom del dia',
     'routine.addDay': 'Afegir',
+    'routine.edit': 'Editar',
+    'routine.doneEditing': 'Fet',
+    'routine.discardConfirm':
+        'Tens canvis sense desar. Vols sortir de l’edició i perdre’ls?',
     'routine.delete': 'Esborrar rutina',
     'routine.deleteConfirm':
         'Esborrar la rutina {name}? Es perd tot el progrés.',

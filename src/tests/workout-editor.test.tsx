@@ -1,7 +1,36 @@
+import {
+    EditModeContext,
+    EditModeProvider,
+    EditModeToggle,
+} from '@/components/edit-mode';
 import { WorkoutEditor } from '@/components/workout-editor';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import {
+    fireEvent,
+    render as rtlRender,
+    screen,
+    waitFor,
+} from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { noopAction } from './setup-helpers';
+
+/** The editor lives inside a routine that is read-only until Edit is pressed,
+    and every test below is about what editing can do. Read mode has its own
+    tests at the end, which render without this. */
+const render = (ui: ReactNode) =>
+    rtlRender(
+        <EditModeContext
+            value={{
+                editing: true,
+                toggle: () => {},
+                discarded: 0,
+                dirtyDays: new Set<string>(),
+                setDirty: () => {},
+            }}
+        >
+            {ui}
+        </EditModeContext>
+    );
 
 const workout = {
     id: 'w1',
@@ -382,5 +411,102 @@ describe('WorkoutEditor', () => {
             'Delete Push A and its exercises?'
         );
         await waitFor(() => expect(onDeleteWorkout).toHaveBeenCalledWith('w1'));
+    });
+});
+
+// No provider here: a routine opens read-only, which is what the context
+// defaults to.
+describe('WorkoutEditor, before Edit is pressed', () => {
+    it('locks every field', () => {
+        rtlRender(<WorkoutEditor {...base} />);
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveAttribute(
+            'readonly'
+        );
+        expect(
+            screen.getByLabelText('Exercise 1, min reps set 1')
+        ).toHaveAttribute('readonly');
+        expect(
+            screen.getByLabelText('Exercise 1, technique set 1')
+        ).toHaveAttribute('readonly');
+        expect(
+            screen.getByLabelText('Exercise 1, reps type set 1')
+        ).toHaveAttribute('aria-readonly', 'true');
+    });
+
+    it('hides everything that would change the day', () => {
+        rtlRender(<WorkoutEditor {...base} />);
+        for (const name of [
+            /Save changes/,
+            /Add exercise/,
+            'Delete day',
+            'Delete exercise 1',
+            'Add set to exercise 1',
+        ]) {
+            expect(
+                screen.queryByRole('button', { name })
+            ).not.toBeInTheDocument();
+        }
+    });
+});
+
+describe('leaving edit mode with unsaved work', () => {
+    // Some of these are about confirm *not* being called, and the spy is on a
+    // shared window: without this it still carries the earlier tests' calls.
+    beforeEach(() => vi.restoreAllMocks());
+
+    /** The real toggle over the real editor: the count of dirty days lives in
+        one and the draft in the other, so only the pair proves the discard. */
+    const renderRoutine = () =>
+        rtlRender(
+            <EditModeProvider>
+                <EditModeToggle />
+                <WorkoutEditor {...base} />
+            </EditModeProvider>
+        );
+
+    const edit = () => screen.getByRole('button', { name: 'Edit' });
+    const done = () => screen.getByRole('button', { name: 'Done' });
+    const name = () => screen.getByLabelText('Exercise 1 name');
+
+    it('leaves quietly when nothing was touched', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.click(done());
+        expect(window.confirm).not.toHaveBeenCalled();
+        expect(name()).toHaveAttribute('readonly');
+    });
+
+    it('asks first, then throws the draft away', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.change(name(), { target: { value: 'Incline press' } });
+        fireEvent.click(done());
+        expect(window.confirm).toHaveBeenCalledWith(
+            'You have changes that were never saved. Leave editing and lose them?'
+        );
+        expect(name()).toHaveValue('Bench press');
+        expect(name()).toHaveAttribute('readonly');
+    });
+
+    it('stays in edit mode, draft intact, when the ask is refused', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(false);
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.change(name(), { target: { value: 'Incline press' } });
+        fireEvent.click(done());
+        expect(name()).toHaveValue('Incline press');
+        expect(name()).not.toHaveAttribute('readonly');
+    });
+
+    it('has nothing to ask about once the draft is back where it started', () => {
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.change(name(), { target: { value: 'Incline press' } });
+        fireEvent.change(name(), { target: { value: 'Bench press' } });
+        fireEvent.click(done());
+        expect(window.confirm).not.toHaveBeenCalled();
     });
 });

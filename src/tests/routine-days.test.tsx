@@ -1,3 +1,4 @@
+import { EditModeProvider, EditModeToggle } from '@/components/edit-mode';
 import { RoutineDays, type RoutineDay } from '@/components/routine-days';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -102,6 +103,30 @@ describe('RoutineDays', () => {
         render(<RoutineDays {...base} />);
         expect(tab(2)).toHaveAccessibleName('Day 2, Pull A, Incomplete');
         expect(tab(1)).toHaveAccessibleName('Day 1, Push A');
+    });
+
+    // Trainable-or-not is a verdict on what was saved, so an edited day drops
+    // both colours until it is saved again.
+    it('marks a day yellow while its draft is unsaved', () => {
+        render(
+            <EditModeProvider>
+                <EditModeToggle />
+                <RoutineDays {...base} />
+            </EditModeProvider>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+        const rule = (n: number) => tab(n).lastElementChild;
+        expect(rule(1)).toHaveClass('bg-surge');
+        expect(rule(2)).toHaveClass('bg-danger');
+
+        fireEvent.change(screen.getAllByLabelText('Exercise 1 name')[0], {
+            target: { value: 'Incline press' },
+        });
+        expect(rule(1)).toHaveClass('bg-draft');
+        expect(tab(1)).toHaveAccessibleName('Day 1, Push A, unsaved changes');
+        // Only the day that was touched.
+        expect(rule(2)).toHaveClass('bg-danger');
     });
 
     it('has nothing to show for a routine with no days', () => {
