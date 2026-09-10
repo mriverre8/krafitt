@@ -4,9 +4,9 @@ import {
     deleteWorkout,
     saveExercises,
 } from '@/app/actions';
-import { ActionButton } from '@/components/action-button';
 import { AddWorkoutForm } from '@/components/add-workout-form';
 import { BackButton } from '@/components/back-button';
+import { DeleteRoutineButton } from '@/components/delete-routine-button';
 import {
     EditModeProvider,
     EditModeToggle,
@@ -16,6 +16,7 @@ import { RoutineDays } from '@/components/routine-days';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
+import { isRoutineFinished } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
 import {
@@ -23,7 +24,7 @@ import {
     workoutFaults,
     workoutProblems,
 } from '@/lib/validate';
-import { CircleCheck, Flame, Trash } from 'lucide-react';
+import { CircleCheck, Flame } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutinePage({
@@ -38,6 +39,15 @@ export default async function RoutinePage({
     if (!routine) notFound();
 
     const complete = isRoutineComplete(routine, t);
+    // Nothing left to train: the plan is what those sessions were logged
+    // against, so it is read-only from here on. Deleting it whole still stands,
+    // and this page is the only place that offers it — so the delete link comes
+    // out of edit mode rather than leaving with it.
+    const finished = isRoutineFinished(
+        routine.cursor,
+        routine.workouts.length,
+        routine.durationWeeks
+    );
 
     return (
         <EditModeProvider>
@@ -53,30 +63,43 @@ export default async function RoutinePage({
                             })}
                         </p>
                         <div className="flex shrink-0 items-center gap-4">
-                            <WhenEditing>
-                                <ActionButton
-                                    action={deleteRoutine.bind(
+                            {finished ? (
+                                <DeleteRoutineButton
+                                    name={routine.name}
+                                    onDelete={deleteRoutine.bind(
                                         null,
                                         routine.id
                                     )}
-                                    confirm={t('routine.deleteConfirm', {
-                                        name: routine.name,
-                                    })}
-                                    className="text-danger hover:text-danger/70 eyebrow flex shrink-0 items-center gap-1.5 transition-colors"
-                                >
-                                    <Trash
-                                        size={14}
-                                        aria-hidden
-                                    />
-                                    {t('routine.delete')}
-                                </ActionButton>
-                            </WhenEditing>
-                            <EditModeToggle />
+                                />
+                            ) : (
+                                <>
+                                    <WhenEditing>
+                                        <DeleteRoutineButton
+                                            name={routine.name}
+                                            onDelete={deleteRoutine.bind(
+                                                null,
+                                                routine.id
+                                            )}
+                                        />
+                                    </WhenEditing>
+                                    <EditModeToggle />
+                                </>
+                            )}
                         </div>
                     </div>
                 </header>
 
-                {routine.isActive ? (
+                {finished ? (
+                    <p
+                        className={`${badgeClass} border-line text-muted border-2`}
+                    >
+                        <CircleCheck
+                            size={13}
+                            aria-hidden
+                        />
+                        {t('routines.finished')}
+                    </p>
+                ) : routine.isActive ? (
                     <p className={`${badgeClass} bg-volt text-on-volt`}>
                         <Flame
                             size={13}

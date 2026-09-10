@@ -2,7 +2,11 @@
 
 import type { Translate } from '@/i18n/config';
 import { getT } from '@/i18n/server';
-import { requireRoutine, routineIdOfWorkout } from '@/lib/access';
+import {
+    requireEditableRoutine,
+    requireRoutine,
+    routineIdOfWorkout,
+} from '@/lib/access';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import {
@@ -117,7 +121,7 @@ export async function addWorkout(
     const t = await getT();
     if (!name) return { error: t('error.workoutName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    await requireRoutine(routineId, user.id);
+    await requireEditableRoutine(routineId, user.id);
 
     const order = await prisma.workout.count({ where: { routineId } });
     await prisma.workout.create({ data: { routineId, name, order } });
@@ -218,7 +222,7 @@ export async function saveExercises(
     if ('error' in parsed) return parsed;
 
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireRoutine(routineId, user.id);
+    await requireEditableRoutine(routineId, user.id);
 
     const existing = await prisma.exercise.findMany({
         where: { workoutId },
@@ -287,7 +291,7 @@ export async function saveExercises(
 export async function deleteWorkout(workoutId: string) {
     const user = await requireUser();
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireRoutine(routineId, user.id);
+    await requireEditableRoutine(routineId, user.id);
     await prisma.workout.delete({ where: { id: workoutId } });
     revalidatePath(`/routines/${routineId}`);
     revalidatePath('/');
