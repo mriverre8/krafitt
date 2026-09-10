@@ -120,9 +120,12 @@ export function WorkoutEditor({
                 {editing && (
                     <ActionButton
                         action={() => onDeleteWorkout(workout.id)}
-                        confirm={t('routine.deleteDayConfirm', {
-                            name: workout.name,
-                        })}
+                        confirm={{
+                            title: t('routine.deleteDay'),
+                            message: t('routine.deleteDayConfirm', {
+                                name: workout.name,
+                            }),
+                        }}
                         className={`${labelClass} hover:text-danger flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
                     >
                         <Trash

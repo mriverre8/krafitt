@@ -44,6 +44,14 @@ export const primaryClass =
     'tracking-wide text-on-volt hover:bg-volt2 disabled:pointer-events-none ' +
     'disabled:opacity-40';
 
+/** The filled button for a move nothing brings back. Same geometry as the ghost
+    it stands next to, so a pair of them ends on one line and one height —
+    danger is the only difference, and the only place the app fills with it. */
+export const dangerClass =
+    'lift rounded-md bg-danger px-4 py-2.5 font-display text-sm font-bold uppercase ' +
+    'tracking-wide text-on-danger hover:bg-danger/85 disabled:pointer-events-none ' +
+    'disabled:opacity-40';
+
 export const ghostClass =
     'lift rounded-md border-2 border-line px-4 py-2.5 font-display text-sm font-bold uppercase ' +
     'tracking-wide text-muted hover:border-pulse hover:text-pulse ' +

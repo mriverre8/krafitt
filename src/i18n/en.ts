@@ -6,6 +6,11 @@ export const en = {
         'Build your gym routines and log every single set, week after week.',
 
     'common.loading': 'Loading',
+    'common.cancel': 'Cancel',
+    'common.close': 'Close',
+    // The confirming button of a modal names the move it commits, never "OK":
+    // what you are agreeing to has to be readable from the button alone.
+    'common.delete': 'Delete',
 
     'nav.today': 'Today',
     'nav.routines': 'Routines',
@@ -47,8 +52,10 @@ export const en = {
     'today.done': 'Workout complete',
     'today.noExercises': 'This workout has no exercises yet.',
     'today.skip': 'Skip to next day',
+    'today.skipTitle': 'Skip this day',
     'today.skipConfirm':
         'This day is not finished. The sets you left blank stay blank. Skip it?',
+    'today.skipAnyway': 'Skip anyway',
     'today.set': 'Set {n}',
     'today.weightLabel': 'Weight set {n}',
     'today.repsLabel': 'Reps set {n}',
@@ -96,8 +103,10 @@ export const en = {
     'routine.addDay': 'Add',
     'routine.edit': 'Edit',
     'routine.doneEditing': 'Done',
+    'routine.discardTitle': 'Unsaved changes',
     'routine.discardConfirm':
         'You have changes that were never saved. Leave editing and lose them?',
+    'routine.discard': 'Discard changes',
     'routine.delete': 'Delete routine',
     'routine.deleteConfirm': 'Delete the routine {name}? All progress is lost.',
 

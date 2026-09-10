@@ -5,6 +5,9 @@ export const ca: Dict = {
     'app.tagline':
         'Munta les teves rutines de gimnàs i registra cada sèrie, setmana a setmana.',
 
+    'common.cancel': 'Cancel·lar',
+    'common.close': 'Tancar',
+    'common.delete': 'Esborrar',
     'common.loading': 'Carregant',
 
     'nav.today': 'Avui',
@@ -47,8 +50,10 @@ export const ca: Dict = {
     'today.done': 'Entrenament completat',
     'today.noExercises': 'Aquest entrenament encara no té exercicis.',
     'today.skip': 'Saltar al dia següent',
+    'today.skipTitle': 'Saltar aquest dia',
     'today.skipConfirm':
         'Aquest dia no està acabat. Les sèries en blanc es queden en blanc. Saltar-lo?',
+    'today.skipAnyway': 'Saltar igualment',
     'today.set': 'Sèrie {n}',
     'today.weightLabel': 'Pes sèrie {n}',
     'today.repsLabel': 'Repeticions sèrie {n}',
@@ -95,8 +100,10 @@ export const ca: Dict = {
     'routine.addDay': 'Afegir',
     'routine.edit': 'Editar',
     'routine.doneEditing': 'Fet',
+    'routine.discardTitle': 'Canvis sense desar',
     'routine.discardConfirm':
         'Tens canvis sense desar. Vols sortir de l’edició i perdre’ls?',
+    'routine.discard': 'Descartar canvis',
     'routine.delete': 'Esborrar rutina',
     'routine.deleteConfirm':
         'Esborrar la rutina {name}? Es perd tot el progrés.',

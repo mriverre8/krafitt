@@ -11,8 +11,15 @@ import {
     waitFor,
 } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { noopAction } from './setup-helpers';
+import { describe, expect, it, vi } from 'vitest';
+import {
+    acceptConfirm,
+    confirmDialog,
+    declineConfirm,
+    noopAction,
+    openConfirm,
+    withModals,
+} from './setup-helpers';
 
 /** The editor lives inside a routine that is read-only until Edit is pressed,
     and every test below is about what editing can do. Read mode has its own
@@ -28,7 +35,7 @@ const render = (ui: ReactNode) =>
                 setDirty: () => {},
             }}
         >
-            {ui}
+            {withModals(ui)}
         </EditModeContext>
     );
 
@@ -399,7 +406,6 @@ describe('WorkoutEditor', () => {
 
     it('confirms before deleting a day', async () => {
         const onDeleteWorkout = vi.fn().mockResolvedValue(undefined);
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
         render(
             <WorkoutEditor
                 {...base}
@@ -407,9 +413,12 @@ describe('WorkoutEditor', () => {
             />
         );
         fireEvent.click(screen.getByRole('button', { name: 'Delete day' }));
-        expect(window.confirm).toHaveBeenCalledWith(
+        expect(await openConfirm()).toHaveTextContent(
             'Delete Push A and its exercises?'
         );
+        expect(onDeleteWorkout).not.toHaveBeenCalled();
+
+        await acceptConfirm('Delete');
         await waitFor(() => expect(onDeleteWorkout).toHaveBeenCalledWith('w1'));
     });
 });
@@ -469,18 +478,16 @@ describe('WorkoutEditor, before Edit is pressed', () => {
 });
 
 describe('leaving edit mode with unsaved work', () => {
-    // Some of these are about confirm *not* being called, and the spy is on a
-    // shared window: without this it still carries the earlier tests' calls.
-    beforeEach(() => vi.restoreAllMocks());
-
     /** The real toggle over the real editor: the count of dirty days lives in
         one and the draft in the other, so only the pair proves the discard. */
     const renderRoutine = () =>
         rtlRender(
-            <EditModeProvider>
-                <EditModeToggle />
-                <WorkoutEditor {...base} />
-            </EditModeProvider>
+            withModals(
+                <EditModeProvider>
+                    <EditModeToggle />
+                    <WorkoutEditor {...base} />
+                </EditModeProvider>
+            )
         );
 
     const edit = () => screen.getByRole('button', { name: 'Edit' });
@@ -488,44 +495,43 @@ describe('leaving edit mode with unsaved work', () => {
     const name = () => screen.getByLabelText('Exercise 1 name');
 
     it('leaves quietly when nothing was touched', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
         renderRoutine();
         fireEvent.click(edit());
         fireEvent.click(done());
-        expect(window.confirm).not.toHaveBeenCalled();
+        expect(confirmDialog()).not.toBeInTheDocument();
         expect(name()).toHaveAttribute('readonly');
     });
 
-    it('asks first, then throws the draft away', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
+    it('asks first, then throws the draft away', async () => {
         renderRoutine();
         fireEvent.click(edit());
         fireEvent.change(name(), { target: { value: 'Incline press' } });
         fireEvent.click(done());
-        expect(window.confirm).toHaveBeenCalledWith(
+        expect(await openConfirm()).toHaveTextContent(
             'You have changes that were never saved. Leave editing and lose them?'
         );
+
+        await acceptConfirm('Discard changes');
         expect(name()).toHaveValue('Bench press');
         expect(name()).toHaveAttribute('readonly');
     });
 
-    it('stays in edit mode, draft intact, when the ask is refused', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
+    it('stays in edit mode, draft intact, when the ask is refused', async () => {
         renderRoutine();
         fireEvent.click(edit());
         fireEvent.change(name(), { target: { value: 'Incline press' } });
         fireEvent.click(done());
+        await declineConfirm();
         expect(name()).toHaveValue('Incline press');
         expect(name()).not.toHaveAttribute('readonly');
     });
 
     it('has nothing to ask about once the draft is back where it started', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
         renderRoutine();
         fireEvent.click(edit());
         fireEvent.change(name(), { target: { value: 'Incline press' } });
         fireEvent.change(name(), { target: { value: 'Bench press' } });
         fireEvent.click(done());
-        expect(window.confirm).not.toHaveBeenCalled();
+        expect(confirmDialog()).not.toBeInTheDocument();
     });
 });

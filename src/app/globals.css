@@ -180,6 +180,35 @@ body {
   }
 }
 
+/* A modal arrives rather than blinks into place: 140ms is short enough that it
+   never reads as waiting, long enough to say where it came from. Opacity and
+   transform only, so it stays on the compositor. There is no exit animation —
+   the dialog is unmounted, and the page behind it is the answer already. */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+dialog[open] {
+  animation: modal-in 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+dialog[open]::backdrop {
+  animation: backdrop-in 140ms ease-out;
+}
+
+/* <dialog> makes the page behind it inert but still scrollable, and a modal
+   whose background slides under it feels broken. One rule, no scroll-lock
+   bookkeeping in JS. */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 /* Tailwind v4 leaves buttons on the browser default cursor, so a click target
    has to say so itself. */
 :where(button, [role="button"], summary):not(:disabled) {

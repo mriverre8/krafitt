@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { labelClass } from '@/lib/ui';
+import { showModal } from '@/store/modal';
 import { Check, Pencil } from 'lucide-react';
 import {
     createContext,
@@ -67,17 +68,22 @@ export function EditModeProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
+    function leaveEditing() {
+        setDirtyDays(noDirtyDays);
+        setDiscarded((n) => n + 1);
+        setEditing(false);
+    }
+
     function toggle() {
-        if (editing) {
-            if (
-                dirtyDays.size > 0 &&
-                !window.confirm(t('routine.discardConfirm'))
-            )
-                return;
-            setDirtyDays(noDirtyDays);
-            setDiscarded((n) => n + 1);
-        }
-        setEditing((on) => !on);
+        if (!editing) return setEditing(true);
+        if (dirtyDays.size > 0)
+            return showModal('confirm', {
+                title: t('routine.discardTitle'),
+                message: t('routine.discardConfirm'),
+                confirmLabel: t('routine.discard'),
+                onConfirm: leaveEditing,
+            });
+        leaveEditing();
     }
 
     return (

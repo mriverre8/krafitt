@@ -24,7 +24,10 @@ export function DeleteRoutineButton({
     return (
         <ActionButton
             action={onDelete}
-            confirm={t('routine.deleteConfirm', { name })}
+            confirm={{
+                title: t('routine.delete'),
+                message: t('routine.deleteConfirm', { name }),
+            }}
             className="text-danger hover:text-danger/70 eyebrow flex shrink-0 items-center gap-1.5 transition-colors"
         >
             <Trash

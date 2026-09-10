@@ -6,6 +6,9 @@ export const es: Dict = {
         'Monta tus rutinas de gimnasio y registra cada serie, semana a semana.',
 
     'common.loading': 'Cargando',
+    'common.cancel': 'Cancelar',
+    'common.close': 'Cerrar',
+    'common.delete': 'Borrar',
 
     'nav.today': 'Hoy',
     'nav.routines': 'Rutinas',
@@ -47,8 +50,10 @@ export const es: Dict = {
     'today.done': 'Entrenamiento completado',
     'today.noExercises': 'Este entrenamiento aún no tiene ejercicios.',
     'today.skip': 'Saltar al siguiente día',
+    'today.skipTitle': 'Saltar este día',
     'today.skipConfirm':
         'Este día no está terminado. Las series en blanco se quedan en blanco. ¿Saltarlo?',
+    'today.skipAnyway': 'Saltar igualmente',
     'today.set': 'Serie {n}',
     'today.weightLabel': 'Peso serie {n}',
     'today.repsLabel': 'Repeticiones serie {n}',
@@ -95,8 +100,10 @@ export const es: Dict = {
     'routine.addDay': 'Añadir',
     'routine.edit': 'Editar',
     'routine.doneEditing': 'Listo',
+    'routine.discardTitle': 'Cambios sin guardar',
     'routine.discardConfirm':
         'Tienes cambios sin guardar. ¿Salir de la edición y perderlos?',
+    'routine.discard': 'Descartar cambios',
     'routine.delete': 'Borrar rutina',
     'routine.deleteConfirm':
         '¿Borrar la rutina {name}? Se pierde todo el progreso.',

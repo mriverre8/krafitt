@@ -15,6 +15,7 @@ import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
+import { showModal } from '@/store/modal';
 import { FormError } from './form-error';
 import { WorkoutExercise, type ExerciseView } from './workout-exercise';
 
@@ -75,8 +76,12 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     // Anything else is a real skip, and the sets left blank are lost for good.
     function onSkip() {
         if (complete) return router.refresh();
-        if (!window.confirm(t('today.skipConfirm'))) return;
-        run(() => skipDay(routineId));
+        showModal('confirm', {
+            title: t('today.skipTitle'),
+            message: t('today.skipConfirm'),
+            confirmLabel: t('today.skipAnyway'),
+            onConfirm: () => run(() => skipDay(routineId)),
+        });
     }
 
     return (

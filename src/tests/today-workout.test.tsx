@@ -3,9 +3,16 @@ import {
     type TodayWorkoutProps,
 } from '@/components/today-workout';
 import { useSessionStore } from '@/store/session';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { skipDay } from '@/app/actions';
+import {
+    acceptConfirm,
+    confirmDialog,
+    declineConfirm,
+    openConfirm,
+    withModals,
+} from './setup-helpers';
 
 vi.mock('@/app/actions', () => ({ logSet: vi.fn(), skipDay: vi.fn() }));
 const refresh = vi.fn();
@@ -78,12 +85,22 @@ describe('TodayWorkout', () => {
         expect(screen.getByLabelText('Weight set 2')).toBeEnabled();
     });
 
-    it('confirms before skipping an unfinished day', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
-        render(<TodayWorkout {...props} />);
+    it('confirms before skipping an unfinished day', async () => {
+        render(withModals(<TodayWorkout {...props} />));
         fireEvent.click(screen.getByText('Skip to next day'));
-        expect(window.confirm).toHaveBeenCalled();
+        expect(await openConfirm()).toBeInTheDocument();
         expect(skipDay).not.toHaveBeenCalled();
+
+        await declineConfirm();
+        expect(confirmDialog()).not.toBeInTheDocument();
+        expect(skipDay).not.toHaveBeenCalled();
+    });
+
+    it('skips once the confirmation is accepted', async () => {
+        render(withModals(<TodayWorkout {...props} />));
+        fireEvent.click(screen.getByText('Skip to next day'));
+        await acceptConfirm('Skip anyway');
+        await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
     });
 
     // The finished day is left behind by the next fetch, so skipping it too
