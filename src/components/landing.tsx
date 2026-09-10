@@ -17,8 +17,6 @@ export function Landing() {
     return (
         <div className="space-y-12 py-4">
             <div className="space-y-4">
-                {/* The mark runs to the edge of the column: at this size it is
-                    the page's only image, so it gets the room of one. */}
                 <h1 className="text-7xl sm:text-8xl">
                     <Wordmark />
                 </h1>
@@ -33,8 +31,6 @@ export function Landing() {
                         key={key}
                         className="border-line flex items-start gap-4 rounded-md border p-4"
                     >
-                        {/* Volt only ever appears as a fill, never as a numeral
-                            in mid-air: on white it would land at 2:1. */}
                         <span
                             aria-hidden
                             className="figure bg-volt text-on-volt grid h-7 w-7 shrink-0 place-items-center rounded-sm text-base leading-none"

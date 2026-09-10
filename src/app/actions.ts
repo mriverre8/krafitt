@@ -220,8 +220,6 @@ export async function saveExercises(
     const routineId = await routineIdOfWorkout(workoutId);
     await requireRoutine(routineId, user.id);
 
-    // An id only counts if it is one of this workout's own exercises: anything
-    // else is treated as a new exercise rather than reaching across the table.
     const existing = await prisma.exercise.findMany({
         where: { workoutId },
         select: { id: true },
@@ -244,8 +242,6 @@ export async function saveExercises(
             exercise.id && kept.has(exercise.id)
                 ? prisma.exercise.update({
                       where: { id: exercise.id },
-                      // Set rows carry nothing of their own: logs key on the
-                      // set's position inside the exercise, so they are replaced.
                       data: {
                           name: exercise.name,
                           order,
@@ -374,9 +370,7 @@ export async function logSet(
     });
 
     (logs[exerciseId] ??= {})[setIndex] = { weight, reps };
-    // Only the session is closed here. Moving the cursor is `todayWorkout`'s job
-    // on the next fetch, so finishing a day costs no extra round trip: the client
-    // already holds the logs, and revalidating would refetch the whole screen.
+
     if (isSessionComplete(session.workout.exercises, logs)) {
         await prisma.workoutSession.update({
             where: { id: session.id },

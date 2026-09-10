@@ -54,8 +54,6 @@ export function RoutineCard(props: RoutineCardProps) {
                     </p>
                 </div>
 
-                {/* Finished comes first: it is the one state that rules out
-                    going active again, so it must not hide behind the flag. */}
                 {props.finished ? (
                     <span
                         className={`${badgeClass} border-line text-muted shrink-0 border-2`}

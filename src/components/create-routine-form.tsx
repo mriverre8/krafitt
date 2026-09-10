@@ -11,7 +11,6 @@ import { useActionState, useState } from 'react';
 export function CreateRoutineForm({ action }: { action: FormAction }) {
     const t = useT();
     const [state, formAction, pending] = useActionState(action, {});
-    // One validity check covers both fields, including the duration range.
     const [valid, setValid] = useState(false);
 
     return (

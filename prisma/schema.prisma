@@ -108,15 +108,11 @@ model Exercise {
   @@index([workoutId, order])
 }
 
-/// One prescribed set. Each carries its own rep range and technique, so a top
-/// set and its back offs live in the same exercise.
 model ExerciseSet {
   id         String   @id @default(cuid())
   exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   order      Int
-  /// range | fixed | amrap. Stored rather than derived from the columns below,
-  /// so a blank repMin/repMax means "not written yet" instead of reading as AMRAP.
   repMode    String   @default("range")
   repMin     Int?
   repMax     Int?

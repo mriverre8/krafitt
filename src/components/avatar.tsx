@@ -16,8 +16,6 @@ export function Avatar({
             .trim()
             .split(/\s+/)
             .slice(0, 2)
-            // Spread, not [0]: an accented or emoji first letter is more than
-            // one code unit and would come back as half a character.
             .map((word) => [...word][0] ?? '')
             .join('')
             .toUpperCase() || '?';

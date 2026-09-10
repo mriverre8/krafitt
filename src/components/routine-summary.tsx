@@ -30,8 +30,6 @@ export function RoutineSummary(props: RoutineSummaryProps) {
     return (
         <Link
             href={`/routines/${props.id}`}
-            // Same volt edge the active routine wears in the list, so the one
-            // being trained reads the same wherever it turns up.
             className={`${cardLinkClass} block ${
                 active ? 'border-l-volt border-l-[6px]' : ''
             }`}

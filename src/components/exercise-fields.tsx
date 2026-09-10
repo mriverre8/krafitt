@@ -63,11 +63,7 @@ export function toDrafts(exercises: ExerciseView[]): ExerciseDraft[] {
     }));
 }
 
-/** Every field in a set row is pinned to this, rather than left to work its
-    height out from padding: a <select> sizes its box from the option text and
-    an <input> from the line box, so at identical padding the two land a pixel
-    or two apart and the row looks crooked. The same fix, and the same number,
-    that the set rows on the home screen use. */
+
 const rowFieldClass = 'h-12';
 
 /** The numbers share out whatever the row has left on a phone, so the line ends
@@ -137,10 +133,6 @@ export function ExerciseFields({
                 wrongAnywhere ? 'border-l-danger' : ''
             }`}
         >
-            {/* The name titles the card: a rule under it and nothing else, so
-                it reads as a heading you can type into rather than as the first
-                of the fields. Nothing shares its row — deleting the exercise is
-                a card-level action and waits at the foot with the other one. */}
             <input
                 value={exercise.name}
                 readOnly={readOnly}
@@ -157,17 +149,6 @@ export function ExerciseFields({
                 {exercise.sets.map((set, setIndex) => {
                     const wrong = fault?.sets[setIndex] ?? noFault;
                     return (
-                        // The same 4px rule a set wears on the home screen, and
-                        // used for the same job: it carries the set's state so
-                        // the row itself does not have to. Here the state a
-                        // plan can be in is whether its reps hold up, so the
-                        // rule goes red exactly when the eye is pointing at it.
-                        // It gathers the whole set, wrapped technique line and
-                        // remove link included, not just the field row.
-                        //
-                        // From md up only. A phone has no width to give to a
-                        // rule and a gutter, so it says which set this is in
-                        // words instead, on a line of its own above the fields.
                         <div
                             key={setIndex}
                             className={`space-y-1.5 transition-colors md:border-l-4 md:pl-3 ${
@@ -176,10 +157,6 @@ export function ExerciseFields({
                                     : 'border-line'
                             }`}
                         >
-                            {/* The set's own header line, phone only: which set
-                                this is, and the way out of it at the far end.
-                                Both replace things the wider layout puts in the
-                                field row itself — the number and the ×. */}
                             <div className="flex items-center justify-between gap-2 md:hidden">
                                 <p
                                     aria-hidden
@@ -190,7 +167,6 @@ export function ExerciseFields({
                                 {!readOnly && (
                                     <button
                                         type="button"
-                                        // The exercise needs at least one set, so the last row stays.
                                         disabled={exercise.sets.length === 1}
                                         onClick={() =>
                                             onChange({
@@ -213,8 +189,6 @@ export function ExerciseFields({
                                     </button>
                                 )}
                             </div>
-                            {/* Wraps on a phone (technique drops to its own line) and sits
-                            on a single line from md up, where there is room for it. */}
                             <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                                 <span
                                     aria-hidden
@@ -222,11 +196,6 @@ export function ExerciseFields({
                                 >
                                     {setIndex + 1}
                                 </span>
-                                {/* A <select> has no readOnly, and `disabled`
-                                    would grey it out among fields that only
-                                    stop taking typing — so it is sealed the way
-                                    the others are: nothing to click, nothing to
-                                    tab to, and it still reads as a value. */}
                                 <select
                                     value={set.mode}
                                     tabIndex={readOnly ? -1 : undefined}
@@ -253,8 +222,6 @@ export function ExerciseFields({
                                         </option>
                                     ))}
                                 </select>
-                                {/* Both number fields are always rendered, so the columns
-                            stay aligned row by row; the mode says which one counts. */}
                                 <input
                                     type="number"
                                     min={REPS.min}
@@ -295,16 +262,10 @@ export function ExerciseFields({
                                         set.mode === 'range' ? '' : unusedClass
                                     }`}
                                 />
-                                {/* Wrapped rather than "hidden" bolted onto
-                                removeButtonClass, which already sets flex:
-                                two display utilities on one element and the
-                                winner is whatever order Tailwind emits them
-                                in, not the order written here. */}
                                 {!readOnly && (
                                     <div className="hidden md:order-last md:block">
                                         <button
                                             type="button"
-                                            // The exercise needs at least one set, so the last row stays.
                                             disabled={
                                                 exercise.sets.length === 1
                                             }
@@ -346,10 +307,6 @@ export function ExerciseFields({
                                         e,
                                         n: setIndex + 1,
                                     })}
-                                    // On its own line below md, flush with the
-                                    // fields above it: the set number that used
-                                    // to need clearing here is gone at that
-                                    // width. From md up it rejoins the row.
                                     className={`${fieldClass} ${rowFieldClass} min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto`}
                                 />
                             </div>
@@ -363,10 +320,6 @@ export function ExerciseFields({
                 <option value={t('technique.backoff')} />
             </datalist>
 
-            {/* The card's two actions, at its foot and pushed to opposite ends:
-                one adds to the exercise, one takes the whole thing away. One
-                control at every width now — a full text button is thumb-sized
-                on its own, so the phone no longer needs a second copy. */}
             {!readOnly && (
                 <div className="flex items-center justify-between gap-2">
                     <button
@@ -386,12 +339,8 @@ export function ExerciseFields({
                     </button>
                     <button
                         type="button"
-                        // The day needs at least one exercise, so the last one stays.
                         disabled={!canRemove}
                         onClick={onRemove}
-                        // The number stays in the accessible name: several of
-                        // these cards are on screen and "Delete exercise" names
-                        // them all.
                         aria-label={t('exercise.delete', { e })}
                         className={`${labelClass} hover:text-danger flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`}
                     >

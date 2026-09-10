@@ -59,8 +59,6 @@ export function NavBar({
                     </div>
                 )}
 
-                {/* Signed in, settings and sign out live inside the user menu
-                    at every breakpoint. */}
                 {userName !== null ? (
                     <UserMenu
                         name={userName}

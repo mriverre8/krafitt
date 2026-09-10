@@ -10,8 +10,6 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
 
     return (
         <div className="border-line border-l-volt bg-surface rounded-md border border-l-[3px] p-8">
-            {/* The icon gets the volt, not the heading: an orange headline is
-                unreadable on the light background. */}
             <span className="bg-volt text-on-volt grid h-11 w-11 place-items-center rounded-md">
                 <Dumbbell
                     size={24}

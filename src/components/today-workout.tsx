@@ -91,8 +91,6 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                             {workout.name}
                         </h1>
                     </div>
-                    {/* The week reads at arm's length from a rack. Volt is a fill
-                        here, never a numeral in mid-air. */}
                     <p className="bg-volt text-on-volt figure grid shrink-0 place-items-center rounded-md px-3 py-2 leading-none">
                         <span className="sr-only">
                             {t('today.week', { week, total: totalWeeks })}

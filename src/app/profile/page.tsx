@@ -34,8 +34,6 @@ export default async function ProfilePage() {
         ),
     }));
 
-    // A routine that has run its course belongs under Finished even while it
-    // still holds the active flag: that is what the home screen says too.
     const active = summaries.find((r) => r.isActive && !r.finished);
     const finished = summaries.filter((r) => r.finished);
     const workoutsDone = summaries.reduce(

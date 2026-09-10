@@ -48,8 +48,6 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                     locale={locale}
                     dict={dict}
                 >
-                    {/* Two rules, not one: a hairline for the panel edge and a
-                        volt seam under it, so the bar reads as a lit strip. */}
                     <header className="border-line bg-bg/80 sticky top-0 z-10 border-b backdrop-blur-md">
                         <NavBar
                             userName={user?.name ?? null}

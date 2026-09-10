@@ -37,26 +37,14 @@ export default async function RoutinePage({
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
     if (!routine) notFound();
 
-    // Recomputed with the page, so it is already up to date after every save.
-    // Each day carries its own list; only the verdict is routine-wide.
     const complete = isRoutineComplete(routine, t);
 
     return (
-        // The routine opens as something to read. Edit is what brings out the
-        // controls below — and everything it brings out is wrapped here or
-        // reads the same context further down.
         <EditModeProvider>
             <div className="space-y-6">
                 <header>
                     <BackButton fallback="/routines" />
                     <h1 className="display mt-5 text-6xl">{routine.name}</h1>
-                    {/* Editing and deleting the routine ride the subtitle line,
-                        at the far end: both belong to the routine as a whole,
-                        so they sit with the line that describes the routine as
-                        a whole rather than below whichever day is open. Set in
-                        the same eyebrow as the text they share the line with,
-                        and delete danger-coloured because nothing else here
-                        destroys anything. */}
                     <div className="mt-2 flex items-center justify-between gap-3">
                         <p className="eyebrow text-muted min-w-0">
                             {t('routine.meta', {
@@ -64,8 +52,6 @@ export default async function RoutinePage({
                                 days: routine.workouts.length,
                             })}
                         </p>
-                        {/* Edit/Done sits at the far end, so it keeps the same
-                            spot whether or not delete is out beside it. */}
                         <div className="flex shrink-0 items-center gap-4">
                             <WhenEditing>
                                 <ActionButton
@@ -90,9 +76,6 @@ export default async function RoutinePage({
                     </div>
                 </header>
 
-                {/* Already active: the volt flame, the same badge the routine
-                    wears in the list, rather than an invitation to activate
-                    it. */}
                 {routine.isActive ? (
                     <p className={`${badgeClass} bg-volt text-on-volt`}>
                         <Flame
@@ -118,9 +101,6 @@ export default async function RoutinePage({
                     </p>
                 )}
 
-                {/* Above the rack it feeds: adding a day is a routine-level
-                    move, like naming the routine or deleting it, not something
-                    you do from inside whichever day happens to be on screen. */}
                 <WhenEditing>
                     <AddWorkoutForm
                         action={addWorkout}
@@ -128,9 +108,6 @@ export default async function RoutinePage({
                     />
                 </WhenEditing>
 
-                {/* One day at a time. Everything the switcher needs to mark a
-                    day as trainable is worked out here, next to the routine-wide
-                    verdict above, so both answer to the same rules. */}
                 <RoutineDays
                     days={routine.workouts.map((workout) => ({
                         id: workout.id,

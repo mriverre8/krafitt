@@ -74,8 +74,6 @@ export function DaySwitcher({
                 >
                     {t('routine.workouts')}
                 </h2>
-                {/* Arrows are for a pointer, and clicking one leaves focus on
-                    it: only the keyboard tab strip moves focus. */}
                 <div className="flex items-center">
                     <button
                         type="button"
@@ -116,10 +114,6 @@ export function DaySwitcher({
                     else return;
                     event.preventDefault();
                 }}
-                // overflow-x also clips vertically, and both the hover lift and
-                // the 5px focus ring live outside a plate's own box. The
-                // padding gives them room; the negative margin cancels it, so
-                // the rack still starts on the page's own edge.
                 className="-mx-1.5 flex gap-2 overflow-x-auto px-1.5 py-1.5"
             >
                 {days.map((day, position) => {
@@ -134,9 +128,6 @@ export function DaySwitcher({
                             aria-selected={selected}
                             tabIndex={selected ? 0 : -1}
                             onClick={() => select(position)}
-                            // The plate shows a number; everything else about
-                            // the day travels in the label. Title so a pointer
-                            // can find the day it wants without clicking.
                             aria-label={
                                 t('routine.dayTab', {
                                     n: position + 1,
@@ -161,11 +152,6 @@ export function DaySwitcher({
                             >
                                 {position + 1}
                             </span>
-                            {/* Yellow outranks both: while a day is unsaved,
-                                trainable-or-not is a verdict on something the
-                                server no longer holds, so the rule says "you
-                                are not finished here" instead of answering a
-                                question that is out of date. */}
                             <span
                                 aria-hidden
                                 className={`mt-1 block h-[3px] rounded-xs ${

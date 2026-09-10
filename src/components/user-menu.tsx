@@ -37,11 +37,6 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
         >
             {(close) => (
                 <>
-                    {/* Where you go, then whose account it is, then what you do
-                        to it. On a phone this menu is the whole navigation, so
-                        the two app links lead; from md up they are already in
-                        the bar and drop out, leaving the account items in the
-                        same order they were always in. */}
                     <Link
                         href="/"
                         onClick={close}
