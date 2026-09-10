@@ -5,6 +5,8 @@ export const ca: Dict = {
     'app.tagline':
         'Munta les teves rutines de gimnàs i registra cada sèrie, setmana a setmana.',
 
+    'common.loading': 'Carregant',
+
     'nav.today': 'Avui',
     'nav.routines': 'Rutines',
     'nav.signOut': 'Sortir',

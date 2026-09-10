@@ -5,6 +5,8 @@ export const es: Dict = {
     'app.tagline':
         'Monta tus rutinas de gimnasio y registra cada serie, semana a semana.',
 
+    'common.loading': 'Cargando',
+
     'nav.today': 'Hoy',
     'nav.routines': 'Rutinas',
     'nav.signOut': 'Salir',

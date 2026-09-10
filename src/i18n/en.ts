@@ -5,6 +5,8 @@ export const en = {
     'app.tagline':
         'Build your gym routines and log every single set, week after week.',
 
+    'common.loading': 'Loading',
+
     'nav.today': 'Today',
     'nav.routines': 'Routines',
     'nav.signOut': 'Sign out',
