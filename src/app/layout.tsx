@@ -1,5 +1,5 @@
-import { ModalHost } from '@/components/modal-host';
-import { NavBar } from '@/components/nav-bar';
+import { ModalHost } from '@/components/modal/modal-host';
+import { NavBar } from '@/components/chrome/nav-bar';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import { getDictionary, getLocale } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';

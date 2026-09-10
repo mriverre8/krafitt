@@ -1,4 +1,4 @@
-import { AuthForms } from '@/components/auth-forms';
+import { AuthForms } from '@/components/auth/auth-forms';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 

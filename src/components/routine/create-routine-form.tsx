@@ -5,7 +5,7 @@ import type { FormAction } from '@/lib/forms';
 import { inputClass, labelClass, primaryClass } from '@/lib/ui';
 import { useT } from '@/i18n/use-t';
 import { Plus } from 'lucide-react';
-import { FormError } from './form-error';
+import { FormError } from '@/components/ui/form-error';
 import { useActionState, useState } from 'react';
 
 export function CreateRoutineForm({ action }: { action: FormAction }) {

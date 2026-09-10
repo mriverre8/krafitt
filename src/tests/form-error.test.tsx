@@ -1,4 +1,4 @@
-import { FormError } from '@/components/form-error';
+import { FormError } from '@/components/ui/form-error';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

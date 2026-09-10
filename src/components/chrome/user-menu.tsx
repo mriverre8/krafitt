@@ -7,8 +7,8 @@ import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Dropdown } from './dropdown';
-import { SettingsPanel } from './settings-panel';
+import { Dropdown } from '@/components/ui/dropdown';
+import { SettingsPanel } from '@/components/chrome/settings-panel';
 
 const itemClass =
     'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-pulse';

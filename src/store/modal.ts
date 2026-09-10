@@ -1,6 +1,6 @@
 'use client';
 
-import type { ConfirmModalProps } from '@/components/confirm-modal';
+import type { ConfirmModalProps } from '@/components/modal/confirm-modal';
 import { create } from 'zustand';
 
 /**

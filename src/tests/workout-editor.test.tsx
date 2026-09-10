@@ -2,8 +2,8 @@ import {
     EditModeContext,
     EditModeProvider,
     EditModeToggle,
-} from '@/components/edit-mode';
-import { WorkoutEditor } from '@/components/workout-editor';
+} from '@/components/routine/edit-mode';
+import { WorkoutEditor } from '@/components/workout/workout-editor';
 import {
     fireEvent,
     render as rtlRender,

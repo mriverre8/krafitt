@@ -1,4 +1,4 @@
-import { Bar, Skeleton } from '@/components/skeleton';
+import { Bar, Skeleton } from '@/components/ui/skeleton';
 import { cardClass } from '@/lib/ui';
 
 /** One day and, inside it, one exercise — the shape the page settles into. */

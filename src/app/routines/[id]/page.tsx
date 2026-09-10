@@ -5,18 +5,18 @@ import {
     saveExercises,
     setActiveRoutine,
 } from '@/app/actions';
-import { ActionButton } from '@/components/action-button';
-import { AddWorkoutForm } from '@/components/add-workout-form';
-import { BackButton } from '@/components/back-button';
-import { DeleteRoutineButton } from '@/components/delete-routine-button';
+import { ActionButton } from '@/components/ui/action-button';
+import { AddWorkoutForm } from '@/components/routine/add-workout-form';
+import { BackButton } from '@/components/ui/back-button';
+import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import {
     EditModeProvider,
     EditModeToggle,
     WhenEditing,
     WhenNotEditing,
-} from '@/components/edit-mode';
-import { HistoryLink } from '@/components/history-link';
-import { RoutineDays } from '@/components/routine-days';
+} from '@/components/routine/edit-mode';
+import { HistoryLink } from '@/components/ui/history-link';
+import { RoutineDays } from '@/components/routine/routine-days';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';

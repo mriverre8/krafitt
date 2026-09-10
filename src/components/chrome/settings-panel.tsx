@@ -3,8 +3,8 @@
 import { useT } from '@/i18n/use-t';
 import type { Theme } from '@/lib/theme';
 import { labelClass } from '@/lib/ui';
-import { LocaleSwitcher } from './locale-switcher';
-import { ThemeToggle } from './theme-toggle';
+import { LocaleSwitcher } from '@/components/chrome/locale-switcher';
+import { ThemeToggle } from '@/components/chrome/theme-toggle';
 
 /** Language and theme, shared by the desktop menu and the mobile one. */
 export function SettingsPanel({ theme }: { theme: Theme }) {

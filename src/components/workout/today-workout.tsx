@@ -10,15 +10,15 @@ import {
     type PreviousLogs,
 } from '@/lib/progress';
 import { ghostClass } from '@/lib/ui';
-import { HistoryLink } from './history-link';
-import { ProgressLadder } from './progress-ladder';
+import { HistoryLink } from '@/components/ui/history-link';
+import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { showModal } from '@/store/modal';
-import { FormError } from './form-error';
-import { WorkoutExercise, type ExerciseView } from './workout-exercise';
+import { FormError } from '@/components/ui/form-error';
+import { WorkoutExercise, type ExerciseView } from '@/components/workout/workout-exercise';
 
 export type TodayWorkoutProps = {
     routineId: string;

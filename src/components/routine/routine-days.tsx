@@ -3,10 +3,10 @@
 import type { DayAction } from '@/lib/forms';
 import type { ExerciseFault } from '@/lib/validate';
 import { useId, useState } from 'react';
-import { DaySwitcher } from './day-switcher';
-import { useDirtyDays } from './edit-mode';
-import type { ExerciseView } from './workout-exercise';
-import { WorkoutEditor } from './workout-editor';
+import { DaySwitcher } from '@/components/routine/day-switcher';
+import { useDirtyDays } from '@/components/routine/edit-mode';
+import type { ExerciseView } from '@/components/workout/workout-exercise';
+import { WorkoutEditor } from '@/components/workout/workout-editor';
 
 export type RoutineDay = {
     id: string;

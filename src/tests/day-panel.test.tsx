@@ -2,7 +2,7 @@ import {
     DayPanel,
     type HistoryDay,
     type WeekRow,
-} from '@/components/day-panel';
+} from '@/components/history/day-panel';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

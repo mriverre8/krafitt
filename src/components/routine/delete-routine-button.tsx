@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { Trash } from 'lucide-react';
-import { ActionButton } from './action-button';
+import { ActionButton } from '@/components/ui/action-button';
 
 /**
  * Deletes the whole routine, name and all. The routine page is the only place

@@ -1,7 +1,7 @@
 import {
     WorkoutExercise,
     type ExerciseView,
-} from '@/components/workout-exercise';
+} from '@/components/workout/workout-exercise';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 

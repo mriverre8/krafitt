@@ -1,4 +1,4 @@
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

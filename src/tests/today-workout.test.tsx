@@ -1,7 +1,7 @@
 import {
     TodayWorkout,
     type TodayWorkoutProps,
-} from '@/components/today-workout';
+} from '@/components/workout/today-workout';
 import { useSessionStore } from '@/store/session';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

@@ -5,7 +5,7 @@ import { authClient } from '@/lib/auth-client';
 import { inputClass, primaryClass } from '@/lib/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FormError } from './form-error';
+import { FormError } from '@/components/ui/form-error';
 
 type Mode = 'login' | 'signup';
 

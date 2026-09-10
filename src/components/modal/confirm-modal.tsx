@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { dangerClass, ghostClass } from '@/lib/ui';
-import { Modal } from './modal';
+import { Modal } from '@/components/modal/modal';
 
 export type ConfirmModalProps = {
     title: string;

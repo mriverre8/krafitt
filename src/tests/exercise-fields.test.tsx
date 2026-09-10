@@ -3,7 +3,7 @@ import {
     ExerciseFields,
     toDrafts,
     type ExerciseDraft,
-} from '@/components/exercise-fields';
+} from '@/components/workout/exercise-fields';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 

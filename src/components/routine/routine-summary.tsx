@@ -4,7 +4,7 @@ import { useT } from '@/i18n/use-t';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
-import { ProgressLadder } from './progress-ladder';
+import { ProgressLadder } from '@/components/ui/progress-ladder';
 
 export type RoutineSummaryProps = {
     id: string;

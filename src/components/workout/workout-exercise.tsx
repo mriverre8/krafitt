@@ -5,7 +5,7 @@ import type { SavedExercise } from '@/lib/forms';
 import type { PreviousValue, SetValue } from '@/lib/progress';
 import { formatReps } from '@/lib/reps';
 import { cardClass } from '@/lib/ui';
-import { SetRow } from './set-row';
+import { SetRow } from '@/components/workout/set-row';
 
 export type ExerciseView = SavedExercise;
 

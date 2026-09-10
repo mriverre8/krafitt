@@ -1,4 +1,4 @@
-import { Landing } from '@/components/landing';
+import { Landing } from '@/components/auth/landing';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithLocale } from './setup-helpers';

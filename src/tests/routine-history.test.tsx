@@ -1,4 +1,4 @@
-import { RoutineHistory, type HistoryDay } from '@/components/routine-history';
+import { RoutineHistory, type HistoryDay } from '@/components/history/routine-history';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

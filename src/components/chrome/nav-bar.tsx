@@ -4,10 +4,10 @@ import { useT } from '@/i18n/use-t';
 import type { Theme } from '@/lib/theme';
 import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { Dropdown } from './dropdown';
-import { Wordmark } from './wordmark';
-import { SettingsPanel } from './settings-panel';
-import { UserMenu } from './user-menu';
+import { Dropdown } from '@/components/ui/dropdown';
+import { Wordmark } from '@/components/ui/wordmark';
+import { SettingsPanel } from '@/components/chrome/settings-panel';
+import { UserMenu } from '@/components/chrome/user-menu';
 
 const linkClass =
     'flex items-center gap-1.5 font-display text-sm md:text-base font-bold uppercase tracking-wide ' +

@@ -1,4 +1,4 @@
-import { Dropdown } from '@/components/dropdown';
+import { Dropdown } from '@/components/ui/dropdown';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

@@ -15,7 +15,7 @@ import {
 } from '@/lib/ui';
 import { Plus, X } from 'lucide-react';
 import { useId } from 'react';
-import type { ExerciseView } from './workout-exercise';
+import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 export type SetDraft = {
     mode: RepMode;

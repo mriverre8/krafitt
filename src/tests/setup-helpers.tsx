@@ -1,4 +1,4 @@
-import { ModalHost } from '@/components/modal-host';
+import { ModalHost } from '@/components/modal/modal-host';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import { dictionaries, type Locale } from '@/i18n/config';
 import { fireEvent, render, screen, within } from '@testing-library/react';

@@ -6,7 +6,7 @@ import type { FormAction } from '@/lib/forms';
 import { ghostClass, inputClass } from '@/lib/ui';
 import { Plus } from 'lucide-react';
 import { useActionState } from 'react';
-import { FormError } from './form-error';
+import { FormError } from '@/components/ui/form-error';
 
 export function AddWorkoutForm({
     action,

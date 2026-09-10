@@ -1,5 +1,5 @@
-import { Avatar } from '@/components/avatar';
-import { RoutineSummary } from '@/components/routine-summary';
+import { Avatar } from '@/components/ui/avatar';
+import { RoutineSummary } from '@/components/routine/routine-summary';
 import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';

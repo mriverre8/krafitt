@@ -1,4 +1,4 @@
-import { AddWorkoutForm } from '@/components/add-workout-form';
+import { AddWorkoutForm } from '@/components/routine/add-workout-form';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { noopAction } from './setup-helpers';

@@ -1,4 +1,4 @@
-import { CreateRoutineForm } from '@/components/create-routine-form';
+import { CreateRoutineForm } from '@/components/routine/create-routine-form';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { noopAction, renderWithLocale } from './setup-helpers';

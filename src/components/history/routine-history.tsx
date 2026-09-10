@@ -2,8 +2,8 @@
 
 import { weekState } from '@/lib/progress';
 import { useId, useState } from 'react';
-import { DayPanel, type HistoryDay } from './day-panel';
-import { DaySwitcher } from './day-switcher';
+import { DayPanel, type HistoryDay } from '@/components/history/day-panel';
+import { DaySwitcher } from '@/components/routine/day-switcher';
 
 export type { HistoryDay };
 

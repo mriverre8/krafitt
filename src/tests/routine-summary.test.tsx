@@ -1,7 +1,7 @@
 import {
     RoutineSummary,
     type RoutineSummaryProps,
-} from '@/components/routine-summary';
+} from '@/components/routine/routine-summary';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

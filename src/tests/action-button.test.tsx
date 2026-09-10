@@ -1,4 +1,4 @@
-import { ActionButton } from '@/components/action-button';
+import { ActionButton } from '@/components/ui/action-button';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {

@@ -12,16 +12,16 @@ import {
 } from '@/lib/ui';
 import { Eye, EyeOff, Plus, Save, Trash, Undo2 } from 'lucide-react';
 import { startTransition, useActionState, useState } from 'react';
-import { ActionButton } from './action-button';
-import { useDiscardSignal, useEditMode } from './edit-mode';
+import { ActionButton } from '@/components/ui/action-button';
+import { useDiscardSignal, useEditMode } from '@/components/routine/edit-mode';
 import {
     emptyExercise,
     ExerciseFields,
     toDrafts,
     type ExerciseDraft,
-} from './exercise-fields';
-import { FormError } from './form-error';
-import type { ExerciseView } from './workout-exercise';
+} from '@/components/workout/exercise-fields';
+import { FormError } from '@/components/ui/form-error';
+import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 /**
  * One training day, and the whole of it is a single form: adding, editing and

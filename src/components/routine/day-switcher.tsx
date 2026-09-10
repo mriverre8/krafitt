@@ -4,7 +4,7 @@ import { useT } from '@/i18n/use-t';
 import { iconButtonClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
-import { useEditMode } from './edit-mode';
+import { useEditMode } from '@/components/routine/edit-mode';
 
 export type DayTab = {
     id: string;

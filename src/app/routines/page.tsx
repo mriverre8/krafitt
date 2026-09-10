@@ -1,6 +1,6 @@
 import { createRoutine, setActiveRoutine } from '@/app/actions';
-import { CreateRoutineForm } from '@/components/create-routine-form';
-import { RoutineCard } from '@/components/routine-card';
+import { CreateRoutineForm } from '@/components/routine/create-routine-form';
+import { RoutineCard } from '@/components/routine/routine-card';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';

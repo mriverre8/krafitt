@@ -1,4 +1,4 @@
-import { NavBar } from '@/components/nav-bar';
+import { NavBar } from '@/components/chrome/nav-bar';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 

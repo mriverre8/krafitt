@@ -2,8 +2,8 @@
 
 import { useT } from '@/i18n/use-t';
 import { CalendarDays, ClipboardList, Dumbbell } from 'lucide-react';
-import { AuthForms } from './auth-forms';
-import { Wordmark } from './wordmark';
+import { AuthForms } from '@/components/auth/auth-forms';
+import { Wordmark } from '@/components/ui/wordmark';
 
 const FEATURES = [
     ['landing.feature1', ClipboardList],

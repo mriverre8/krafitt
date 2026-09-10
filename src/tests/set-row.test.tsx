@@ -1,4 +1,4 @@
-import { SetRow } from '@/components/set-row';
+import { SetRow } from '@/components/workout/set-row';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithLocale } from './setup-helpers';

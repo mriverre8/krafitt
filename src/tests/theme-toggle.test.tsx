@@ -1,4 +1,4 @@
-import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/chrome/theme-toggle';
 import { THEME_COOKIE, type Theme } from '@/lib/theme';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';

@@ -3,8 +3,8 @@
 import { useT } from '@/i18n/use-t';
 import { isSessionComplete, type Logs, type WeekState } from '@/lib/progress';
 import { useState } from 'react';
-import { HistoryExercise } from './history-exercise';
-import type { ExerciseView } from './workout-exercise';
+import { HistoryExercise } from '@/components/history/history-exercise';
+import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 export type HistoryDay = {
     id: string;

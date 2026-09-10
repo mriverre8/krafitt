@@ -1,4 +1,4 @@
-import { DeleteRoutineButton } from '@/components/delete-routine-button';
+import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {

@@ -1,4 +1,4 @@
-import { ProgressLadder } from '@/components/progress-ladder';
+import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

@@ -1,4 +1,4 @@
-import { BackButton } from '@/components/back-button';
+import { BackButton } from '@/components/ui/back-button';
 import { renderWithLocale } from '@/tests/setup-helpers';
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

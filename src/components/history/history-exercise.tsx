@@ -10,7 +10,7 @@ import {
 import { formatReps } from '@/lib/reps';
 import { cardClass, iconButtonClass } from '@/lib/ui';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { ExerciseView } from './workout-exercise';
+import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 export type HistoryRow = {
     week: number;

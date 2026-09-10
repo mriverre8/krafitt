@@ -1,5 +1,5 @@
-import { BackButton } from '@/components/back-button';
-import { RoutineHistory } from '@/components/routine-history';
+import { BackButton } from '@/components/ui/back-button';
+import { RoutineHistory } from '@/components/history/routine-history';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
