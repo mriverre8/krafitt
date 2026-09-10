@@ -1,5 +1,11 @@
-import { EditModeProvider, EditModeToggle } from '@/components/routine/edit-mode';
-import { RoutineDays, type RoutineDay } from '@/components/routine/routine-days';
+import {
+    EditModeProvider,
+    EditModeToggle,
+} from '@/components/routine/edit-mode';
+import {
+    RoutineDays,
+    type RoutineDay,
+} from '@/components/routine/routine-days';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { noopAction } from './setup-helpers';

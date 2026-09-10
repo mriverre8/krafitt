@@ -18,7 +18,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { showModal } from '@/store/modal';
 import { FormError } from '@/components/ui/form-error';
-import { WorkoutExercise, type ExerciseView } from '@/components/workout/workout-exercise';
+import {
+    WorkoutExercise,
+    type ExerciseView,
+} from '@/components/workout/workout-exercise';
 
 export type TodayWorkoutProps = {
     routineId: string;
