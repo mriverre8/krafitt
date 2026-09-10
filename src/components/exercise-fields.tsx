@@ -63,7 +63,6 @@ export function toDrafts(exercises: ExerciseView[]): ExerciseDraft[] {
     }));
 }
 
-
 const rowFieldClass = 'h-12';
 
 /** The numbers share out whatever the row has left on a phone, so the line ends
