@@ -138,6 +138,43 @@ export async function myRoutines(userId: string) {
     });
 }
 
+/**
+ * Everything the user has logged in one routine, by day and then by week.
+ *
+ * The plan comes along with it: a week nobody trained leaves no session behind,
+ * and the history page still has to draw that week's blanks — which sets they
+ * would have been is only knowable from the plan.
+ */
+export async function routineHistory(routineId: string, userId: string) {
+    const [routine, sessions] = await Promise.all([
+        prisma.routine.findUnique({
+            where: { id: routineId },
+            include: {
+                workouts: {
+                    orderBy: { order: 'asc' },
+                    include: {
+                        exercises: {
+                            orderBy: { order: 'asc' },
+                            include: { sets: { orderBy: { order: 'asc' } } },
+                        },
+                    },
+                },
+            },
+        }),
+        prisma.workoutSession.findMany({
+            where: { routineId, userId },
+            include: { logs: true },
+        }),
+    ]);
+    if (!routine) return null;
+
+    const byDay: Record<string, Record<number, Logs>> = {};
+    for (const session of sessions)
+        (byDay[session.workoutId] ??= {})[session.week] = toLogs(session.logs);
+
+    return { routine, byDay };
+}
+
 export async function routineDetail(routineId: string) {
     return prisma.routine.findUnique({
         where: { id: routineId },

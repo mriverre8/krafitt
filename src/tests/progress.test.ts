@@ -4,6 +4,8 @@ import {
     isSessionComplete,
     isSetEnabled,
     positionFromCursor,
+    setTrend,
+    weekState,
     type Logs,
 } from '@/lib/progress';
 import { describe, expect, it } from 'vitest';
@@ -15,6 +17,50 @@ const plan = (id: string, count: number) => ({
 });
 
 const exercises = [plan('a', 2), plan('b', 1)];
+
+describe('setTrend', () => {
+    const before = { weight: 80, reps: 8 };
+
+    it('counts either number rising as progress', () => {
+        expect(setTrend({ weight: 82.5, reps: 8 }, before)).toBe('up');
+        expect(setTrend({ weight: 80, reps: 9 }, before)).toBe('up');
+    });
+
+    // The usual shape of a working set moving forward: more bar, fewer reps.
+    it('still counts more weight as progress when the reps give way', () => {
+        expect(setTrend({ weight: 85, reps: 6 }, before)).toBe('up');
+        expect(setTrend({ weight: 75, reps: 12 }, before)).toBe('up');
+    });
+
+    it('calls it a drop only when nothing gained', () => {
+        expect(setTrend({ weight: 75, reps: 8 }, before)).toBe('down');
+        expect(setTrend({ weight: 80, reps: 6 }, before)).toBe('down');
+        expect(setTrend({ weight: 75, reps: 6 }, before)).toBe('down');
+    });
+
+    it('says nothing about a set that repeated itself', () => {
+        expect(setTrend({ weight: 80, reps: 8 }, before)).toBe('same');
+    });
+});
+
+describe('weekState', () => {
+    // Two days a week, so the cursor walks 0=W1D1, 1=W1D2, 2=W2D1, 3=W2D2...
+    it('splits the weeks around the cursor, day by day', () => {
+        expect(weekState(3, 1, 0, 2)).toBe('past');
+        expect(weekState(3, 2, 0, 2)).toBe('past');
+        expect(weekState(3, 2, 1, 2)).toBe('current');
+        expect(weekState(3, 3, 0, 2)).toBe('upcoming');
+    });
+
+    it('leaves every week ahead of a routine that has not started', () => {
+        expect(weekState(0, 1, 0, 2)).toBe('current');
+        expect(weekState(0, 1, 1, 2)).toBe('upcoming');
+    });
+
+    it('puts every week behind a routine that is over', () => {
+        expect(weekState(6, 3, 1, 2)).toBe('past');
+    });
+});
 
 describe('positionFromCursor', () => {
     it('walks day by day and then week by week', () => {

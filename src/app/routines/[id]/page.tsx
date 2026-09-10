@@ -15,6 +15,7 @@ import {
     WhenEditing,
     WhenNotEditing,
 } from '@/components/edit-mode';
+import { HistoryLink } from '@/components/history-link';
 import { RoutineDays } from '@/components/routine-days';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
@@ -92,51 +93,57 @@ export default async function RoutinePage({
                     </div>
                 </header>
 
-                {finished ? (
-                    <p
-                        className={`${badgeClass} border-line text-muted border-2`}
-                    >
-                        <CircleCheck
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.finished')}
-                    </p>
-                ) : routine.isActive ? (
-                    <p className={`${badgeClass} bg-volt text-on-volt`}>
-                        <Flame
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.active')}
-                    </p>
-                ) : !complete ? (
-                    <p
-                        className={`${badgeClass} border-line text-muted border-2 border-dashed`}
-                    >
-                        {t('routines.incomplete')}
-                    </p>
-                ) : (
-                    <div className="flex flex-wrap items-center gap-4">
-                        {!locked && (
-                            <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
-                                <CircleCheck
-                                    size={16}
-                                    aria-hidden
-                                />
-                                {t('validate.ok')}
-                            </p>
-                        )}
-                        <WhenNotEditing>
-                            <ActionButton
-                                action={setActiveRoutine.bind(null, routine.id)}
-                                className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
-                            >
-                                {t('routines.markActive')}
-                            </ActionButton>
-                        </WhenNotEditing>
-                    </div>
-                )}
+                <div className="flex flex-wrap items-center gap-4">
+                    {finished ? (
+                        <p
+                            className={`${badgeClass} border-line text-muted border-2`}
+                        >
+                            <CircleCheck
+                                size={13}
+                                aria-hidden
+                            />
+                            {t('routines.finished')}
+                        </p>
+                    ) : routine.isActive ? (
+                        <p className={`${badgeClass} bg-volt text-on-volt`}>
+                            <Flame
+                                size={13}
+                                aria-hidden
+                            />
+                            {t('routines.active')}
+                        </p>
+                    ) : !complete ? (
+                        <p
+                            className={`${badgeClass} border-line text-muted border-2 border-dashed`}
+                        >
+                            {t('routines.incomplete')}
+                        </p>
+                    ) : (
+                        <>
+                            {!locked && (
+                                <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
+                                    <CircleCheck
+                                        size={16}
+                                        aria-hidden
+                                    />
+                                    {t('validate.ok')}
+                                </p>
+                            )}
+                            <WhenNotEditing>
+                                <ActionButton
+                                    action={setActiveRoutine.bind(
+                                        null,
+                                        routine.id
+                                    )}
+                                    className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
+                                >
+                                    {t('routines.markActive')}
+                                </ActionButton>
+                            </WhenNotEditing>
+                        </>
+                    )}
+                    {locked && <HistoryLink routineId={routine.id} />}
+                </div>
                 {routine.workouts.length === 0 && (
                     <p className="text-danger text-sm">
                         {t('validate.noWorkouts')}

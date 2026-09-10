@@ -40,6 +40,39 @@ export function positionFromCursor(
     };
 }
 
+/**
+ * How a logged set stands against the last time that same set was logged.
+ *
+ * Either number rising is progress: adding weight at the cost of a rep is how a
+ * set moves forward, and so is squeezing an extra rep out of the same bar. Only
+ * a set that gave ground on one number and gained on neither has gone back.
+ */
+export type SetTrend = 'up' | 'down' | 'same';
+
+export function setTrend(value: SetValue, previous: SetValue): SetTrend {
+    if (value.weight > previous.weight || value.reps > previous.reps)
+        return 'up';
+    if (value.weight === previous.weight && value.reps === previous.reps)
+        return 'same';
+    return 'down';
+}
+
+/** Where one day of one week sits relative to the cursor: the question the
+    history page asks of every row it draws, so a blank cell can say "you
+    skipped this" rather than "you have not got there yet". */
+export type WeekState = 'past' | 'current' | 'upcoming';
+
+export function weekState(
+    cursor: number,
+    week: number,
+    workoutIndex: number,
+    workoutCount: number
+): WeekState {
+    const position = (week - 1) * workoutCount + workoutIndex;
+    if (cursor > position) return 'past';
+    return cursor === position ? 'current' : 'upcoming';
+}
+
 /** Every workout of every week is behind the cursor. An empty routine is never
     finished, however far the cursor has been pushed. */
 export function isRoutineFinished(

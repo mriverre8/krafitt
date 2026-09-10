@@ -10,6 +10,7 @@ import {
     type PreviousLogs,
 } from '@/lib/progress';
 import { ghostClass } from '@/lib/ui';
+import { HistoryLink } from './history-link';
 import { ProgressLadder } from './progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
@@ -39,9 +40,9 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     const [error, setError] = useState<string | undefined>();
 
     useEffect(() => {
-        hydrate(props.logs);
+        hydrate(`${workout.id}:${week}`, props.logs);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.logs, workout.id]);
+    }, [props.logs, workout.id, week]);
 
     function run(operation: () => Promise<unknown>) {
         startTransition(async () => {
@@ -115,18 +116,23 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     </p>
                 </div>
 
-                {all.length > 0 && (
-                    <div className="space-y-2">
+                <div className="space-y-2">
+                    {all.length > 0 && (
                         <ProgressLadder
                             done={doneSets}
                             total={all.length}
                             label={sessionProgress}
                         />
-                        <p className="figure text-muted text-sm">
-                            {sessionProgress}
-                        </p>
+                    )}
+                    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                        {all.length > 0 && (
+                            <p className="figure text-muted text-sm">
+                                {sessionProgress}
+                            </p>
+                        )}
+                        <HistoryLink routineId={routineId} />
                     </div>
-                )}
+                </div>
             </header>
 
             <FormError message={error} />

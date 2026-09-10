@@ -57,7 +57,7 @@ const full = {
 
 describe('TodayWorkout', () => {
     beforeEach(() => {
-        useSessionStore.setState({ logs: {} });
+        useSessionStore.setState({ logs: {}, day: undefined });
         vi.clearAllMocks();
     });
 
@@ -115,6 +115,40 @@ describe('TodayWorkout', () => {
         fireEvent.click(screen.getByText('Skip to next day'));
         expect(skipDay).not.toHaveBeenCalled();
         expect(refresh).toHaveBeenCalled();
+    });
+
+    // Coming back from the history replays the payload this page was rendered
+    // with, from before the set was logged. Hydrating from it again would empty
+    // the field until the next reload.
+    it('keeps what was logged when the same day comes back stale', () => {
+        const { rerender } = render(<TodayWorkout {...props} />);
+        useSessionStore.getState().save('e1', 0, { weight: 80, reps: 8 });
+        rerender(
+            <TodayWorkout
+                {...props}
+                logs={{}}
+            />
+        );
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue(80);
+    });
+
+    // A one-day routine comes round again under the same workout id, and week 2
+    // starts empty however week 1 ended.
+    it('reloads the day when the week moves on', () => {
+        const { rerender } = render(
+            <TodayWorkout
+                {...props}
+                logs={full}
+            />
+        );
+        rerender(
+            <TodayWorkout
+                {...props}
+                week={3}
+                logs={{}}
+            />
+        );
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue(null);
     });
 
     it('says so when the day has no exercises', () => {

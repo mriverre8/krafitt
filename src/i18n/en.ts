@@ -68,6 +68,33 @@ export const en = {
     'today.noPrevious': '—',
     'today.genericError': 'Something went wrong',
 
+    'progress.link': 'History',
+    // A list of routines is a column of identical links; each one has to say
+    // which routine it opens.
+    'progress.linkLabel': 'History of {name}',
+    'progress.title': 'History',
+    'progress.weeksTrained': '{done}/{total} weeks done',
+    // The grid is read across in one glance: the week column is an abbreviation,
+    // and the full wording travels alongside it for a screen reader.
+    'progress.week': 'W{n}',
+    'progress.weekLabel': 'Week {n}',
+    'progress.weekColumn': 'Week',
+    'progress.setLabel': 'Set {n}',
+    'progress.value': '{weight}×{reps}',
+    'progress.logged': '{weight} kg, {reps} reps',
+    // Paging leaves focus on the arrow, so the count is what announces which
+    // exercise arrived: it names it rather than reading out a bare number.
+    'progress.counter': '{n}/{total}',
+    'progress.exerciseCount': '{name}, exercise {n} of {total}',
+    'progress.prevExercise': 'Previous exercise',
+    'progress.nextExercise': 'Next exercise',
+    // The arrow in a cell, for anyone not seeing the arrow.
+    'progress.up': 'Improved',
+    'progress.down': 'Dropped',
+    'progress.missed': 'Not logged',
+    'progress.upcoming': 'Not trained yet',
+    'progress.tableCaption': '{exercise}: every set, week by week',
+
     'profile.memberSince': 'Member since {date}',
     'profile.stats': '{routines} routines · {workouts} workouts done',
     'profile.activeTitle': 'Active routine',
