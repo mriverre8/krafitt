@@ -160,7 +160,7 @@ export function DaySwitcher({
                             {editing && (
                                 <span
                                     aria-hidden
-                                    className={`mt-1 block h-[3px] rounded-xs ${
+                                    className={`mt-1 block h-0.75 rounded-xs ${
                                         day.unsaved
                                             ? 'bg-draft'
                                             : day.ready

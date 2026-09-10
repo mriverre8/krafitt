@@ -42,7 +42,7 @@ export function ThemeToggle({ theme }: { theme: Theme }) {
         >
             <span
                 className={`bg-volt text-on-volt flex h-5 w-5 items-center justify-center rounded-full transition-transform ${
-                    dark ? 'translate-x-[24px]' : 'translate-x-[2px]'
+                    dark ? 'translate-x-6' : 'translate-x-0.5'
                 }`}
             >
                 {dark ? (

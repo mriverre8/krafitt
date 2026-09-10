@@ -55,7 +55,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                         />
                         <div
                             aria-hidden
-                            className="from-volt via-pulse h-px bg-gradient-to-r to-transparent opacity-60"
+                            className="from-volt via-pulse h-px bg-linear-to-r to-transparent opacity-60"
                         />
                     </header>
                     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">

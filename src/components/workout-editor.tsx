@@ -235,7 +235,7 @@ export function WorkoutEditor({
                         type="button"
                         disabled={pending || plan === saved}
                         onClick={save}
-                        className={`${primaryClass} flex flex-[2] items-center justify-center gap-2`}
+                        className={`${primaryClass} flex flex-2 items-center justify-center gap-2`}
                     >
                         <Save
                             size={16}
