@@ -7,8 +7,11 @@
 
 // Width lives outside the field styling: a row that sizes its own columns
 // cannot win against a w-full baked into the shared string.
+//
+// text-sm below 16px is only safe because layout.tsx pins maximumScale to 1 —
+// iOS Safari auto-zooms into any focused field under 16px otherwise.
 const fieldBase =
-    'rounded-md border-2 bg-surface2 px-3 py-2.5 text-base font-medium text-ink ' +
+    'rounded-md border-2 bg-surface2 px-3 py-2.5 text-sm font-medium text-ink ' +
     'transition-colors placeholder:text-muted placeholder:font-normal ' +
     'focus:border-pulse focus:outline-none disabled:opacity-30';
 

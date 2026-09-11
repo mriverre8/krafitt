@@ -4,7 +4,7 @@ import { I18nProvider } from '@/i18n/i18n-provider';
 import { getDictionary, getLocale } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { getTheme } from '@/lib/theme-server';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
 
@@ -20,6 +20,15 @@ const body = Barlow({
     subsets: ['latin'],
     weight: ['400', '500', '600', '700'],
 });
+
+// The price of sub-16px fields: iOS Safari zooms into any focused input whose
+// font-size is under 16px, and capping the scale is the only thing that stops
+// it. Costs pinch-to-zoom on the whole app (WCAG 1.4.4).
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+};
 
 export const metadata: Metadata = {
     title: 'Krafitt',
