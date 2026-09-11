@@ -18,6 +18,7 @@ import {
     WEIGHT,
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
+import { isSetKind, readSetValue } from '@/lib/sets';
 import type { DayState, FormState } from '@/lib/forms';
 import {
     isRoutineFinished,
@@ -180,25 +181,33 @@ function readPlan(raw: string, t: Translate) {
 
         const rows = [];
         for (const [order, row] of sets.entries()) {
-            const { mode, repMin, repMax, technique } = (row ?? {}) as Record<
-                string,
-                unknown
-            >;
+            const { kind, mode, repMin, repMax, value, technique } = (row ??
+                {}) as Record<string, unknown>;
             if (!isRepMode(mode)) return { error: t('error.sets') };
+            const setKind = kind === undefined ? 'normal' : kind;
+            if (!isSetKind(setKind) || (setKind !== 'normal' && order === 0)) {
+                return { error: t('error.sets') };
+            }
             const min = readReps(repMin);
             const max = readReps(repMax);
             if (min === undefined || max === undefined) {
                 return { error: t('error.repRange') };
             }
+            const amount = readSetValue(value, setKind);
+            if (amount === undefined) return { error: t('error.setValue') };
             rows.push({
                 order,
+                kind: setKind,
                 repMode: mode,
                 repMin: min,
                 repMax: max,
+                value: amount,
                 technique:
-                    (typeof technique === 'string' &&
-                        technique.trim().slice(0, NAME_MAX)) ||
-                    t('technique.linear'),
+                    setKind !== 'normal'
+                        ? ''
+                        : (typeof technique === 'string' &&
+                              technique.trim().slice(0, NAME_MAX)) ||
+                          t('technique.linear'),
             });
         }
         exercises.push({ id, name: name.trim(), sets: rows });
@@ -281,6 +290,8 @@ export async function saveExercises(
                     repMin: true,
                     repMax: true,
                     technique: true,
+                    kind: true,
+                    value: true,
                 },
             },
         },

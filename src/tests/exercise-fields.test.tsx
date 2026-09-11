@@ -3,6 +3,7 @@ import {
     ExerciseFields,
     toDrafts,
     type ExerciseDraft,
+    type SetDraft,
 } from '@/components/workout/exercise-fields';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -11,8 +12,22 @@ const draft: ExerciseDraft = {
     id: 'e1',
     name: 'Bench press',
     sets: [
-        { mode: 'range', repMin: '4', repMax: '6', technique: 'Top set' },
-        { mode: 'amrap', repMin: '', repMax: '', technique: 'Drop set' },
+        {
+            kind: 'normal',
+            mode: 'range',
+            repMin: '4',
+            repMax: '6',
+            value: '',
+            technique: 'Top set',
+        },
+        {
+            kind: 'normal',
+            mode: 'amrap',
+            repMin: '',
+            repMax: '',
+            value: '',
+            technique: 'Back off',
+        },
     ],
 };
 
@@ -55,9 +70,11 @@ describe('toDrafts', () => {
                 name: 'Bench press',
                 sets: [
                     {
+                        kind: 'normal',
                         mode: 'fixed',
                         repMin: '8',
                         repMax: '',
+                        value: '',
                         technique: 'Top set',
                     },
                 ],
@@ -116,6 +133,186 @@ describe('ExerciseFields', () => {
         expect(onChange.mock.calls[1][0].sets).toEqual([draft.sets[0]]);
     });
 
+    describe('drop and rest-pause sets', () => {
+        // Both layouts render the button; jsdom hides neither.
+        const add = (name: string) =>
+            fireEvent.click(screen.getAllByRole('button', { name })[0]);
+
+        it('hangs a new one off the set it was added from', () => {
+            const onChange = vi.fn();
+            fields({ onChange });
+            add('Add drop / rest-pause to set 1');
+            add('Add drop set');
+
+            const sets = onChange.mock.calls[0][0].sets;
+            expect(sets.map((set: SetDraft) => set.kind)).toEqual([
+                'normal',
+                'drop',
+                'normal',
+            ]);
+        });
+
+        it('offers only the kind the set already carries, behind the last', () => {
+            const onChange = vi.fn();
+            const sets = [
+                draft.sets[0],
+                { ...draft.sets[0], kind: 'drop' as const },
+                draft.sets[1],
+            ];
+            fields({ exercise: { ...draft, sets }, onChange });
+
+            // The menu is gone: one working set takes one kind, not both.
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Add drop / rest-pause to set 1',
+                })
+            ).not.toBeInTheDocument();
+
+            add('Add drop set');
+            expect(
+                onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
+            ).toEqual(['normal', 'drop', 'drop', 'normal']);
+        });
+
+        // The button lives on the working set that carries the run, however
+        // long the run gets. The row a control sits in is the wrapper the set
+        // fields share — no Tailwind in jsdom, so the utility class is what
+        // identifies it.
+        const rowOf = (el: Element) => el.closest('[class*="space-y-1.5"]')!;
+
+        it('sits on the working set while it carries no run', () => {
+            fields();
+            const button = screen.getAllByRole('button', {
+                name: 'Add drop / rest-pause to set 1',
+            })[0];
+            expect(rowOf(button)).toContainElement(
+                screen.getByLabelText('Exercise 1, reps type set 1')
+            );
+        });
+
+        it('stays on the working set once the run has grown', () => {
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        { ...draft.sets[0], kind: 'drop' as const },
+                        { ...draft.sets[0], kind: 'drop' as const },
+                    ],
+                },
+            });
+            const button = screen.getAllByRole('button', {
+                name: 'Add drop set',
+            })[0];
+            expect(rowOf(button)).toContainElement(
+                screen.getByLabelText('Exercise 1, reps type set 1')
+            );
+        });
+
+        it('takes the whole run with the working set it hangs off', () => {
+            const onChange = vi.fn();
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        { ...draft.sets[0], kind: 'drop' as const },
+                        { ...draft.sets[0], kind: 'drop' as const },
+                        draft.sets[1],
+                    ],
+                },
+                onChange,
+            });
+            add('Exercise 1, remove set 1');
+            expect(
+                onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
+            ).toEqual(['normal']);
+        });
+
+        it('drops one of the run on its own', () => {
+            const onChange = vi.fn();
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        { ...draft.sets[0], kind: 'drop' as const },
+                        { ...draft.sets[0], kind: 'drop' as const },
+                    ],
+                },
+                onChange,
+            });
+            add('Exercise 1, remove set DS1');
+            expect(
+                onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
+            ).toEqual(['normal', 'drop']);
+        });
+
+        it('will not empty the exercise by taking a run out with its set', () => {
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        { ...draft.sets[0], kind: 'drop' as const },
+                    ],
+                },
+            });
+            for (const button of screen.getAllByRole('button', {
+                name: 'Exercise 1, remove set 1',
+            })) {
+                expect(button).toBeDisabled();
+            }
+        });
+
+        it('swaps the technique field for the amount, and names the row DS1', () => {
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        {
+                            ...draft.sets[0],
+                            kind: 'rest' as const,
+                            value: '15',
+                        },
+                    ],
+                },
+            });
+            expect(
+                screen.queryByLabelText('Exercise 1, technique set RP1')
+            ).not.toBeInTheDocument();
+            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
+                15
+            );
+            expect(
+                screen.getByLabelText('Exercise 1, min reps set RP1')
+            ).toBeInTheDocument();
+        });
+
+        it('marks the pause a rest-pause set has not been given', () => {
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        { ...draft.sets[0], kind: 'rest' as const },
+                    ],
+                },
+                fault: {
+                    name: false,
+                    sets: [
+                        { min: false, max: false, value: false },
+                        { min: false, max: false, value: true },
+                    ],
+                },
+            });
+            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveClass(
+                'border-danger'
+            );
+        });
+    });
+
     it('keeps the last set of the exercise', () => {
         fields({ exercise: { ...draft, sets: [draft.sets[0]] } });
         for (const button of screen.getAllByRole('button', {
@@ -157,8 +354,8 @@ describe('ExerciseFields', () => {
                 fault: {
                     name: true,
                     sets: [
-                        { min: false, max: true },
-                        { min: false, max: false },
+                        { min: false, max: true, value: false },
+                        { min: false, max: false, value: false },
                     ],
                 },
             });
@@ -197,6 +394,11 @@ describe('ExerciseFields', () => {
         const options = [...container.querySelectorAll('datalist option')].map(
             (option) => option.getAttribute('value')
         );
-        expect(options).toEqual(['Straight sets', 'Top set', 'Back off']);
+        expect(options).toEqual([
+            'Straight sets',
+            'Warm-up set',
+            'Top set',
+            'Back off',
+        ]);
     });
 });

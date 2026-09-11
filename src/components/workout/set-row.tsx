@@ -9,19 +9,31 @@ import { useState } from 'react';
 
 export function SetRow({
     setIndex,
+    label,
+    name,
+    sub,
     enabled,
     saved,
     previous,
     onSave,
 }: {
     setIndex: number;
+    /** What this set is called on screen — `3`, or `DS` for a drop set. The
+        index still says where it is in the exercise, which is what gets logged. */
+    label?: string;
+    /** The same, but unique inside the exercise (`DS1`, `DS2`): what the field
+        labels are worded from, since two of them must never share a name. */
+    name?: string;
+    /** A drop or rest-pause set: it hangs off the row above it. */
+    sub?: boolean;
     enabled: boolean;
     saved?: SetValue;
     previous?: PreviousValue;
     onSave: (weight: number, reps: number) => void;
 }) {
     const t = useT();
-    const number = setIndex + 1;
+    const shown = label ?? String(setIndex + 1);
+    const number = name ?? shown;
 
     // No syncing effect: the draft wins, and without one we show what is stored.
     const [draft, setDraft] = useState<{ weight: string; reps: string } | null>(
@@ -42,9 +54,6 @@ export function SetRow({
         (!saved || saved.weight !== parsedWeight || saved.reps !== parsedReps);
     const done = !!saved && !canSave;
 
-    // The left rule is the state: quiet when locked, volt when it is your turn,
-    // green once the set is banked. Colour is never the only signal — the button
-    // swaps its arrow for a tick at the same moment.
     return (
         <div
             className={`flex items-center gap-2 border-l-4 pl-3 transition-colors ${
@@ -52,12 +61,12 @@ export function SetRow({
             }`}
         >
             <span
-                className={`figure w-5 shrink-0 text-xl ${
+                className={`figure w-9 shrink-0 ${sub ? 'text-sm' : 'text-xl'} ${
                     done ? 'text-surge' : enabled ? 'text-ink' : 'text-muted'
                 }`}
             >
                 <span className="sr-only">{t('today.set', { n: number })}</span>
-                <span aria-hidden>{number}</span>
+                <span aria-hidden>{shown}</span>
             </span>
             <span className="text-muted w-16 shrink-0 text-xs tabular-nums md:text-sm">
                 {previous
@@ -103,8 +112,6 @@ export function SetRow({
                 onClick={() => onSave(parsedWeight, parsedReps)}
                 aria-label={t('today.saveLabel', { n: number })}
                 data-done={done}
-                // A banked set keeps its green even though the button is done and
-                // disabled; a locked one goes neutral, because faded orange turns muddy.
                 className={`lift grid h-12 w-12 shrink-0 place-items-center rounded-md disabled:pointer-events-none ${
                     done
                         ? 'bg-surge text-on-surge'

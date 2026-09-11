@@ -85,8 +85,11 @@ describe('workoutFaults', () => {
             'Exercise 1: the sets are not properly defined.',
         ]);
         expect(workoutFaults(exercises)).toEqual({
-            e1: { name: true, sets: [{ min: false, max: true }] },
-            e2: { name: false, sets: [{ min: false, max: false }] },
+            e1: { name: true, sets: [{ min: false, max: true, value: false }] },
+            e2: {
+                name: false,
+                sets: [{ min: false, max: false, value: false }],
+            },
         });
     });
 });

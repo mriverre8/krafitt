@@ -69,7 +69,9 @@ const base = {
 /** A day whose only stored exercise has no name. */
 const flagged = {
     problems: ['Exercise 1: give it a name.'],
-    faults: { e1: { name: true, sets: [{ min: false, max: false }] } },
+    faults: {
+        e1: { name: true, sets: [{ min: false, max: false, value: false }] },
+    },
 };
 
 const save = () => screen.getByRole('button', { name: /Save changes/ });
@@ -190,9 +192,11 @@ describe('WorkoutEditor', () => {
                 name: 'Bench press',
                 sets: [
                     {
+                        kind: 'normal',
                         mode: 'range',
                         repMin: '4',
                         repMax: '6',
+                        value: '',
                         technique: 'Top set',
                     },
                 ],
@@ -202,9 +206,11 @@ describe('WorkoutEditor', () => {
                 name: 'Dips',
                 sets: [
                     {
+                        kind: 'normal',
                         mode: 'range',
                         repMin: '',
                         repMax: '',
+                        value: '',
                         technique: '',
                     },
                 ],

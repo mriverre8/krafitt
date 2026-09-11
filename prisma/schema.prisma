@@ -117,6 +117,10 @@ model ExerciseSet {
   repMin     Int?
   repMax     Int?
   technique  String
+  /// "normal" | "drop" | "rest"
+  kind       String   @default("normal")
+  /// Per cent dropped for a drop set, seconds of pause for a rest-pause. Unused by a working set.
+  value      Int?
 
   @@index([exerciseId, order])
 }

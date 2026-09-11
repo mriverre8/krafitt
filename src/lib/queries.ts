@@ -128,6 +128,8 @@ export async function myRoutines(userId: string) {
                                     repMode: true,
                                     repMin: true,
                                     repMax: true,
+                                    kind: true,
+                                    value: true,
                                 },
                             },
                         },

@@ -1,4 +1,5 @@
 import type { RepSpec } from './reps';
+import type { KindedSet } from './sets';
 
 /**
  * Shape returned by every form server action, consumed by useActionState.
@@ -12,11 +13,12 @@ export type FormAction = (
     data: FormData
 ) => Promise<FormState>;
 
-/** One exercise as the database holds it. */
+/** One exercise as the database holds it. The kind is optional only so that a
+    plain working set can be written without it — the database always has one. */
 export type SavedExercise = {
     id: string;
     name: string;
-    sets: (RepSpec & { technique: string })[];
+    sets: (RepSpec & KindedSet & { technique: string })[];
 };
 
 /**

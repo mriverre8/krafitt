@@ -157,6 +157,20 @@ export const en = {
     'exercise.delete': 'Delete exercise {e}',
     'exercise.removeShort': 'Delete exercise',
     'exercise.removeSetShort': 'Remove set',
+    'exercise.setValue': 'Exercise {e}, {label} amount',
+    'exercise.addSub': 'Add drop / rest-pause',
+    'exercise.addSubLabel': 'Add drop / rest-pause to set {n}',
+    'exercise.addDrop': 'Add drop set',
+    'exercise.addRest': 'Add rest-pause set',
+
+    // A drop or rest-pause set hangs off the working set above it. The short
+    // form is what the row itself shows, where a working set shows its number.
+    'set.drop': 'Drop set',
+    'set.rest': 'Rest-pause set',
+    'set.dropWith': 'Drop set −{value}%',
+    'set.restWith': 'Rest-pause set {value}s',
+    'set.dropUnit': '%',
+    'set.restUnit': 'sec',
 
     'reps.range': 'Range',
     'reps.fixed': 'Fixed',
@@ -176,6 +190,7 @@ export const en = {
     'technique.linear': 'Straight sets',
     'technique.topset': 'Top set',
     'technique.backoff': 'Back off',
+    'technique.warmup': 'Warm-up set',
 
     'error.notSignedIn': 'You are not signed in',
     'error.routineNotFound': 'Routine not found',
@@ -191,6 +206,7 @@ export const en = {
     'error.sets': 'Sets: between 1 and 20',
     'error.exercises': 'Exercises: between 1 and 30',
     'error.repRange': 'The rep range is not valid',
+    'error.setValue': 'The drop or rest-pause amount is not valid',
     'error.weight': 'Invalid weight',
     'error.reps': 'Invalid reps',
     'error.alreadyFinished': 'This workout is already finished',

@@ -8,6 +8,7 @@ import {
     type WeekState,
 } from '@/lib/progress';
 import { formatReps } from '@/lib/reps';
+import { setName, setPlaces, setShortLabel } from '@/lib/sets';
 import { cardClass, iconButtonClass } from '@/lib/ui';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
@@ -55,6 +56,9 @@ export function HistoryExercise({
     onSelect: (position: number) => void;
 }) {
     const t = useT();
+    const places = setPlaces(exercise.sets);
+    const labels = places.map(setShortLabel);
+    const names = places.map(setName);
     const count = {
         name: exercise.name,
         n: position + 1,
@@ -150,12 +154,12 @@ export function HistoryExercise({
                                 >
                                     <span className="sr-only">
                                         {`${t('progress.setLabel', {
-                                            n: setIndex + 1,
+                                            n: names[setIndex],
                                         })}, ${formatReps(set, t)}`}
                                     </span>
                                     <span aria-hidden>
                                         <span className="figure text-ink block text-lg leading-none">
-                                            {setIndex + 1}
+                                            {labels[setIndex]}
                                         </span>
                                         <span className="text-muted mt-1 block text-[11px] whitespace-nowrap">
                                             {formatReps(set, t)}
