@@ -387,6 +387,7 @@ export function ExerciseFields({
                                 </select>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
                                     min={REPS.min}
                                     max={REPS.max}
                                     value={set.repMin}
@@ -407,6 +408,7 @@ export function ExerciseFields({
                                 />
                                 <input
                                     type="number"
+                                    inputMode="numeric"
                                     min={REPS.min}
                                     max={REPS.max}
                                     value={set.repMax}
@@ -433,6 +435,7 @@ export function ExerciseFields({
                                 {sub ? (
                                     <input
                                         type="number"
+                                        inputMode="numeric"
                                         min={limit.min}
                                         max={limit.max}
                                         value={set.value}
