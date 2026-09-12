@@ -2,11 +2,11 @@
 
 import { useT } from '@/i18n/use-t';
 import type { Theme } from '@/lib/theme';
+import { iconButtonClass } from '@/lib/ui';
+import { showModal } from '@/store/modal';
 import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { Dropdown } from '@/components/ui/dropdown';
 import { Wordmark } from '@/components/ui/wordmark';
-import { SettingsPanel } from '@/components/chrome/settings-panel';
 import { UserMenu } from '@/components/chrome/user-menu';
 
 const linkClass =
@@ -65,17 +65,17 @@ export function NavBar({
                         theme={theme}
                     />
                 ) : (
-                    <Dropdown
-                        label={t('nav.settings')}
-                        icon={
-                            <Settings
-                                size={16}
-                                aria-hidden
-                            />
-                        }
+                    <button
+                        type="button"
+                        onClick={() => showModal('settings', { theme })}
+                        aria-label={t('nav.settings')}
+                        className={iconButtonClass}
                     >
-                        {() => <SettingsPanel theme={theme} />}
-                    </Dropdown>
+                        <Settings
+                            size={16}
+                            aria-hidden
+                        />
+                    </button>
                 )}
             </div>
         </nav>

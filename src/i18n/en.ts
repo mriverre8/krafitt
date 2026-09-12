@@ -11,6 +11,8 @@ export const en = {
     'nav.today': 'Today',
     'nav.routines': 'Routines',
     'nav.signOut': 'Sign out',
+    'nav.signOutConfirm':
+        'You will have to sign in again to log your workouts.',
     'nav.theme': 'Switch theme',
     'nav.language': 'Language',
     'nav.settings': 'Settings',

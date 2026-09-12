@@ -12,7 +12,9 @@ export const es: Dict = {
 
     'nav.today': 'Hoy',
     'nav.routines': 'Rutinas',
-    'nav.signOut': 'Salir',
+    'nav.signOut': 'Cerrar sesión',
+    'nav.signOutConfirm':
+        'Tendrás que volver a iniciar sesión para registrar tus entrenos.',
     'nav.theme': 'Cambiar tema',
     'nav.language': 'Idioma',
     'nav.settings': 'Configuración',

@@ -6,9 +6,8 @@ import type { Theme } from '@/lib/theme';
 import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Dropdown } from '@/components/ui/dropdown';
-import { SettingsPanel } from '@/components/chrome/settings-panel';
+import { showModal } from '@/store/modal';
 
 const itemClass =
     'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-pulse';
@@ -18,7 +17,6 @@ const itemClass =
 export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
     const t = useT();
     const router = useRouter();
-    const [showSettings, setShowSettings] = useState(false);
 
     return (
         <Dropdown
@@ -73,8 +71,10 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
 
                     <button
                         type="button"
-                        onClick={() => setShowSettings((value) => !value)}
-                        aria-expanded={showSettings}
+                        onClick={() => {
+                            close();
+                            showModal('settings', { theme });
+                        }}
                         className={itemClass}
                     >
                         <Settings
@@ -83,18 +83,20 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
                         />
                         {t('nav.settings')}
                     </button>
-                    {showSettings && (
-                        <div className="border-line border-t pt-2 pb-1">
-                            <SettingsPanel theme={theme} />
-                        </div>
-                    )}
 
                     <button
                         type="button"
-                        onClick={async () => {
+                        onClick={() => {
                             close();
-                            await authClient.signOut();
-                            router.refresh();
+                            showModal('confirm', {
+                                title: t('nav.signOut'),
+                                message: t('nav.signOutConfirm'),
+                                confirmLabel: t('nav.signOut'),
+                                onConfirm: async () => {
+                                    await authClient.signOut();
+                                    router.refresh();
+                                },
+                            });
                         }}
                         className={itemClass}
                     >

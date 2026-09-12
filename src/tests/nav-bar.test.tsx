@@ -1,11 +1,14 @@
 import { NavBar } from '@/components/chrome/nav-bar';
+import { useModalStore } from '@/store/modal';
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('@/lib/auth-client', () => ({
     authClient: { signOut: vi.fn().mockResolvedValue(undefined) },
 }));
+
+beforeEach(() => useModalStore.getState().close());
 
 /** The menu repeats the app links only below md, where the bar hides them. */
 function openMenu(name: string) {
@@ -48,7 +51,9 @@ describe('NavBar', () => {
         ).toBeInTheDocument();
     });
 
-    it('keeps theme and language out of the bar until settings is opened', () => {
+    // Theme and language live in a modal now: the bar only asks for it, and
+    // what it asks for is the store's business, not the panel's.
+    it('opens settings as a modal when signed out', () => {
         render(
             <NavBar
                 userName={null}
@@ -56,15 +61,12 @@ describe('NavBar', () => {
             />
         );
         expect(screen.queryByLabelText('Switch theme')).not.toBeInTheDocument();
-        expect(
-            screen.queryByRole('group', { name: 'Language' })
-        ).not.toBeInTheDocument();
 
-        const menu = openMenu('Settings');
-        expect(within(menu).getByLabelText('Switch theme')).toBeInTheDocument();
-        expect(
-            within(menu).getByRole('group', { name: 'Language' })
-        ).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+        expect(useModalStore.getState().open).toEqual({
+            kind: 'settings',
+            props: { theme: 'dark' },
+        });
     });
 
     it('puts every signed-in option in the user menu', () => {
@@ -104,7 +106,7 @@ describe('NavBar', () => {
         ).toEqual(['Today', 'Routines', 'Profile', 'Settings', 'Sign out']);
     });
 
-    it('expands language and theme inside the user menu', () => {
+    it('opens the settings modal from the user menu, and closes the menu', () => {
         render(
             <NavBar
                 userName="Ada"
@@ -112,15 +114,33 @@ describe('NavBar', () => {
             />
         );
         const menu = openMenu('Menu');
-        expect(
-            within(menu).queryByLabelText('Switch theme')
-        ).not.toBeInTheDocument();
-
         fireEvent.click(within(menu).getByRole('button', { name: 'Settings' }));
-        expect(within(menu).getByLabelText('Switch theme')).toBeInTheDocument();
-        expect(
-            within(menu).getByRole('group', { name: 'Language' })
-        ).toBeInTheDocument();
+
+        expect(useModalStore.getState().open).toEqual({
+            kind: 'settings',
+            props: { theme: 'dark' },
+        });
+        expect(menu).not.toBeInTheDocument();
+    });
+
+    // Signing out is a click away from losing an unsaved workout, so it asks.
+    it('confirms before signing out', async () => {
+        const { authClient } = await import('@/lib/auth-client');
+        render(
+            <NavBar
+                userName="Ada"
+                theme="dark"
+            />
+        );
+        const menu = openMenu('Menu');
+        fireEvent.click(within(menu).getByRole('button', { name: 'Sign out' }));
+
+        const open = useModalStore.getState().open;
+        expect(open?.kind).toBe('confirm');
+        expect(authClient.signOut).not.toHaveBeenCalled();
+
+        (open?.props as { onConfirm: () => void }).onConfirm();
+        expect(authClient.signOut).toHaveBeenCalled();
     });
 
     it('offers a single settings control, never one per breakpoint', () => {

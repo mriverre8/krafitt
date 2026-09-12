@@ -12,7 +12,9 @@ export const ca: Dict = {
 
     'nav.today': 'Avui',
     'nav.routines': 'Rutines',
-    'nav.signOut': 'Sortir',
+    'nav.signOut': 'Tancar sessió',
+    'nav.signOutConfirm':
+        'Hauràs de tornar a iniciar sessió per registrar els teus entrenaments.',
     'nav.theme': 'Canviar tema',
     'nav.language': 'Idioma',
     'nav.settings': 'Configuració',

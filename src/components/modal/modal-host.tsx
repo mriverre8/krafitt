@@ -20,6 +20,9 @@ const modals = {
     confirm: dynamic(() =>
         import('./confirm-modal').then((m) => m.ConfirmModal)
     ),
+    settings: dynamic(() =>
+        import('./settings-modal').then((m) => m.SettingsModal)
+    ),
 };
 
 export function ModalHost() {
