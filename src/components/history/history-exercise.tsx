@@ -150,7 +150,7 @@ export function HistoryExercise({
                                 <th
                                     key={setIndex}
                                     scope="col"
-                                    className="border-line min-w-18 border-b-2 px-2 pb-2 font-normal"
+                                    className="border-line min-w-14 border-b-2 px-2 pb-2 font-normal"
                                 >
                                     <span className="sr-only">
                                         {`${t('progress.setLabel', {

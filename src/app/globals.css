@@ -114,6 +114,16 @@ body {
   color: var(--on-volt);
 }
 
+/* Headings carry user-typed names — a routine, a day, an exercise — and a name
+   is 60 characters with no promise of a space in them. Anywhere, not break-word:
+   it also shrinks the min-content size, so a heading in a flex row cannot push
+   the page sideways either. Inherited, so the spans inside are covered too. */
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+}
+
 /* Condensed and heavy carries the athletic voice on its own: no italic, no
    extra tracking. Reserved for names and numbers, never for labels. */
 .display {
