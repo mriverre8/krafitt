@@ -27,6 +27,52 @@ export const ca: Dict = {
     'landing.feature3':
         'Registra pes i repeticions sèrie a sèrie, amb els números de la sessió anterior al costat.',
 
+    'landing.lead':
+        "A partir d'aquí només obres l'app: et diu què et toca avui, què vas aixecar l'última vegada i si ho has superat.",
+    'landing.ctaStart': 'Començar a entrenar',
+    'landing.ctaTour': 'Veure com funciona',
+    'landing.chip1': 'Només pesos i repeticions',
+    'landing.chip2': 'Rutines il·limitades',
+    'landing.chip3': 'Pensada per al gimnàs',
+
+    'landing.todayEyebrow': 'Entrenament',
+    'landing.todayTitle': "L'entrenament d'avui",
+
+    'landing.editorEyebrow': 'Editor de rutines',
+    'landing.editorTitle': 'Munta el pla',
+    'landing.spec1Title': "D'1 a {n} setmanes",
+    'landing.spec1Body':
+        'El bloc dura el que tu diguis, i a dins hi caben tants dies d’entrenament com n’entrenis de debò. Els poses nom tu i els ordenes tu.',
+    'landing.spec2Title': 'Fins a {n} exercicis per dia',
+    'landing.spec2Body':
+        'Cada dia de la rutina porta la seva pròpia llista, en l’ordre en què te la fas.',
+    'landing.spec3Title': 'Fins a {n} sèries per exercici',
+    'landing.spec3Body':
+        'Escalfaments, sèries efectives i back offs són files de la mateixa llista, i cadascuna es prescriu pel seu compte.',
+    'landing.spec4Title': 'Rang, fixes o AMRAP',
+    'landing.spec4Body':
+        'Cada sèrie diu com s’escriuen les seves repeticions. Deixa’n una a mitges i la rutina simplement encara no està a punt: mai s’inventa un número per tu.',
+    'landing.spec5Title': 'Una tècnica a cada sèrie',
+    'landing.spec5Body':
+        'El camp et suggereix les quatre de sempre i accepta qualsevol altra que li vulguis posar.',
+    'landing.spec6Title': 'Drop sets i rest-pause',
+    'landing.spec6Body':
+        "Penja'n un de qualsevol sèrie efectiva: de l'1 al 99% menys de barra, o una pausa d'1 a 600 segons. Es prescriuen, es registren i se segueixen com una sèrie més.",
+
+    'landing.progressEyebrow': 'Progrés',
+    'landing.progressTitle': 'Cada sèrie, setmana a setmana',
+    'landing.progressLead':
+        "Una taula per exercici: les setmanes cap avall, les sèries a l'ample. Una fletxa així que una sèrie millora l'última vegada que la vas fer, un guió per a la setmana que et vas saltar i un punt per a la que encara no ha arribat.",
+
+    'landing.joinEyebrow': 'Començar',
+    'landing.joinTitle': 'Munta la teva primera rutina',
+    'landing.joinLead': 'Un correu i una contrasenya. Res més.',
+
+    'landing.demoRoutine': 'Tors / Cama',
+    'landing.day1': 'Empenta A',
+    'landing.exBench': 'Press banca',
+    'landing.exSquat': 'Esquat',
+
     'auth.login': 'Inicia sessió',
     'auth.signup': "Registra't",
     'auth.name': 'Nom',

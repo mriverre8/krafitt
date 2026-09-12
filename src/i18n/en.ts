@@ -1,5 +1,3 @@
-// Source dictionary. Every other locale is typed against it, so a missing key
-// is a compile error rather than a blank string in the UI.
 export const en = {
     'app.name': 'Krafitt',
     'app.tagline':
@@ -8,8 +6,6 @@ export const en = {
     'common.loading': 'Loading',
     'common.cancel': 'Cancel',
     'common.close': 'Close',
-    // The confirming button of a modal names the move it commits, never "OK":
-    // what you are agreeing to has to be readable from the button alone.
     'common.delete': 'Delete',
 
     'nav.today': 'Today',
@@ -28,6 +24,52 @@ export const en = {
         'The home screen shows the workout you owe today, and it stays there until you finish it.',
     'landing.feature3':
         "Log weight and reps set by set, with last session's numbers right next to you.",
+
+    'landing.lead':
+        'After that you just open the app: it tells you what you owe today, what you lifted last time, and whether you have beaten it.',
+    'landing.ctaStart': 'Start training',
+    'landing.ctaTour': 'See how it works',
+    'landing.chip1': 'Just weights and reps',
+    'landing.chip2': 'Unlimited routines',
+    'landing.chip3': 'Made for the gym floor',
+
+    'landing.todayEyebrow': 'Training',
+    'landing.todayTitle': "Today's workout",
+
+    'landing.editorEyebrow': 'Routine editor',
+    'landing.editorTitle': 'Write the plan',
+    'landing.spec1Title': 'From 1 to {n} weeks',
+    'landing.spec1Body':
+        'The block runs as long as you say it does, and holds as many training days as you actually train. You name them and you order them.',
+    'landing.spec2Title': 'Up to {n} exercises a day',
+    'landing.spec2Body':
+        'Every day of the routine keeps its own list, in the order you work through it.',
+    'landing.spec3Title': 'Up to {n} sets an exercise',
+    'landing.spec3Body':
+        'Warm-ups, working sets and back-offs are all rows of the same list, and every one of them is prescribed on its own.',
+    'landing.spec4Title': 'Range, fixed or AMRAP',
+    'landing.spec4Body':
+        'Each set says how its reps are written. Leave one half-written and the routine is simply not ready yet — it never guesses a number for you.',
+    'landing.spec5Title': 'A technique on every set',
+    'landing.spec5Body':
+        'The field suggests the usual four and accepts anything else you call it.',
+    'landing.spec6Title': 'Drop sets and rest-pause',
+    'landing.spec6Body':
+        'Hang one off any working set: 1–99% off the bar, or a pause of 1–600 seconds. They are prescribed, logged and tracked like every other set.',
+
+    'landing.progressEyebrow': 'Progress',
+    'landing.progressTitle': 'Every set, week by week',
+    'landing.progressLead':
+        'One grid per exercise: weeks down the page, sets across. An arrow the moment a set beats the last time you did it, a dash for a week you missed, a dot for one still ahead.',
+
+    'landing.joinEyebrow': 'Get started',
+    'landing.joinTitle': 'Write your first routine',
+    'landing.joinLead': 'An email and a password. Nothing else.',
+
+    'landing.demoRoutine': 'Upper / Lower',
+    'landing.day1': 'Push A',
+    'landing.exBench': 'Bench press',
+    'landing.exSquat': 'Back squat',
 
     'auth.login': 'Sign in',
     'auth.signup': 'Sign up',
@@ -69,26 +111,19 @@ export const en = {
     'today.genericError': 'Something went wrong',
 
     'progress.link': 'History',
-    // A list of routines is a column of identical links; each one has to say
-    // which routine it opens.
     'progress.linkLabel': 'History of {name}',
     'progress.title': 'History',
     'progress.weeksTrained': '{done}/{total} weeks done',
-    // The grid is read across in one glance: the week column is an abbreviation,
-    // and the full wording travels alongside it for a screen reader.
     'progress.week': 'W{n}',
     'progress.weekLabel': 'Week {n}',
     'progress.weekColumn': 'Week',
     'progress.setLabel': 'Set {n}',
     'progress.value': '{weight}×{reps}',
     'progress.logged': '{weight} kg, {reps} reps',
-    // Paging leaves focus on the arrow, so the count is what announces which
-    // exercise arrived: it names it rather than reading out a bare number.
     'progress.counter': '{n}/{total}',
     'progress.exerciseCount': '{name}, exercise {n} of {total}',
     'progress.prevExercise': 'Previous exercise',
     'progress.nextExercise': 'Next exercise',
-    // The arrow in a cell, for anyone not seeing the arrow.
     'progress.up': 'Improved',
     'progress.down': 'Dropped',
     'progress.missed': 'Not logged',
@@ -117,7 +152,6 @@ export const en = {
 
     'routine.meta': '{weeks} weeks · {days} days per week',
     'routine.workouts': 'Workouts',
-    // The day strip shows numbers only; the name travels in the tab's label.
     'routine.dayTab': 'Day {n}, {name}',
     'routine.prevDay': 'Previous day',
     'routine.nextDay': 'Next day',
@@ -137,8 +171,6 @@ export const en = {
     'routine.delete': 'Delete routine',
     'routine.deleteConfirm': 'Delete the routine {name}? All progress is lost.',
 
-    // A day holds several exercises at once, so every field label carries its
-    // exercise number {e}: "Min reps set 1" alone would name four inputs.
     'exercise.namePlaceholder': 'Exercise',
     'exercise.nameLabel': 'Exercise {e} name',
     'exercise.repMode': 'Exercise {e}, reps type set {n}',
@@ -152,7 +184,6 @@ export const en = {
     'exercise.add': 'Add exercise',
     'exercise.saveChanges': 'Save changes',
     'exercise.undo': 'Undo changes',
-    // Short form: below md, Undo shares the save bar and the full label wraps.
     'exercise.undoShort': 'Undo',
     'exercise.delete': 'Delete exercise {e}',
     'exercise.removeShort': 'Delete exercise',
@@ -163,8 +194,6 @@ export const en = {
     'exercise.addDrop': 'Add drop set',
     'exercise.addRest': 'Add rest-pause set',
 
-    // A drop or rest-pause set hangs off the working set above it. The short
-    // form is what the row itself shows, where a working set shows its number.
     'set.drop': 'Drop set',
     'set.rest': 'Rest-pause set',
     'set.dropWith': 'Drop set −{value}%',
@@ -179,7 +208,6 @@ export const en = {
 
     'validate.ok': 'The routine is complete. You can set it as active.',
     'validate.noWorkouts': 'The routine has no days.',
-    // Shown inside the day's own card, so they never name the day.
     'validate.emptyDay': 'No exercises yet.',
     'validate.exerciseN': 'Exercise {n}',
     'validate.noName': '{where}: give it a name.',

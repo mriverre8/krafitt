@@ -233,6 +233,40 @@ html:has(dialog[open]) {
   outline: none;
 }
 
+/* The landing page is the one screen with anchors in it, and the one screen
+   long enough for a section to arrive rather than just be there. Both are
+   motion, so both live behind the same preference.
+
+   The reveal is driven by the scroll position itself rather than by an
+   observer: no JS, and nothing to run on a browser that has not got it. The
+   range ends at `entry 60%` on purpose — anything already on screen when the
+   page loads is past the end of it and renders at the final state, so a
+   missing timeline can never leave a section invisible. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Scoped to the page that has anchors in it, the same way the modal rule
+     above is scoped to a page with a dialog open. Left global it would also
+     catch the day rack's scrollIntoView, and animate a control that is meant
+     to answer a tap instantly. */
+  html:has([data-landing]) {
+    scroll-behavior: smooth;
+  }
+
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

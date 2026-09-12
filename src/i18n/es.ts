@@ -27,6 +27,52 @@ export const es: Dict = {
     'landing.feature3':
         'Registra peso y repeticiones serie a serie, con los números de la sesión anterior al lado.',
 
+    'landing.lead':
+        'A partir de ahí solo abres la app: te dice qué te toca hoy, qué levantaste la última vez y si lo has superado.',
+    'landing.ctaStart': 'Empezar a entrenar',
+    'landing.ctaTour': 'Ver cómo funciona',
+    'landing.chip1': 'Solo pesos y repeticiones',
+    'landing.chip2': 'Rutinas ilimitadas',
+    'landing.chip3': 'Pensada para el gimnasio',
+
+    'landing.todayEyebrow': 'Entrenamiento',
+    'landing.todayTitle': 'El entreno de hoy',
+
+    'landing.editorEyebrow': 'Editor de rutinas',
+    'landing.editorTitle': 'Monta el plan',
+    'landing.spec1Title': 'De 1 a {n} semanas',
+    'landing.spec1Body':
+        'El bloque dura lo que tú digas, y dentro caben tantos días de entreno como entrenes de verdad. Los nombras tú y los ordenas tú.',
+    'landing.spec2Title': 'Hasta {n} ejercicios por día',
+    'landing.spec2Body':
+        'Cada día de la rutina lleva su propia lista, en el orden en que te la haces.',
+    'landing.spec3Title': 'Hasta {n} series por ejercicio',
+    'landing.spec3Body':
+        'Calentamientos, series efectivas y back offs son filas de la misma lista, y cada una se prescribe por su cuenta.',
+    'landing.spec4Title': 'Rango, fijas o AMRAP',
+    'landing.spec4Body':
+        'Cada serie dice cómo se escriben sus repeticiones. Deja una a medias y la rutina simplemente aún no está lista: nunca se inventa un número por ti.',
+    'landing.spec5Title': 'Una técnica en cada serie',
+    'landing.spec5Body':
+        'El campo te sugiere las cuatro de siempre y acepta cualquier otra que le quieras poner.',
+    'landing.spec6Title': 'Drop sets y rest-pause',
+    'landing.spec6Body':
+        'Cuelga uno de cualquier serie efectiva: del 1 al 99% menos de barra, o una pausa de 1 a 600 segundos. Se prescriben, se registran y se siguen como una serie más.',
+
+    'landing.progressEyebrow': 'Progreso',
+    'landing.progressTitle': 'Cada serie, semana a semana',
+    'landing.progressLead':
+        'Una tabla por ejercicio: las semanas hacia abajo, las series a lo ancho. Una flecha en cuanto una serie mejora la última vez que la hiciste, una raya para la semana que te saltaste y un punto para la que aún no ha llegado.',
+
+    'landing.joinEyebrow': 'Empezar',
+    'landing.joinTitle': 'Monta tu primera rutina',
+    'landing.joinLead': 'Un email y una contraseña. Nada más.',
+
+    'landing.demoRoutine': 'Torso / Pierna',
+    'landing.day1': 'Empuje A',
+    'landing.exBench': 'Press banca',
+    'landing.exSquat': 'Sentadilla',
+
     'auth.login': 'Iniciar sesión',
     'auth.signup': 'Registrarse',
     'auth.name': 'Nombre',
