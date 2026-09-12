@@ -148,6 +148,62 @@ body {
   }
 }
 
+/* The legal pages are the only long-form prose in the app, and the only place
+   markup arrives as markdown rather than as components — so it is styled here
+   by element instead of with utilities on tags that do not exist yet.
+   Held to ~68ch: the app's container is 48rem, which is close to 90 characters
+   of Barlow and too wide a measure to read a policy at. */
+.markdown {
+  max-inline-size: 68ch;
+  line-height: 1.65;
+}
+.markdown > * + * {
+  margin-block-start: 1.1em;
+}
+.markdown h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-size: 1.75rem;
+  margin-block-start: 2.25rem;
+  /* The same thick left rule every card in the app wears. */
+  border-left: 3px solid var(--volt);
+  padding-left: 0.6rem;
+}
+.markdown h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 1.125rem;
+  margin-block-start: 1.75rem;
+}
+.markdown a {
+  color: var(--pulse);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  /* A URL in a policy has no spaces to break at. */
+  overflow-wrap: anywhere;
+}
+.markdown strong {
+  font-weight: 700;
+}
+/* Reserved for the "Last updated" stamp, which is metadata, not prose. */
+.markdown em {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.markdown code {
+  background-color: var(--surface-2);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
+}
+
 /* One hover language for the whole app: a 2px lift plus a colour commitment.
    Transform and colour only, so it stays off the layout and on the compositor. */
 .lift {

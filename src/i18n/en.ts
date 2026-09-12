@@ -20,6 +20,17 @@ export const en = {
     'nav.profile': 'Profile',
     'nav.back': 'Back',
 
+    'footer.project': 'Project links',
+    'footer.legal': 'Legal',
+    'footer.source': 'Source code',
+    'footer.profile': 'GitHub profile',
+    'footer.contact': 'Contact',
+    'footer.rights': '© {year} Krafitt. All rights reserved.',
+
+    'legal.privacy': 'Privacy policy',
+    'legal.terms': 'Terms of service',
+    'legal.cookies': 'Cookie policy',
+
     'landing.feature1':
         'Build routines with their days, exercises, sets, rep ranges and technique.',
     'landing.feature2':

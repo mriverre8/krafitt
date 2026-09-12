@@ -22,6 +22,17 @@ export const es: Dict = {
     'nav.profile': 'Perfil',
     'nav.back': 'Volver',
 
+    'footer.project': 'Enlaces del proyecto',
+    'footer.legal': 'Legal',
+    'footer.source': 'Código fuente',
+    'footer.profile': 'Perfil de GitHub',
+    'footer.contact': 'Contacto',
+    'footer.rights': '© {year} Krafitt. Todos los derechos reservados.',
+
+    'legal.privacy': 'Política de privacidad',
+    'legal.terms': 'Términos del servicio',
+    'legal.cookies': 'Política de cookies',
+
     'landing.feature1':
         'Monta rutinas con sus días, ejercicios, series, rango de repeticiones y técnica.',
     'landing.feature2':

@@ -22,6 +22,17 @@ export const ca: Dict = {
     'nav.profile': 'Perfil',
     'nav.back': 'Tornar',
 
+    'footer.project': 'Enllaços del projecte',
+    'footer.legal': 'Legal',
+    'footer.source': 'Codi font',
+    'footer.profile': 'Perfil de GitHub',
+    'footer.contact': 'Contacte',
+    'footer.rights': '© {year} Krafitt. Tots els drets reservats.',
+
+    'legal.privacy': 'Política de privacitat',
+    'legal.terms': 'Termes del servei',
+    'legal.cookies': 'Política de galetes',
+
     'landing.feature1':
         'Munta rutines amb els seus dies, exercicis, sèries, rang de repeticions i tècnica.',
     'landing.feature2':

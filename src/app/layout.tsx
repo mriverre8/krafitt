@@ -1,4 +1,5 @@
 import { ModalHost } from '@/components/modal/modal-host';
+import { Footer } from '@/components/chrome/footer';
 import { NavBar } from '@/components/chrome/nav-bar';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import { getDictionary, getLocale } from '@/i18n/server';
@@ -71,6 +72,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
                         {children}
                     </main>
+                    <Footer />
                     <ModalHost />
                 </I18nProvider>
             </body>
