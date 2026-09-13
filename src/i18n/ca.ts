@@ -100,6 +100,7 @@ export const ca: Dict = {
     'auth.signup': "Registra't",
     'auth.name': 'Nom',
     'auth.email': 'Correu',
+    'auth.emailHint': 'Alguna cosa com nom@exemple.com',
     'auth.password': 'Contrasenya',
     'auth.passwordPlaceholder': 'Contrasenya (mín. 8)',
     'auth.submitLogin': 'Som-hi',

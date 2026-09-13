@@ -37,6 +37,25 @@ describe('AuthForms', () => {
         );
     });
 
+    // type="email" would accept `asdf@asdf`; the pattern is what asks for a TLD.
+    it('demands a TLD on the email', async () => {
+        const { EMAIL_PATTERN } = await import('@/lib/constants');
+        render(<AuthForms />);
+        expect(screen.getByLabelText('Email')).toHaveAttribute(
+            'pattern',
+            EMAIL_PATTERN
+        );
+
+        // Anchored the way the browser anchors the attribute.
+        const pattern = new RegExp(`^(?:${EMAIL_PATTERN})$`);
+        expect(pattern.test('ana@gmail.com')).toBe(true);
+        expect(pattern.test('ana.lopez+gym@sub.dominio.es')).toBe(true);
+        expect(pattern.test('a@b.co')).toBe(true);
+        expect(pattern.test('asdf@asdf')).toBe(false);
+        expect(pattern.test('ana@gmail.c')).toBe(false);
+        expect(pattern.test('ana@gmail.123')).toBe(false);
+    });
+
     it('signs in with the typed credentials', async () => {
         render(<AuthForms />);
         fireEvent.change(screen.getByLabelText('Email'), {

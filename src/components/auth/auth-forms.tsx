@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
-import { USER_NAME_MAX } from '@/lib/constants';
+import { EMAIL_PATTERN, USER_NAME_MAX } from '@/lib/constants';
 import { inputClass, primaryClass } from '@/lib/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -83,6 +83,8 @@ export function AuthForms() {
                     name="email"
                     type="email"
                     required
+                    pattern={EMAIL_PATTERN}
+                    title={t('auth.emailHint')}
                     autoComplete="email"
                     aria-label={t('auth.email')}
                     placeholder={t('auth.email')}

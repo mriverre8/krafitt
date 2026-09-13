@@ -100,6 +100,7 @@ export const es: Dict = {
     'auth.signup': 'Registrarse',
     'auth.name': 'Nombre',
     'auth.email': 'Email',
+    'auth.emailHint': 'Algo como nombre@ejemplo.com',
     'auth.password': 'Contraseña',
     'auth.passwordPlaceholder': 'Contraseña (mín. 8)',
     'auth.submitLogin': 'Vamos',

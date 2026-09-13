@@ -7,6 +7,8 @@ export const NAME_MAX = 60;
 /** Longest name a user account can have, at signup and when changed later. */
 export const USER_NAME_MAX = 30;
 
+export const EMAIL_PATTERN = '[^\\s@]+@[^\\s@]+\\.[a-zA-Z]{2,}';
+
 export const WEEKS = { min: 1, max: 52 };
 export const EXERCISES = { max: 30 };
 export const SETS = { min: 1, max: 20 };

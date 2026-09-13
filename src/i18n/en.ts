@@ -98,6 +98,7 @@ export const en = {
     'auth.signup': 'Sign up',
     'auth.name': 'Name',
     'auth.email': 'Email',
+    'auth.emailHint': 'Something like name@example.com',
     'auth.password': 'Password',
     'auth.passwordPlaceholder': 'Password (min. 8)',
     'auth.submitLogin': "Let's go",
