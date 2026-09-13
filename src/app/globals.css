@@ -114,6 +114,18 @@ body {
   color: var(--on-volt);
 }
 
+/* The standard properties, not ::-webkit-scrollbar: both are inherited, so one
+   declaration on the root reaches every scroll container in the app — the page,
+   the day rack, a dialog's overflow — with no per-element rules to keep in sync.
+   The thumb is --line, the same hairline every card is drawn with, on a
+   transparent track so the volt bloom behind the page shows through; both swap
+   with the theme for free. A browser too old for these keeps its native
+   scrollbar, which is the correct fallback. */
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
 /* Headings carry user-typed names — a routine, a day, an exercise — and a name
    is 60 characters with no promise of a space in them. Anywhere, not break-word:
    it also shrinks the min-content size, so a heading in a flex row cannot push
