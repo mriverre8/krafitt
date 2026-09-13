@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
+import { USER_NAME_MAX } from '@/lib/constants';
 import { inputClass, primaryClass } from '@/lib/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -72,6 +73,7 @@ export function AuthForms() {
                     <input
                         name="name"
                         required
+                        maxLength={USER_NAME_MAX}
                         aria-label={t('auth.name')}
                         placeholder={t('auth.name')}
                         className={inputClass}

@@ -15,9 +15,11 @@ const linkClass =
 
 export function NavBar({
     userName,
+    userImage,
     theme,
 }: {
     userName: string | null;
+    userImage: string | null;
     theme: Theme;
 }) {
     const t = useT();
@@ -62,6 +64,7 @@ export function NavBar({
                 {userName !== null ? (
                     <UserMenu
                         name={userName}
+                        image={userImage}
                         theme={theme}
                     />
                 ) : (

@@ -54,6 +54,7 @@ export default async function ProfilePage() {
             <header className={`${cardClass} flex items-center gap-4`}>
                 <Avatar
                     name={user.name}
+                    src={user.image}
                     className="size-16 text-2xl md:size-20 md:text-3xl"
                 />
                 <div className="min-w-0">

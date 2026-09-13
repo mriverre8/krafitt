@@ -1,5 +1,5 @@
 import { Avatar } from '@/components/ui/avatar';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 describe('Avatar', () => {
@@ -16,6 +16,20 @@ describe('Avatar', () => {
     it('keeps an accented initial whole', () => {
         const { container } = render(<Avatar name="Ángel Ñuñez" />);
         expect(container.textContent).toBe('ÁÑ');
+    });
+
+    it('shows the picture instead of the monogram once there is one', () => {
+        const { container } = render(
+            <Avatar
+                name="Marc"
+                src="data:image/jpeg;base64,abc"
+            />
+        );
+        expect(container.textContent).toBe('');
+        expect(container.querySelector('img')).toHaveAttribute(
+            'src',
+            'data:image/jpeg;base64,abc'
+        );
     });
 
     it('stays out of the accessibility tree', () => {

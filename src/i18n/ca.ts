@@ -9,6 +9,7 @@ export const ca: Dict = {
     'common.close': 'Tancar',
     'common.delete': 'Esborrar',
     'common.loading': 'Carregant',
+    'common.save': 'Desar',
 
     'nav.today': 'Avui',
     'nav.routines': 'Rutines',
@@ -21,6 +22,15 @@ export const ca: Dict = {
     'nav.menu': 'Menú',
     'nav.profile': 'Perfil',
     'nav.back': 'Tornar',
+    'nav.username': "Nom d'usuari",
+    'nav.picture': 'Foto de perfil',
+    'nav.uploadPicture': 'Pujar',
+    'nav.removePicture': 'Eliminar imatge',
+    'nav.pictureFailed': "No s'ha pogut llegir aquesta imatge",
+    'nav.deleteAccount': 'Eliminar compte',
+    'nav.delete': 'Eliminar',
+    'nav.deleteAccountConfirm':
+        "Això elimina el teu compte, rutines i historial d'entrenaments de manera permanent. No es pot desfer.",
 
     'footer.project': 'Enllaços del projecte',
     'footer.legal': 'Legal',

@@ -9,6 +9,7 @@ export const es: Dict = {
     'common.cancel': 'Cancelar',
     'common.close': 'Cerrar',
     'common.delete': 'Borrar',
+    'common.save': 'Guardar',
 
     'nav.today': 'Hoy',
     'nav.routines': 'Rutinas',
@@ -21,6 +22,15 @@ export const es: Dict = {
     'nav.menu': 'Menú',
     'nav.profile': 'Perfil',
     'nav.back': 'Volver',
+    'nav.username': 'Nombre de usuario',
+    'nav.picture': 'Foto de perfil',
+    'nav.uploadPicture': 'Subir',
+    'nav.removePicture': 'Eliminar imagen',
+    'nav.pictureFailed': 'No se ha podido leer esa imagen',
+    'nav.deleteAccount': 'Eliminar cuenta',
+    'nav.delete': 'Eliminar',
+    'nav.deleteAccountConfirm':
+        'Esto elimina tu cuenta, rutinas e historial de entrenos de forma permanente. No se puede deshacer.',
 
     'footer.project': 'Enlaces del proyecto',
     'footer.legal': 'Legal',

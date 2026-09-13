@@ -25,6 +25,18 @@ describe('AuthForms', () => {
         expect(screen.getByLabelText('Name')).toBeInTheDocument();
     });
 
+    // The same cap Settings enforces later: a name that signs up too long
+    // could never be saved again from there.
+    it('caps the signup name at the length an account allows', async () => {
+        const { USER_NAME_MAX } = await import('@/lib/constants');
+        render(<AuthForms />);
+        fireEvent.click(screen.getByRole('button', { name: 'Sign up' }));
+        expect(screen.getByLabelText('Name')).toHaveAttribute(
+            'maxlength',
+            String(USER_NAME_MAX)
+        );
+    });
+
     it('signs in with the typed credentials', async () => {
         render(<AuthForms />);
         fireEvent.change(screen.getByLabelText('Email'), {

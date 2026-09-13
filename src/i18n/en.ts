@@ -7,6 +7,7 @@ export const en = {
     'common.cancel': 'Cancel',
     'common.close': 'Close',
     'common.delete': 'Delete',
+    'common.save': 'Save',
 
     'nav.today': 'Today',
     'nav.routines': 'Routines',
@@ -19,6 +20,15 @@ export const en = {
     'nav.menu': 'Menu',
     'nav.profile': 'Profile',
     'nav.back': 'Back',
+    'nav.username': 'Username',
+    'nav.picture': 'Profile picture',
+    'nav.uploadPicture': 'Upload',
+    'nav.removePicture': 'Remove picture',
+    'nav.pictureFailed': 'Could not read that image',
+    'nav.deleteAccount': 'Delete account',
+    'nav.delete': 'Delete',
+    'nav.deleteAccountConfirm':
+        'This permanently deletes your account, routines and workout history. This cannot be undone.',
 
     'footer.project': 'Project links',
     'footer.legal': 'Legal',

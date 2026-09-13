@@ -6,6 +6,7 @@ import type { Theme } from '@/lib/theme';
 import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Avatar } from '@/components/ui/avatar';
 import { Dropdown } from '@/components/ui/dropdown';
 import { showModal } from '@/store/modal';
 
@@ -14,7 +15,15 @@ const itemClass =
 
 /** Every signed-in action behind a single user icon. The app links are
     already in the bar from md up, so the menu only repeats them below it. */
-export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
+export function UserMenu({
+    name,
+    image,
+    theme,
+}: {
+    name: string;
+    image: string | null;
+    theme: Theme;
+}) {
     const t = useT();
     const router = useRouter();
 
@@ -23,10 +32,18 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
             label={t('nav.menu')}
             icon={
                 <span className="flex items-center gap-1.5">
-                    <User
-                        size={16}
-                        aria-hidden
-                    />
+                    {image ? (
+                        <Avatar
+                            name={name}
+                            src={image}
+                            className="size-5"
+                        />
+                    ) : (
+                        <User
+                            size={16}
+                            aria-hidden
+                        />
+                    )}
                     <span className="hidden max-w-32 truncate text-sm font-semibold md:inline">
                         {name}
                     </span>
@@ -73,7 +90,11 @@ export function UserMenu({ name, theme }: { name: string; theme: Theme }) {
                         type="button"
                         onClick={() => {
                             close();
-                            showModal('settings', { theme });
+                            showModal('settings', {
+                                theme,
+                                userName: name,
+                                userImage: image,
+                            });
                         }}
                         className={itemClass}
                     >
