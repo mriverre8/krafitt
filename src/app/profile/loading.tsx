@@ -5,7 +5,7 @@ export default function Loading() {
     return (
         <Skeleton>
             <div className={`${cardClass} flex items-center gap-4`}>
-                <Bar className="size-16 shrink-0 rounded-full! md:size-20" />
+                <Bar className="size-16 shrink-0 rounded-md! md:size-20" />
                 <div className="min-w-0 flex-1 space-y-2">
                     <Bar className="h-9 w-2/3 md:h-11" />
                     <Bar className="h-3 w-40" />
