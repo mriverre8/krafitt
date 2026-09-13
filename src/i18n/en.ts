@@ -77,7 +77,7 @@ export const en = {
 
     'landing.joinEyebrow': 'Get started',
     'landing.joinTitle': 'Write your first routine',
-    'landing.joinLead': 'An email and a password. Nothing else.',
+    'landing.joinLead': 'Google, GitHub, or an email and a password.',
 
     'landing.demoRoutine': 'Upper / Lower',
     'landing.day1': 'Push A',
@@ -93,6 +93,8 @@ export const en = {
     'auth.submitLogin': "Let's go",
     'auth.submitSignup': 'Create account',
     'auth.failed': 'Could not complete',
+    'auth.continueWith': 'Continue with {provider}',
+    'auth.or': 'or',
 
     'home.noRoutineTitle': 'No active routine',
     'home.noRoutineBody':

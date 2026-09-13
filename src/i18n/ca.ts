@@ -79,7 +79,7 @@ export const ca: Dict = {
 
     'landing.joinEyebrow': 'Començar',
     'landing.joinTitle': 'Munta la teva primera rutina',
-    'landing.joinLead': 'Un correu i una contrasenya. Res més.',
+    'landing.joinLead': 'Google, GitHub o un correu i una contrasenya.',
 
     'landing.demoRoutine': 'Tors / Cama',
     'landing.day1': 'Empenta A',
@@ -95,6 +95,8 @@ export const ca: Dict = {
     'auth.submitLogin': 'Som-hi',
     'auth.submitSignup': 'Crear compte',
     'auth.failed': "No s'ha pogut completar",
+    'auth.continueWith': 'Continua amb {provider}',
+    'auth.or': 'o',
 
     'home.noRoutineTitle': 'No tens cap rutina activa',
     'home.noRoutineBody':

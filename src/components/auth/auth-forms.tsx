@@ -6,6 +6,7 @@ import { inputClass, primaryClass } from '@/lib/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FormError } from '@/components/ui/form-error';
+import { SocialButtons } from '@/components/auth/social-buttons';
 
 type Mode = 'login' | 'signup';
 
@@ -62,6 +63,8 @@ export function AuthForms() {
                     </button>
                 ))}
             </div>
+
+            <SocialButtons onError={setError} />
 
             <form
                 onSubmit={onSubmit}
