@@ -102,7 +102,10 @@ export function SetRow({
                 disabled={!enabled}
                 value={reps}
                 onChange={(event) =>
-                    setDraft({ weight, reps: event.target.value })
+                    setDraft({
+                        weight,
+                        reps: event.target.value.slice(0, REPS.digits),
+                    })
                 }
                 className={`${inputClass} figure h-12 text-center text-lg`}
             />

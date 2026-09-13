@@ -423,8 +423,10 @@ export function ExerciseFields({
                                                 readOnly={readOnly}
                                                 onChange={(event) =>
                                                     updateSet(setIndex, {
-                                                        repMin: event.target
-                                                            .value,
+                                                        repMin: event.target.value.slice(
+                                                            0,
+                                                            REPS.digits
+                                                        ),
                                                     })
                                                 }
                                                 placeholder={t('today.reps')}
@@ -457,9 +459,10 @@ export function ExerciseFields({
                                                             updateSet(
                                                                 setIndex,
                                                                 {
-                                                                    repMax: event
-                                                                        .target
-                                                                        .value,
+                                                                    repMax: event.target.value.slice(
+                                                                        0,
+                                                                        REPS.digits
+                                                                    ),
                                                                 }
                                                             )
                                                         }
@@ -494,7 +497,10 @@ export function ExerciseFields({
                                         readOnly={readOnly}
                                         onChange={(event) =>
                                             updateSet(setIndex, {
-                                                value: event.target.value,
+                                                value: event.target.value.slice(
+                                                    0,
+                                                    limit.digits
+                                                ),
                                             })
                                         }
                                         placeholder={t(

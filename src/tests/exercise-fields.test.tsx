@@ -1,5 +1,6 @@
 import {
     emptyExercise,
+    emptySet,
     ExerciseFields,
     toDrafts,
     type ExerciseDraft,
@@ -112,6 +113,30 @@ describe('ExerciseFields', () => {
             target: { value: 'Incline press' },
         });
         expect(onChange).toHaveBeenCalledWith({ name: 'Incline press' });
+    });
+
+    it('cuts a typed number down to the digits it is allowed', () => {
+        // `maxLength` does nothing on a number input, so the cap has to hold
+        // here: three digits for reps, two for a drop or rest-pause value.
+        const onChange = vi.fn();
+        fields({ onChange });
+        fireEvent.change(screen.getByLabelText('Exercise 1, min reps set 1'), {
+            target: { value: '1234' },
+        });
+        expect(onChange.mock.calls[0][0].sets[0].repMin).toBe('123');
+
+        onChange.mockClear();
+        fields({
+            onChange,
+            exercise: {
+                ...draft,
+                sets: [draft.sets[0], { ...emptySet, kind: 'rest' }],
+            },
+        });
+        fireEvent.change(screen.getByPlaceholderText('sec'), {
+            target: { value: '123' },
+        });
+        expect(onChange.mock.calls[0][0].sets[1].value).toBe('12');
     });
 
     it('adds and removes sets one at a time', () => {
