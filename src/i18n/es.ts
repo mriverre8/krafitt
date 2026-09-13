@@ -80,7 +80,7 @@ export const es: Dict = {
         'El campo te sugiere las cuatro de siempre y acepta cualquier otra que le quieras poner.',
     'landing.spec6Title': 'Drop sets y rest-pause',
     'landing.spec6Body':
-        'Cuelga uno de cualquier serie efectiva: del 1 al 99% menos de barra, o una pausa de 1 a 600 segundos. Se prescriben, se registran y se siguen como una serie más.',
+        'Cuelga uno de cualquier serie efectiva: del 1 al 99% menos de barra, o una pausa de 1 a 60 segundos. Se prescriben, se registran y se siguen como una serie más.',
 
     'landing.progressEyebrow': 'Progreso',
     'landing.progressTitle': 'Cada serie, semana a semana',

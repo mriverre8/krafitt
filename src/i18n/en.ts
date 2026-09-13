@@ -78,7 +78,7 @@ export const en = {
         'The field suggests the usual four and accepts anything else you call it.',
     'landing.spec6Title': 'Drop sets and rest-pause',
     'landing.spec6Body':
-        'Hang one off any working set: 1–99% off the bar, or a pause of 1–600 seconds. They are prescribed, logged and tracked like every other set.',
+        'Hang one off any working set: 1–99% off the bar, or a pause of 1–60 seconds. They are prescribed, logged and tracked like every other set.',
 
     'landing.progressEyebrow': 'Progress',
     'landing.progressTitle': 'Every set, week by week',

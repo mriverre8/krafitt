@@ -102,7 +102,8 @@ describe('readSetValue', () => {
         expect(readSetValue('20', 'drop')).toBe(20);
         expect(readSetValue('120', 'drop')).toBeUndefined();
         expect(readSetValue('0', 'rest')).toBeUndefined();
-        expect(readSetValue('90', 'rest')).toBe(90);
+        expect(readSetValue('90', 'rest')).toBeUndefined();
+        expect(readSetValue('45', 'rest')).toBe(45);
     });
 
     it('drops whatever a working set was sent', () => {

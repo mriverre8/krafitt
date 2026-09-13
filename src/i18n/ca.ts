@@ -80,7 +80,7 @@ export const ca: Dict = {
         'El camp et suggereix les quatre de sempre i accepta qualsevol altra que li vulguis posar.',
     'landing.spec6Title': 'Drop sets i rest-pause',
     'landing.spec6Body':
-        "Penja'n un de qualsevol sèrie efectiva: de l'1 al 99% menys de barra, o una pausa d'1 a 600 segons. Es prescriuen, es registren i se segueixen com una sèrie més.",
+        "Penja'n un de qualsevol sèrie efectiva: de l'1 al 99% menys de barra, o una pausa d'1 a 60 segons. Es prescriuen, es registren i se segueixen com una sèrie més.",
 
     'landing.progressEyebrow': 'Progrés',
     'landing.progressTitle': 'Cada sèrie, setmana a setmana',
