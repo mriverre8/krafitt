@@ -236,6 +236,7 @@ export const en = {
     'reps.fixed': 'Fixed',
     'reps.amrap': 'AMRAP',
     'reps.unset': 'Reps to define',
+    'reps.to': 'to',
 
     'validate.ok': 'The routine is complete. You can set it as active.',
     'validate.noWorkouts': 'The routine has no days.',

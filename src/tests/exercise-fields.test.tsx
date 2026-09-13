@@ -5,7 +5,7 @@ import {
     type ExerciseDraft,
     type SetDraft,
 } from '@/components/workout/exercise-fields';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const draft: ExerciseDraft = {
@@ -324,13 +324,37 @@ describe('ExerciseFields', () => {
 
     // jsdom has no Tailwind, so the utility class is what we can assert on.
     it('shows only the inputs the rep type needs', () => {
+        // AMRAP needs neither number, a fixed count only the first, and a range
+        // both of them joined by a word.
         fields({ exercise: { ...draft, sets: [draft.sets[1]] } });
-        expect(screen.getByLabelText('Exercise 1, min reps set 1')).toHaveClass(
-            'hidden'
-        );
-        expect(screen.getByLabelText('Exercise 1, max reps set 1')).toHaveClass(
-            'hidden'
-        );
+        expect(
+            screen.queryByLabelText('Exercise 1, min reps set 1')
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Exercise 1, max reps set 1')
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('—')).toBeInTheDocument();
+
+        cleanup();
+        fields({
+            exercise: {
+                ...draft,
+                sets: [{ ...draft.sets[0], mode: 'fixed', repMax: '' }],
+            },
+        });
+        expect(
+            screen.getByLabelText('Exercise 1, min reps set 1')
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Exercise 1, max reps set 1')
+        ).not.toBeInTheDocument();
+
+        cleanup();
+        fields({ exercise: { ...draft, sets: [draft.sets[0]] } });
+        expect(
+            screen.getByLabelText('Exercise 1, max reps set 1')
+        ).toBeInTheDocument();
+        expect(screen.getByText('to')).toBeInTheDocument();
     });
 
     it('removes the whole exercise, unless it is the only one', () => {
@@ -368,9 +392,6 @@ describe('ExerciseFields', () => {
             expect(
                 screen.getByLabelText('Exercise 1, max reps set 1')
             ).toHaveClass('border-danger');
-            expect(
-                screen.getByLabelText('Exercise 1, max reps set 2')
-            ).not.toHaveClass('border-danger');
         });
 
         it('marks nothing without one', () => {

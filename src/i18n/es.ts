@@ -239,6 +239,7 @@ export const es: Dict = {
     'reps.fixed': 'Fijas',
     'reps.amrap': 'AMRAP',
     'reps.unset': 'Reps por definir',
+    'reps.to': 'a',
 
     'validate.ok': 'La rutina está completa. Ya puedes marcarla como activa.',
     'validate.noWorkouts': 'La rutina no tiene días.',

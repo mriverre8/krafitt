@@ -89,17 +89,36 @@ export function toDrafts(exercises: ExerciseView[]): ExerciseDraft[] {
 
 const rowFieldClass = 'h-12';
 
-/** The numbers share out whatever the row has left on a phone, so the line ends
-    flush instead of trailing off; from md up they are a fixed column again. */
+/** How a number box looks. How it takes its width is left to the caller: the
+    reps share out their slot, the drop or rest-pause value takes the line. */
 const numberClass = (wrong: boolean) =>
-    `${wrong ? wrongFieldClass : fieldClass} ${rowFieldClass} min-w-0 flex-1 ` +
-    `px-1 text-center md:w-20 md:flex-none md:px-3`;
+    `${wrong ? wrongFieldClass : fieldClass} ${rowFieldClass} min-w-0 ` +
+    `px-1 text-center md:px-3`;
 
 const noFault = { min: false, max: false, value: false };
 
-/** A field the mode does not need: gone on a phone, an empty slot from md up,
-    where keeping the columns aligned across rows is worth the space. */
-const unusedClass = 'hidden md:invisible md:block';
+/** The reps are one column from md up, whatever the mode puts in it: two boxes
+    for a range, one wide box for a fixed count, a dash for AMRAP. The width is
+    held so the technique column lines up across rows, and a field the mode does
+    not need is gone rather than an invisible box leaving a hole.
+
+    On a phone a working set has the line to itself and its reps take the rest
+    of it. A drop or rest-pause set shares that line with its own value, so
+    there the reps take everything the fixed value box leaves: same width on
+    every one of those rows, and the line ends flush on any screen.
+
+    `min-w-0` is what makes that second case work. A flex item's automatic
+    minimum is its content, and for a box holding `<input>`s that is their
+    intrinsic ~170px each — so a range would blow the row open and push the
+    value onto a line of its own however little the reps were given. */
+const repsSlotClass = (sub: boolean) =>
+    sub
+        ? 'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2'
+        : 'contents md:flex md:w-48 md:shrink-0 md:gap-2';
+
+/** Joins the two boxes of a range, so the pair reads as one prescription
+    instead of two loose numbers. */
+const rangeJoinClass = 'text-muted shrink-0 self-center text-sm';
 
 /** A row action worded rather than drawn: adding a drop set has no icon anyone
     would read, so these say what they do. */
@@ -385,48 +404,81 @@ export function ExerciseFields({
                                         </option>
                                     ))}
                                 </select>
-                                <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    min={REPS.min}
-                                    max={REPS.max}
-                                    value={set.repMin}
-                                    readOnly={readOnly}
-                                    onChange={(event) =>
-                                        updateSet(setIndex, {
-                                            repMin: event.target.value,
-                                        })
-                                    }
-                                    placeholder={t('today.reps')}
-                                    aria-label={t('exercise.repMin', {
-                                        e,
-                                        n,
-                                    })}
-                                    className={`${numberClass(wrong.min)} ${
-                                        set.mode === 'amrap' ? unusedClass : ''
-                                    }`}
-                                />
-                                <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    min={REPS.min}
-                                    max={REPS.max}
-                                    value={set.repMax}
-                                    readOnly={readOnly}
-                                    onChange={(event) =>
-                                        updateSet(setIndex, {
-                                            repMax: event.target.value,
-                                        })
-                                    }
-                                    placeholder={t('today.reps')}
-                                    aria-label={t('exercise.repMax', {
-                                        e,
-                                        n,
-                                    })}
-                                    className={`${numberClass(wrong.max)} ${
-                                        set.mode === 'range' ? '' : unusedClass
-                                    }`}
-                                />
+                                <div className={repsSlotClass(sub)}>
+                                    {set.mode === 'amrap' ? (
+                                        <span
+                                            aria-hidden
+                                            className={`${rowFieldClass} text-muted flex flex-1 items-center justify-center`}
+                                        >
+                                            —
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <input
+                                                type="number"
+                                                inputMode="numeric"
+                                                min={REPS.min}
+                                                max={REPS.max}
+                                                value={set.repMin}
+                                                readOnly={readOnly}
+                                                onChange={(event) =>
+                                                    updateSet(setIndex, {
+                                                        repMin: event.target
+                                                            .value,
+                                                    })
+                                                }
+                                                placeholder={t('today.reps')}
+                                                aria-label={t(
+                                                    'exercise.repMin',
+                                                    { e, n }
+                                                )}
+                                                className={`${numberClass(
+                                                    wrong.min
+                                                )} flex-1`}
+                                            />
+                                            {set.mode === 'range' && (
+                                                <>
+                                                    <span
+                                                        aria-hidden
+                                                        className={
+                                                            rangeJoinClass
+                                                        }
+                                                    >
+                                                        {t('reps.to')}
+                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        inputMode="numeric"
+                                                        min={REPS.min}
+                                                        max={REPS.max}
+                                                        value={set.repMax}
+                                                        readOnly={readOnly}
+                                                        onChange={(event) =>
+                                                            updateSet(
+                                                                setIndex,
+                                                                {
+                                                                    repMax: event
+                                                                        .target
+                                                                        .value,
+                                                                }
+                                                            )
+                                                        }
+                                                        placeholder={t(
+                                                            'today.reps'
+                                                        )}
+                                                        aria-label={t(
+                                                            'exercise.repMax',
+                                                            { e, n }
+                                                        )}
+                                                        className={`${numberClass(
+                                                            wrong.max
+                                                        )} flex-1`}
+                                                    />
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                                 {!readOnly && (
                                     <div className="hidden md:order-last md:block">
                                         {removeButton}
@@ -454,7 +506,9 @@ export function ExerciseFields({
                                             e,
                                             label: n,
                                         })}
-                                        className={numberClass(wrong.value)}
+                                        className={`${numberClass(
+                                            wrong.value
+                                        )} w-16 shrink-0 md:w-20`}
                                     />
                                 ) : (
                                     <input
