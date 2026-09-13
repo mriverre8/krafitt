@@ -70,7 +70,12 @@ export function SocialButtons({
     const [pending, setPending] = useState<string | undefined>();
 
     return (
-        <div className="mb-5 space-y-3">
+        <div className="mt-5 space-y-3">
+            <div className="flex items-center gap-3">
+                <span className="bg-line h-px flex-1" />
+                <span className="eyebrow text-muted">{t('auth.or')}</span>
+                <span className="bg-line h-px flex-1" />
+            </div>
             <div className="grid gap-2 sm:grid-cols-2">
                 {PROVIDERS.map(({ id, name, Mark }) => (
                     <button
@@ -96,12 +101,6 @@ export function SocialButtons({
                         {t('auth.continueWith', { provider: name })}
                     </button>
                 ))}
-            </div>
-
-            <div className="flex items-center gap-3">
-                <span className="bg-line h-px flex-1" />
-                <span className="eyebrow text-muted">{t('auth.or')}</span>
-                <span className="bg-line h-px flex-1" />
             </div>
         </div>
     );

@@ -64,8 +64,6 @@ export function AuthForms() {
                 ))}
             </div>
 
-            <SocialButtons onError={setError} />
-
             <form
                 onSubmit={onSubmit}
                 className="space-y-3"
@@ -113,6 +111,8 @@ export function AuthForms() {
                         : t('auth.submitSignup')}
                 </button>
             </form>
+
+            <SocialButtons onError={setError} />
         </div>
     );
 }
