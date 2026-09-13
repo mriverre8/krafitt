@@ -141,6 +141,31 @@ export async function myRoutines(userId: string) {
 }
 
 /**
+ * Every day the user logged something since `from`, as ISO date → sets logged.
+ * Sessions across every routine, active or not: the graph is about the person,
+ * not about one plan. A session that was opened and never logged into is not a
+ * day trained, so it is left out.
+ *
+ * ponytail: days are keyed in UTC, which is the server's day, not necessarily
+ * the user's. Send the client's offset in if a late-night set ever lands on the
+ * wrong square.
+ */
+export async function trainingDays(userId: string, from: Date) {
+    const sessions = await prisma.workoutSession.findMany({
+        where: { userId, startedAt: { gte: from } },
+        select: { startedAt: true, _count: { select: { logs: true } } },
+    });
+
+    const days: Record<string, number> = {};
+    for (const session of sessions) {
+        if (session._count.logs === 0) continue;
+        const key = session.startedAt.toISOString().slice(0, 10);
+        days[key] = (days[key] ?? 0) + session._count.logs;
+    }
+    return days;
+}
+
+/**
  * Everything the user has logged in one routine, by day and then by week.
  *
  * The plan comes along with it: a week nobody trained leaves no session behind,

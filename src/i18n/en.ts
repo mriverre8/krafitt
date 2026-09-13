@@ -148,6 +148,12 @@ export const en = {
     'profile.activeTitle': 'Active routine',
     'profile.finishedTitle': 'Finished',
     'profile.noFinished': 'No finished routines yet.',
+    'profile.yearTitle': 'Training year {year}',
+    'profile.yearDays': '{days} days trained',
+    'profile.daySets': '{sets} sets · {date}',
+    'profile.dayRest': 'Rest · {date}',
+    'profile.less': 'Less',
+    'profile.more': 'More',
 
     'routines.title': 'My routines',
     'routines.empty': 'You have no routines yet.',

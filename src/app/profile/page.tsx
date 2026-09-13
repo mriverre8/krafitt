@@ -1,9 +1,10 @@
 import { Avatar } from '@/components/ui/avatar';
+import { TrainingYear } from '@/components/profile/training-year';
 import { RoutineSummary } from '@/components/routine/routine-summary';
 import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';
-import { myRoutines } from '@/lib/queries';
+import { myRoutines, trainingDays } from '@/lib/queries';
 import { cardClass } from '@/lib/ui';
 import { redirect } from 'next/navigation';
 
@@ -14,8 +15,10 @@ export default async function ProfilePage() {
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const [routines, t, locale] = await Promise.all([
+    const today = new Date();
+    const [routines, days, t, locale] = await Promise.all([
         myRoutines(user.id),
+        trainingDays(user.id, new Date(Date.UTC(today.getUTCFullYear(), 0, 1))),
         getT(),
         getLocale(),
     ]);
@@ -68,6 +71,11 @@ export default async function ProfilePage() {
                     </p>
                 </div>
             </header>
+
+            <TrainingYear
+                days={days}
+                end={today.toISOString().slice(0, 10)}
+            />
 
             <section className="space-y-3">
                 <h2 className="eyebrow text-muted">

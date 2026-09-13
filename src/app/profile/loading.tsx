@@ -14,6 +14,13 @@ export default function Loading() {
             </div>
 
             <div className="space-y-3">
+                <Bar className="h-3 w-40" />
+                <div className={cardClass}>
+                    <Bar className="h-33.75 w-full" />
+                </div>
+            </div>
+
+            <div className="space-y-3">
                 <Bar className="h-3 w-32" />
                 <RoutineCardSkeleton accent />
             </div>

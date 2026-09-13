@@ -150,6 +150,12 @@ export const es: Dict = {
     'profile.activeTitle': 'Rutina activa',
     'profile.finishedTitle': 'Terminadas',
     'profile.noFinished': 'Aún no has terminado ninguna rutina.',
+    'profile.yearTitle': 'Año de entrenamiento {year}',
+    'profile.yearDays': '{days} días entrenados',
+    'profile.daySets': '{sets} series · {date}',
+    'profile.dayRest': 'Descanso · {date}',
+    'profile.less': 'Menos',
+    'profile.more': 'Más',
 
     'routines.title': 'Mis rutinas',
     'routines.empty': 'Aún no tienes rutinas.',
