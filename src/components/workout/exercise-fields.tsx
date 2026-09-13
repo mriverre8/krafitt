@@ -7,6 +7,7 @@ import {
     REPS,
     REST_SECONDS,
     SETS,
+    USER_NAME_MAX,
 } from '@/lib/constants';
 import { isRepMode, REP_MODES, type RepMode } from '@/lib/reps';
 import {
@@ -530,6 +531,7 @@ export function ExerciseFields({
                                                 technique: event.target.value,
                                             })
                                         }
+                                        maxLength={USER_NAME_MAX}
                                         placeholder={t(
                                             'exercise.techniquePlaceholder'
                                         )}
