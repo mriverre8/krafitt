@@ -129,7 +129,7 @@ export function HistoryExercise({
                 )}
             </div>
 
-            <div className="mt-3 -mb-1 overflow-x-auto pb-1">
+            <div className="relative mt-3 -mb-1 overflow-x-auto pb-1">
                 <table className="w-full min-w-max border-separate border-spacing-0 text-center">
                     <caption className="sr-only">
                         {t('progress.tableCaption', {
