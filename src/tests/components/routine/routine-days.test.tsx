@@ -4,7 +4,7 @@ import { RoutineDays } from '@/components/routine/routine-days';
 import type { RoutineDay } from '@/lib/types';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { noopAction } from './setup-helpers';
+import { noopAction } from '../../setup-helpers';
 
 const sets = [{ repMode: 'range', repMin: 4, repMax: 6, technique: 'Top set' }];
 

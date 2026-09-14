@@ -1,7 +1,7 @@
 import { SetRow } from '@/components/workout/set-row';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '../../setup-helpers';
 
 const base = {
     setIndex: 0,

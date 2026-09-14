@@ -12,7 +12,7 @@ import {
     declineConfirm,
     openConfirm,
     withModals,
-} from './setup-helpers';
+} from '../../setup-helpers';
 
 vi.mock('@/app/actions', () => ({ logSet: vi.fn(), skipDay: vi.fn() }));
 const refresh = vi.fn();

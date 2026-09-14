@@ -4,7 +4,7 @@ import { useDirtyDays, useDiscardSignal, useEditMode } from '@/lib/edit-mode';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { acceptConfirm, declineConfirm, withModals } from './setup-helpers';
+import { acceptConfirm, declineConfirm, withModals } from '../../setup-helpers';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 

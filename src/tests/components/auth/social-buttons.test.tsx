@@ -2,7 +2,7 @@ import { SocialButtons } from '@/components/auth/social-buttons';
 import { SOCIAL_PROVIDERS } from '@/lib/social-providers';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '../../setup-helpers';
 
 const signInSocial = vi.fn();
 vi.mock('@/lib/auth-client', () => ({

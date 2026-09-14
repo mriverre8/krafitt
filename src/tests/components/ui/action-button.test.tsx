@@ -7,7 +7,7 @@ import {
     declineConfirm,
     openConfirm,
     withModals,
-} from './setup-helpers';
+} from '../../setup-helpers';
 
 const confirm = { title: 'Delete routine', message: 'Sure?' };
 

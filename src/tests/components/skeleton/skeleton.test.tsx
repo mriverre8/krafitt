@@ -2,7 +2,7 @@ import { Bar } from '@/components/skeleton/bar';
 import { Skeleton } from '@/components/skeleton/skeleton';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '../../setup-helpers';
 
 describe('Skeleton', () => {
     // The bars say nothing worth announcing, so the busy status is the whole

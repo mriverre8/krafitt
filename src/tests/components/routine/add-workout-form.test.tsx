@@ -1,7 +1,7 @@
 import { AddWorkoutForm } from '@/components/routine/add-workout-form';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { noopAction } from './setup-helpers';
+import { noopAction } from '../../setup-helpers';
 
 describe('AddWorkoutForm', () => {
     it('carries the routine id with the submission', () => {

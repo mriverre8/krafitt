@@ -1,7 +1,7 @@
 import { TodayPreview } from '@/components/landing/today-preview';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '../../setup-helpers';
 
 describe('TodayPreview', () => {
     // A photograph of the app mid-workout: two of the four sets banked, and the

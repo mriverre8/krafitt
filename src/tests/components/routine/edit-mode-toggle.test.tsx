@@ -2,7 +2,7 @@ import { EditModeProvider } from '@/components/routine/edit-mode-provider';
 import { EditModeToggle } from '@/components/routine/edit-mode-toggle';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '../../setup-helpers';
 
 const toggle = () => screen.getByRole('button');
 
