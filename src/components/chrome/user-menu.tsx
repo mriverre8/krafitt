@@ -44,7 +44,7 @@ export function UserMenu({
                             aria-hidden
                         />
                     )}
-                    <span className="hidden max-w-32 truncate text-sm font-semibold md:inline">
+                    <span className="max-w-32 truncate text-sm font-semibold">
                         {name}
                     </span>
                 </span>
