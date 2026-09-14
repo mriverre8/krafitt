@@ -5,6 +5,7 @@ import { I18nProvider } from '@/i18n/i18n-provider';
 import { getDictionary, getLocale } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { bodyFont, displayFont } from '@/lib/fonts';
+import { APP_NAME } from '@/lib/site';
 import { getTheme } from '@/lib/theme-server';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
@@ -19,10 +20,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'Krafitt',
+    title: APP_NAME,
     description: 'Track your gym progress',
     appleWebApp: {
-        title: 'Krafitt',
+        title: APP_NAME,
     },
 };
 

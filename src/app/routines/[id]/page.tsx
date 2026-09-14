@@ -20,7 +20,8 @@ import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished, isRoutineLocked } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
-import { badgeClass } from '@/lib/ui';
+import { HOME, ROUTINES } from '@/lib/routes';
+import { badgeClass, labelClass } from '@/lib/ui';
 import {
     isRoutineComplete,
     workoutFaults,
@@ -34,7 +35,7 @@ export default async function RoutinePage({
 }: PageProps<'/routines/[id]'>) {
     const { id } = await params;
     const user = await currentUser();
-    if (!user) redirect('/');
+    if (!user) redirect(HOME);
 
     await requireRoutine(id, user.id);
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
@@ -55,10 +56,10 @@ export default async function RoutinePage({
         <EditModeProvider>
             <div className="space-y-6">
                 <header>
-                    <BackButton fallback="/routines" />
+                    <BackButton fallback={ROUTINES} />
                     <h1 className="display mt-5 text-6xl">{routine.name}</h1>
                     <div className="mt-2 flex items-center justify-between gap-3">
-                        <p className="eyebrow text-muted min-w-0">
+                        <p className={`${labelClass} min-w-0`}>
                             {t('routine.meta', {
                                 weeks: routine.durationWeeks,
                                 days: routine.workouts.length,

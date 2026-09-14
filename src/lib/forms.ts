@@ -2,6 +2,22 @@ import type { RepSpec } from './reps';
 import type { KindedSet } from './sets';
 
 /**
+ * The `name` every form field submits under, and the key the action reads it
+ * back by. The two sides are a plain string apart, checked by nothing — a
+ * renamed input just starts arriving as an empty value — so both ends quote
+ * this instead.
+ */
+export const FIELD = {
+    name: 'name',
+    email: 'email',
+    password: 'password',
+    durationWeeks: 'durationWeeks',
+    routineId: 'routineId',
+    workoutId: 'workoutId',
+    plan: 'plan',
+} as const;
+
+/**
  * Shape returned by every form server action, consumed by useActionState.
  * A form that keeps its own state clears it on `ok`, and on `error` it holds
  * on to whatever the user typed.

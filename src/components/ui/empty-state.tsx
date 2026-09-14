@@ -1,6 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import { ROUTINES } from '@/lib/routes';
 import { primaryClass } from '@/lib/ui';
 import { Dumbbell } from 'lucide-react';
 import Link from 'next/link';
@@ -19,7 +20,7 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
             <h1 className="display mt-4 text-5xl">{title}</h1>
             <p className="text-muted mt-3 max-w-sm text-base">{body}</p>
             <Link
-                href="/routines"
+                href={ROUTINES}
                 className={`${primaryClass} mt-7 inline-block`}
             >
                 {t('home.goToRoutines')}

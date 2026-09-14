@@ -3,7 +3,7 @@
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
 import { SOCIAL_PROVIDERS } from '@/lib/social-providers';
-import { ghostClass } from '@/lib/ui';
+import { ghostClass, labelClass } from '@/lib/ui';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -29,7 +29,7 @@ export function SocialButtons({
         <div className="mt-5 space-y-3">
             <div className="flex items-center gap-3">
                 <span className="bg-line h-px flex-1" />
-                <span className="eyebrow text-muted">{t('auth.or')}</span>
+                <span className={labelClass}>{t('auth.or')}</span>
                 <span className="bg-line h-px flex-1" />
             </div>
             <div className="grid gap-2 sm:grid-cols-2">

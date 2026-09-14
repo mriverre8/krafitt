@@ -1,6 +1,8 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import { HOME, ROUTINES } from '@/lib/routes';
+import { APP_NAME } from '@/lib/site';
 import type { Theme } from '@/lib/theme';
 import { iconButtonClass, navLinkClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
@@ -24,8 +26,8 @@ export function NavBar({
     return (
         <nav className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
             <Link
-                href="/"
-                aria-label="Krafitt"
+                href={HOME}
+                aria-label={APP_NAME}
                 className="text-ink"
             >
                 <Wordmark className="text-3xl" />
@@ -35,7 +37,7 @@ export function NavBar({
                 {signedIn && (
                     <div className="hidden items-center gap-3 md:flex">
                         <Link
-                            href="/"
+                            href={HOME}
                             className={navLinkClass}
                         >
                             <CalendarDays
@@ -45,7 +47,7 @@ export function NavBar({
                             {t('nav.today')}
                         </Link>
                         <Link
-                            href="/routines"
+                            href={ROUTINES}
                             className={navLinkClass}
                         >
                             <Dumbbell

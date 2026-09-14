@@ -1,7 +1,14 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { badgeClass, cardLinkClass } from '@/lib/ui';
+import { routinePath } from '@/lib/routes';
+import {
+    accentClass,
+    badgeClass,
+    cardLinkClass,
+    figureClass,
+    labelClass,
+} from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { ActionButton } from '@/components/ui/action-button';
@@ -33,20 +40,16 @@ export function RoutineCard(props: RoutineCardProps) {
     const training = props.isActive && !props.finished;
 
     return (
-        <li
-            className={`${cardLinkClass} ${
-                training ? 'border-l-volt border-l-[6px]' : ''
-            }`}
-        >
+        <li className={`${cardLinkClass} ${training ? accentClass : ''}`}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <Link
-                        href={`/routines/${props.id}`}
+                        href={routinePath(props.id)}
                         className="display hover:text-pulse text-3xl transition-colors"
                     >
                         {props.name}
                     </Link>
-                    <p className="eyebrow text-muted mt-1.5">
+                    <p className={`${labelClass} mt-1.5`}>
                         {t('routines.meta', {
                             weeks: props.durationWeeks,
                             days: props.workoutCount,
@@ -96,7 +99,7 @@ export function RoutineCard(props: RoutineCardProps) {
                     total={total}
                     label={progress}
                 />
-                <p className="figure text-muted text-sm">{progress}</p>
+                <p className={figureClass}>{progress}</p>
             </div>
         </li>
     );

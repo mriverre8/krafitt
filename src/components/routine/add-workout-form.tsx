@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { NAME_MAX } from '@/lib/constants';
-import type { FormAction } from '@/lib/forms';
+import { FIELD, type FormAction } from '@/lib/forms';
 import { ghostClass, inputClass } from '@/lib/ui';
 import { Plus } from 'lucide-react';
 import { useActionState } from 'react';
@@ -26,11 +26,11 @@ export function AddWorkoutForm({
             <div className="flex gap-2">
                 <input
                     type="hidden"
-                    name="routineId"
+                    name={FIELD.routineId}
                     value={routineId}
                 />
                 <input
-                    name="name"
+                    name={FIELD.name}
                     aria-label={t('routine.dayLabel')}
                     placeholder={t('routine.dayPlaceholder')}
                     maxLength={NAME_MAX}

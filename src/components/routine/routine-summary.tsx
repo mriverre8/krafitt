@@ -1,7 +1,14 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { badgeClass, cardLinkClass } from '@/lib/ui';
+import { routinePath } from '@/lib/routes';
+import {
+    accentClass,
+    badgeClass,
+    cardLinkClass,
+    figureClass,
+    labelClass,
+} from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
@@ -29,15 +36,13 @@ export function RoutineSummary(props: RoutineSummaryProps) {
 
     return (
         <Link
-            href={`/routines/${props.id}`}
-            className={`${cardLinkClass} block ${
-                active ? 'border-l-volt border-l-[6px]' : ''
-            }`}
+            href={routinePath(props.id)}
+            className={`${cardLinkClass} block ${active ? accentClass : ''}`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <p className="display truncate text-3xl">{props.name}</p>
-                    <p className="eyebrow text-muted mt-1.5">
+                    <p className={`${labelClass} mt-1.5`}>
                         {t('routines.meta', {
                             weeks: props.durationWeeks,
                             days: props.workoutCount,
@@ -73,7 +78,7 @@ export function RoutineSummary(props: RoutineSummaryProps) {
                     total={total}
                     label={progress}
                 />
-                <p className="figure text-muted text-sm">{progress}</p>
+                <p className={figureClass}>{progress}</p>
             </div>
         </Link>
     );

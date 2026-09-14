@@ -5,13 +5,14 @@ import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines } from '@/lib/queries';
+import { HOME } from '@/lib/routes';
 import { emptyBoxClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
 export default async function RoutinesPage() {
     const user = await currentUser();
-    if (!user) redirect('/');
+    if (!user) redirect(HOME);
 
     const [routines, t] = await Promise.all([myRoutines(user.id), getT()]);
 

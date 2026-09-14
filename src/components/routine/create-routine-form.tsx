@@ -1,7 +1,7 @@
 'use client';
 
 import { NAME_MAX, WEEKS } from '@/lib/constants';
-import type { FormAction } from '@/lib/forms';
+import { FIELD, type FormAction } from '@/lib/forms';
 import { inputClass, labelClass, primaryClass } from '@/lib/ui';
 import { useT } from '@/i18n/use-t';
 import { Plus } from 'lucide-react';
@@ -21,7 +21,7 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
         >
             <h2 className="display text-4xl">{t('routines.newTitle')}</h2>
             <input
-                name="name"
+                name={FIELD.name}
                 aria-label={t('routines.nameLabel')}
                 placeholder={t('routines.namePlaceholder')}
                 required
@@ -31,7 +31,7 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
             <label className={`block ${labelClass}`}>
                 {t('routines.duration')}
                 <input
-                    name="durationWeeks"
+                    name={FIELD.durationWeeks}
                     type="number"
                     required
                     min={WEEKS.min}

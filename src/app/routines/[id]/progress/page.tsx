@@ -4,7 +4,8 @@ import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { routineHistory } from '@/lib/queries';
-import { emptyClass } from '@/lib/ui';
+import { HOME, routinePath } from '@/lib/routes';
+import { emptyClass, labelClass } from '@/lib/ui';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutineProgressPage({
@@ -12,7 +13,7 @@ export default async function RoutineProgressPage({
 }: PageProps<'/routines/[id]/progress'>) {
     const { id } = await params;
     const user = await currentUser();
-    if (!user) redirect('/');
+    if (!user) redirect(HOME);
 
     await requireRoutine(id, user.id);
     const [history, t] = await Promise.all([
@@ -26,9 +27,9 @@ export default async function RoutineProgressPage({
     return (
         <div className="space-y-6">
             <header>
-                <BackButton fallback={`/routines/${routine.id}`} />
+                <BackButton fallback={routinePath(routine.id)} />
                 <h1 className="mt-5">
-                    <span className="eyebrow text-muted block">
+                    <span className={`${labelClass} block`}>
                         {routine.name}
                     </span>
                     <span className="display mt-1 block text-6xl">

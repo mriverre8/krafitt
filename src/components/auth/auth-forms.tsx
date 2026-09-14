@@ -3,6 +3,7 @@
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
 import { EMAIL_PATTERN, USER_NAME_MAX } from '@/lib/constants';
+import { FIELD } from '@/lib/forms';
 import type { AuthMode } from '@/lib/types';
 import { inputClass, primaryClass } from '@/lib/ui';
 import { useRouter } from 'next/navigation';
@@ -20,8 +21,8 @@ export function AuthForms() {
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        const email = String(data.get('email'));
-        const password = String(data.get('password'));
+        const email = String(data.get(FIELD.email));
+        const password = String(data.get(FIELD.password));
 
         setLoading(true);
         setError(undefined);
@@ -31,7 +32,7 @@ export function AuthForms() {
                 : await authClient.signUp.email({
                       email,
                       password,
-                      name: String(data.get('name')),
+                      name: String(data.get(FIELD.name)),
                   });
         setLoading(false);
 
@@ -70,7 +71,7 @@ export function AuthForms() {
             >
                 {mode === 'signup' && (
                     <input
-                        name="name"
+                        name={FIELD.name}
                         required
                         maxLength={USER_NAME_MAX}
                         aria-label={t('auth.name')}
@@ -79,7 +80,7 @@ export function AuthForms() {
                     />
                 )}
                 <input
-                    name="email"
+                    name={FIELD.email}
                     type="email"
                     required
                     pattern={EMAIL_PATTERN}
@@ -90,7 +91,7 @@ export function AuthForms() {
                     className={inputClass}
                 />
                 <input
-                    name="password"
+                    name={FIELD.password}
                     type="password"
                     required
                     minLength={8}

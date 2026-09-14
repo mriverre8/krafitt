@@ -10,6 +10,7 @@ import {
     todayExercise,
 } from '@/lib/demo';
 import { isSetEnabled } from '@/lib/progress';
+import { figureClass, labelClass } from '@/lib/ui';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { WorkoutExercise } from '@/components/workout/workout-exercise';
 
@@ -34,7 +35,7 @@ export function TodayPreview() {
             <header className="border-line border-l-volt bg-surface space-y-5 rounded-md border border-l-[6px] p-5">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <p className="eyebrow text-muted truncate">
+                        <p className={`${labelClass} truncate`}>
                             {t('landing.demoRoutine')}
                         </p>
                         <p className="display text-ink mt-2 text-5xl sm:text-6xl">
@@ -69,7 +70,7 @@ export function TodayPreview() {
                         total={total}
                         label={progress}
                     />
-                    <p className="figure text-muted text-sm">{progress}</p>
+                    <p className={figureClass}>{progress}</p>
                 </div>
             </header>
 

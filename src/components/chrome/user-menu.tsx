@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
+import { HOME, PROFILE, ROUTINES } from '@/lib/routes';
 import type { Theme } from '@/lib/theme';
 import { menuItemClass } from '@/lib/ui';
 import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
@@ -51,7 +52,7 @@ export function UserMenu({
             {(close) => (
                 <>
                     <Link
-                        href="/"
+                        href={HOME}
                         onClick={close}
                         className={`${menuItemClass} md:hidden`}
                     >
@@ -62,7 +63,7 @@ export function UserMenu({
                         {t('nav.today')}
                     </Link>
                     <Link
-                        href="/routines"
+                        href={ROUTINES}
                         onClick={close}
                         className={`${menuItemClass} md:hidden`}
                     >
@@ -73,7 +74,7 @@ export function UserMenu({
                         {t('nav.routines')}
                     </Link>
                     <Link
-                        href="/profile"
+                        href={PROFILE}
                         onClick={close}
                         className={menuItemClass}
                     >

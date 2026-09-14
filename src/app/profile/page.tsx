@@ -5,12 +5,13 @@ import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines, trainingDays } from '@/lib/queries';
-import { cardClass, emptyClass } from '@/lib/ui';
+import { cardClass, emptyClass, labelClass } from '@/lib/ui';
+import { HOME } from '@/lib/routes';
 import { redirect } from 'next/navigation';
 
 export default async function ProfilePage() {
     const user = await currentUser();
-    if (!user) redirect('/');
+    if (!user) redirect(HOME);
 
     const today = new Date();
     const [routines, days, t, locale] = await Promise.all([
@@ -58,7 +59,7 @@ export default async function ProfilePage() {
                     <h1 className="display truncate text-4xl md:text-5xl">
                         {user.name}
                     </h1>
-                    <p className="eyebrow text-muted mt-1.5">
+                    <p className={`${labelClass} mt-1.5`}>
                         {t('profile.memberSince', { date: memberSince })}
                     </p>
                     <p className="figure text-muted mt-2 text-sm">
@@ -76,9 +77,7 @@ export default async function ProfilePage() {
             />
 
             <section className="space-y-3">
-                <h2 className="eyebrow text-muted">
-                    {t('profile.activeTitle')}
-                </h2>
+                <h2 className={labelClass}>{t('profile.activeTitle')}</h2>
                 {active ? (
                     <RoutineSummary
                         {...active}
@@ -90,9 +89,7 @@ export default async function ProfilePage() {
             </section>
 
             <section className="space-y-3">
-                <h2 className="eyebrow text-muted">
-                    {t('profile.finishedTitle')}
-                </h2>
+                <h2 className={labelClass}>{t('profile.finishedTitle')}</h2>
                 {finished.length > 0 ? (
                     <ul className="space-y-3">
                         {finished.map((routine) => (

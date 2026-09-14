@@ -1,6 +1,7 @@
 import { Wordmark } from '@/components/ui/wordmark';
 import { getT } from '@/i18n/server';
 import { CONTACT_EMAIL, PROFILE_URL, REPO_URL } from '@/lib/site';
+import { legalPath } from '@/lib/routes';
 import { iconButtonClass, legalLinkClass } from '@/lib/ui';
 import { AtSign, Code, Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -70,19 +71,19 @@ export async function Footer() {
                         className="flex flex-wrap items-center justify-center gap-x-5 md:justify-start"
                     >
                         <Link
-                            href="/legal/privacy"
+                            href={legalPath('privacy')}
                             className={legalLinkClass}
                         >
                             {t('legal.privacy')}
                         </Link>
                         <Link
-                            href="/legal/terms"
+                            href={legalPath('terms')}
                             className={legalLinkClass}
                         >
                             {t('legal.terms')}
                         </Link>
                         <Link
-                            href="/legal/cookies"
+                            href={legalPath('cookies')}
                             className={legalLinkClass}
                         >
                             {t('legal.cookies')}

@@ -1,6 +1,8 @@
 import { BackButton } from '@/components/ui/back-button';
 import { getLocale, getT } from '@/i18n/server';
 import { DOCS, isDoc, readDoc } from '@/lib/legal';
+import { HOME } from '@/lib/routes';
+import { APP_NAME } from '@/lib/site';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Markdown from 'react-markdown';
@@ -10,7 +12,7 @@ export async function generateMetadata({
 }: PageProps<'/legal/[doc]'>): Promise<Metadata> {
     const { doc } = await params;
     if (!isDoc(doc)) return {};
-    return { title: `${(await getT())(DOCS[doc])} · Krafitt` };
+    return { title: `${(await getT())(DOCS[doc])} · ${APP_NAME}` };
 }
 
 export default async function LegalPage({ params }: PageProps<'/legal/[doc]'>) {
@@ -25,7 +27,7 @@ export default async function LegalPage({ params }: PageProps<'/legal/[doc]'>) {
     return (
         <div className="space-y-6">
             <header>
-                <BackButton fallback="/" />
+                <BackButton fallback={HOME} />
                 <h1 className="display mt-5 text-5xl md:text-6xl">
                     {t(DOCS[doc])}
                 </h1>

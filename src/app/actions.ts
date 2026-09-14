@@ -19,7 +19,7 @@ import {
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
 import { isSetKind, readSetValue } from '@/lib/sets';
-import type { DayState, FormState } from '@/lib/forms';
+import { FIELD, type DayState, type FormState } from '@/lib/forms';
 import {
     isRoutineFinished,
     isSessionComplete,
@@ -27,6 +27,7 @@ import {
     type Logs,
 } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
+import { HOME, ROUTINES, routinePath } from '@/lib/routes';
 import { isRoutineComplete } from '@/lib/validate';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -43,8 +44,8 @@ export async function createRoutine(
 ): Promise<FormState> {
     const user = await requireUser();
     const t = await getT();
-    const name = str(data, 'name');
-    const durationWeeks = int(data, 'durationWeeks');
+    const name = str(data, FIELD.name);
+    const durationWeeks = int(data, FIELD.durationWeeks);
 
     if (!name) return { error: t('error.routineName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
@@ -61,8 +62,8 @@ export async function createRoutine(
         data: { name, durationWeeks, creatorId: user.id },
     });
 
-    revalidatePath('/routines');
-    redirect(`/routines/${routine.id}`);
+    revalidatePath(ROUTINES);
+    redirect(routinePath(routine.id));
 }
 
 export async function setActiveRoutine(routineId: string) {
@@ -98,16 +99,16 @@ export async function setActiveRoutine(routineId: string) {
             data: { isActive: true },
         }),
     ]);
-    revalidatePath('/');
-    revalidatePath('/routines');
+    revalidatePath(HOME);
+    revalidatePath(ROUTINES);
 }
 
 export async function deleteRoutine(routineId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);
     await prisma.routine.delete({ where: { id: routineId } });
-    revalidatePath('/');
-    redirect('/routines');
+    revalidatePath(HOME);
+    redirect(ROUTINES);
 }
 
 // ---------- workouts and exercises ----------
@@ -117,8 +118,8 @@ export async function addWorkout(
     data: FormData
 ): Promise<FormState> {
     const user = await requireUser();
-    const routineId = str(data, 'routineId');
-    const name = str(data, 'name');
+    const routineId = str(data, FIELD.routineId);
+    const name = str(data, FIELD.name);
     const t = await getT();
     if (!name) return { error: t('error.workoutName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
@@ -126,7 +127,7 @@ export async function addWorkout(
 
     const order = await prisma.workout.count({ where: { routineId } });
     await prisma.workout.create({ data: { routineId, name, order } });
-    revalidatePath(`/routines/${routineId}`);
+    revalidatePath(routinePath(routineId));
     return { ok: true };
 }
 
@@ -226,8 +227,8 @@ export async function saveExercises(
 ): Promise<DayState> {
     const user = await requireUser();
     const t = await getT();
-    const workoutId = str(data, 'workoutId');
-    const parsed = readPlan(String(data.get('plan') ?? ''), t);
+    const workoutId = str(data, FIELD.workoutId);
+    const parsed = readPlan(String(data.get(FIELD.plan) ?? ''), t);
     if ('error' in parsed) return parsed;
 
     const routineId = await routineIdOfWorkout(workoutId);
@@ -272,8 +273,8 @@ export async function saveExercises(
         ),
     ]);
 
-    revalidatePath(`/routines/${routineId}`);
-    revalidatePath('/');
+    revalidatePath(routinePath(routineId));
+    revalidatePath(HOME);
 
     // Handed straight back to the editor: it is the only thing that knows what
     // the defaults filled in and which ids the new exercises ended up with.
@@ -304,8 +305,8 @@ export async function deleteWorkout(workoutId: string) {
     const routineId = await routineIdOfWorkout(workoutId);
     await requireEditableRoutine(routineId, user.id);
     await prisma.workout.delete({ where: { id: workoutId } });
-    revalidatePath(`/routines/${routineId}`);
-    revalidatePath('/');
+    revalidatePath(routinePath(routineId));
+    revalidatePath(HOME);
 }
 
 // ---------- training ----------
@@ -402,5 +403,5 @@ export async function skipDay(routineId: string) {
         where: { id: routineId },
         data: { cursor: { increment: 1 } },
     });
-    revalidatePath('/');
+    revalidatePath(HOME);
 }

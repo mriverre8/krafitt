@@ -70,6 +70,15 @@ export const cardLinkClass = `${cardClass} lift hover:border-pulse`;
 
 export const labelClass = 'eyebrow text-muted';
 
+/** A count read off the app rather than written by it — "day 4 of 24", a week's
+    tally. Tabular figures, so a number that ticks up does not shuffle the line. */
+export const figureClass = 'figure text-muted text-sm';
+
+/** The volt edge on the one routine being trained. Doubles the shared card's
+    left rule as well as colouring it: on a list of cards the width is what the
+    eye catches before the colour. */
+export const accentClass = 'border-l-volt border-l-[6px]';
+
 /** The × that drops a row, exercise or set alike. One size for both, so the
     fields they sit next to end on the same edge instead of a few pixels apart.
     A finger-sized box on a phone; from md up a mouse can have the tight one. */

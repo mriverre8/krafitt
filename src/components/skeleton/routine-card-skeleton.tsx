@@ -1,14 +1,10 @@
 import { Bar } from '@/components/skeleton/bar';
-import { cardClass } from '@/lib/ui';
+import { accentClass, cardClass } from '@/lib/ui';
 
 /** A routine as both lists draw it: name, meta, badge, ladder, count. */
 export function RoutineCardSkeleton({ accent = false }: { accent?: boolean }) {
     return (
-        <div
-            className={`${cardClass} ${
-                accent ? 'border-l-volt border-l-[6px]' : ''
-            }`}
-        >
+        <div className={`${cardClass} ${accent ? accentClass : ''}`}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 space-y-2">
                     <Bar className="h-7 w-2/3" />

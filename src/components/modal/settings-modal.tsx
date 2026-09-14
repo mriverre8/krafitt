@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/i18n/use-t';
+import { HOME } from '@/lib/routes';
 import { authClient } from '@/lib/auth-client';
 import { USER_NAME_MAX } from '@/lib/constants';
 import { compressImageToBase64 } from '@/lib/image';
@@ -200,7 +201,7 @@ export function SettingsModal({
                                         confirmLabel: t('nav.deleteAccount'),
                                         onConfirm: async () => {
                                             await authClient.deleteUser();
-                                            router.push('/');
+                                            router.push(HOME);
                                             router.refresh();
                                         },
                                     });

@@ -3,7 +3,7 @@
 import { useT } from '@/i18n/use-t';
 import { useEditMode } from '@/lib/edit-mode';
 import type { DayTab } from '@/lib/types';
-import { iconButtonClass } from '@/lib/ui';
+import { iconButtonClass, labelClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
 
@@ -65,7 +65,7 @@ export function DaySwitcher({
             <div className="flex items-center justify-between gap-3">
                 <h2
                     id={`${baseId}-label`}
-                    className="eyebrow text-muted"
+                    className={labelClass}
                 >
                     {t('routine.workouts')}
                 </h2>

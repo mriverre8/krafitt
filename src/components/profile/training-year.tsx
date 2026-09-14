@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useT } from '@/i18n/use-t';
-import { cardClass, yearFillClasses } from '@/lib/ui';
+import { cardClass, figureClass, labelClass, yearFillClasses } from '@/lib/ui';
 import { DAY_MS, dayKey, trainingLevel, utc, weekday } from '@/lib/year';
 
 /**
@@ -66,9 +66,7 @@ export function TrainingYear({
 
     return (
         <section className="space-y-3">
-            <h2 className="eyebrow text-muted">
-                {t('profile.yearTitle', { year })}
-            </h2>
+            <h2 className={labelClass}>{t('profile.yearTitle', { year })}</h2>
 
             <div className={`${cardClass} space-y-1`}>
                 <div className="overflow-x-auto pb-1">
@@ -140,7 +138,7 @@ export function TrainingYear({
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                    <p className="figure text-muted text-sm">{summary}</p>
+                    <p className={figureClass}>{summary}</p>
                     <p
                         aria-hidden
                         className="text-muted flex items-center gap-1 text-[10px] font-semibold uppercase"

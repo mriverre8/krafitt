@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { EXERCISES } from '@/lib/constants';
-import type { DayAction } from '@/lib/forms';
+import { FIELD, type DayAction } from '@/lib/forms';
 import type { ExerciseFault } from '@/lib/validate';
 import {
     ghostClass,
@@ -102,8 +102,8 @@ export function WorkoutEditor({
      */
     function save() {
         const data = new FormData();
-        data.set('workoutId', workout.id);
-        data.set('plan', plan);
+        data.set(FIELD.workoutId, workout.id);
+        data.set(FIELD.plan, plan);
         startTransition(() => formAction(data));
     }
 

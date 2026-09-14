@@ -10,7 +10,7 @@ import {
     type PreviousLogs,
 } from '@/lib/progress';
 import type { ExerciseView } from '@/lib/types';
-import { emptyClass, ghostClass } from '@/lib/ui';
+import { emptyClass, figureClass, ghostClass, labelClass } from '@/lib/ui';
 import { HistoryLink } from '@/components/ui/history-link';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
@@ -91,7 +91,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
             <header className="border-line border-l-volt bg-surface space-y-5 rounded-md border border-l-[6px] p-5">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <p className="eyebrow text-muted truncate">
+                        <p className={`${labelClass} truncate`}>
                             {routineName}
                         </p>
                         <h1 className="display text-ink mt-2 text-6xl">
@@ -127,9 +127,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     )}
                     <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                         {all.length > 0 && (
-                            <p className="figure text-muted text-sm">
-                                {sessionProgress}
-                            </p>
+                            <p className={figureClass}>{sessionProgress}</p>
                         )}
                         <HistoryLink routineId={routineId} />
                     </div>
