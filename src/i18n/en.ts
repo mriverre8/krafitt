@@ -238,6 +238,7 @@ export const en = {
     'reps.range': 'Range',
     'reps.fixed': 'Fixed',
     'reps.amrap': 'AMRAP',
+    'reps.unspecified': 'N/A reps',
     'reps.unset': 'Reps to define',
     'reps.to': 'to',
 

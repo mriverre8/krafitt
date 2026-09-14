@@ -241,6 +241,7 @@ export const es: Dict = {
     'reps.range': 'Rango',
     'reps.fixed': 'Fijas',
     'reps.amrap': 'AMRAP',
+    'reps.unspecified': 'N/A reps',
     'reps.unset': 'Reps por definir',
     'reps.to': 'a',
 
