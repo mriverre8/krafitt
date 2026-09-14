@@ -15,6 +15,9 @@ import { renderWithLocale, withModals } from './setup-helpers';
 function setup({
     rename = vi.fn<FormAction>(async () => ({ ok: true })),
     onDelete = vi.fn(async () => {}),
+    /** As the page passes them: no rename once finished, no edit once locked. */
+    finished = false,
+    editable = true,
 } = {}) {
     renderWithLocale(
         withModals(
@@ -22,8 +25,9 @@ function setup({
                 <WhenNotEditing>
                     <RoutineOptions
                         name="Push Pull Legs"
-                        rename={rename}
+                        rename={finished ? undefined : rename}
                         onDelete={onDelete}
+                        editable={editable}
                     />
                 </WhenNotEditing>
                 <WhenEditing>
@@ -45,6 +49,24 @@ describe('RoutineOptions', () => {
         fireEvent.click(options());
         expect(screen.getByText('Rename routine')).toBeInTheDocument();
         expect(screen.getByText('Edit')).toBeInTheDocument();
+        expect(screen.getByText('Delete routine')).toBeInTheDocument();
+    });
+
+    it('still renames a routine that is locked but not finished', () => {
+        setup({ editable: false });
+        fireEvent.click(options());
+
+        expect(screen.getByText('Rename routine')).toBeInTheDocument();
+        expect(screen.queryByText('Edit')).not.toBeInTheDocument();
+    });
+
+    it('drops the menu entirely once only delete is left', () => {
+        setup({ finished: true, editable: false });
+
+        // Finished: nothing to rename and nothing to edit, so no trigger to
+        // open — the one move that is left stands on its own.
+        expect(screen.queryByRole('button', { name: 'Options' })).toBeNull();
+        expect(screen.queryByText('Rename routine')).not.toBeInTheDocument();
         expect(screen.getByText('Delete routine')).toBeInTheDocument();
     });
 
