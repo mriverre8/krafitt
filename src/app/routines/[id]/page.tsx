@@ -9,7 +9,6 @@ import {
 import { ActionButton } from '@/components/ui/action-button';
 import { AddWorkoutForm } from '@/components/routine/add-workout-form';
 import { BackButton } from '@/components/ui/back-button';
-import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import {
     EditModeProvider,
     EditModeToggle,
@@ -69,34 +68,29 @@ export default async function RoutinePage({
                             })}
                         </p>
                         <div className="flex shrink-0 items-center gap-4">
-                            {locked ? (
-                                <DeleteRoutineButton
+                            {/* A locked routine never enters edit mode, so the
+                                menu is all it ever shows. */}
+                            <WhenNotEditing>
+                                <RoutineOptions
                                     name={routine.name}
+                                    rename={
+                                        finished
+                                            ? undefined
+                                            : renameRoutine.bind(
+                                                  null,
+                                                  routine.id
+                                              )
+                                    }
                                     onDelete={deleteRoutine.bind(
                                         null,
                                         routine.id
                                     )}
+                                    editable={!locked}
                                 />
-                            ) : (
-                                <>
-                                    <WhenNotEditing>
-                                        <RoutineOptions
-                                            name={routine.name}
-                                            rename={renameRoutine.bind(
-                                                null,
-                                                routine.id
-                                            )}
-                                            onDelete={deleteRoutine.bind(
-                                                null,
-                                                routine.id
-                                            )}
-                                        />
-                                    </WhenNotEditing>
-                                    <WhenEditing>
-                                        <EditModeToggle />
-                                    </WhenEditing>
-                                </>
-                            )}
+                            </WhenNotEditing>
+                            <WhenEditing>
+                                <EditModeToggle />
+                            </WhenEditing>
                         </div>
                     </div>
                 </header>
