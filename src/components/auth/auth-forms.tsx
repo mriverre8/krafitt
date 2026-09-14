@@ -3,18 +3,17 @@
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
 import { EMAIL_PATTERN, USER_NAME_MAX } from '@/lib/constants';
+import type { AuthMode } from '@/lib/types';
 import { inputClass, primaryClass } from '@/lib/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FormError } from '@/components/ui/form-error';
 import { SocialButtons } from '@/components/auth/social-buttons';
 
-type Mode = 'login' | 'signup';
-
 export function AuthForms() {
     const t = useT();
     const router = useRouter();
-    const [mode, setMode] = useState<Mode>('login');
+    const [mode, setMode] = useState<AuthMode>('login');
     const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 

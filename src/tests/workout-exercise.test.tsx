@@ -1,7 +1,5 @@
-import {
-    WorkoutExercise,
-    type ExerciseView,
-} from '@/components/workout/workout-exercise';
+import { WorkoutExercise } from '@/components/workout/workout-exercise';
+import type { ExerciseView } from '@/lib/types';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 

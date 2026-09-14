@@ -1,7 +1,5 @@
-import {
-    RoutineHistory,
-    type HistoryDay,
-} from '@/components/history/routine-history';
+import { RoutineHistory } from '@/components/history/routine-history';
+import type { HistoryDay } from '@/lib/types';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

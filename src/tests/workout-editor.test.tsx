@@ -1,8 +1,6 @@
-import {
-    EditModeContext,
-    EditModeProvider,
-    EditModeToggle,
-} from '@/components/routine/edit-mode';
+import { EditModeProvider } from '@/components/routine/edit-mode-provider';
+import { EditModeToggle } from '@/components/routine/edit-mode-toggle';
+import { EditModeContext } from '@/lib/edit-mode';
 import { WorkoutEditor } from '@/components/workout/workout-editor';
 import {
     fireEvent,

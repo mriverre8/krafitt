@@ -1,19 +1,11 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import { useEditMode } from '@/lib/edit-mode';
+import type { DayTab } from '@/lib/types';
 import { iconButtonClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
-import { useEditMode } from '@/components/routine/edit-mode';
-
-export type DayTab = {
-    id: string;
-    name: string;
-    ready: boolean;
-    /** Edited and not saved yet, so `ready` describes a day that no longer
-        exists anywhere but the draft. */
-    unsaved: boolean;
-};
 
 /**
  * The days of a routine as a rack of numbered plates: one is on screen at a

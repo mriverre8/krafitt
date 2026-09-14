@@ -3,15 +3,13 @@
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
 import type { Theme } from '@/lib/theme';
+import { menuItemClass } from '@/lib/ui';
 import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/avatar';
 import { Dropdown } from '@/components/ui/dropdown';
 import { showModal } from '@/store/modal';
-
-const itemClass =
-    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-pulse';
 
 /** Every signed-in action behind a single user icon. The app links are
     already in the bar from md up, so the menu only repeats them below it. */
@@ -55,7 +53,7 @@ export function UserMenu({
                     <Link
                         href="/"
                         onClick={close}
-                        className={`${itemClass} md:hidden`}
+                        className={`${menuItemClass} md:hidden`}
                     >
                         <CalendarDays
                             size={14}
@@ -66,7 +64,7 @@ export function UserMenu({
                     <Link
                         href="/routines"
                         onClick={close}
-                        className={`${itemClass} md:hidden`}
+                        className={`${menuItemClass} md:hidden`}
                     >
                         <Dumbbell
                             size={14}
@@ -77,7 +75,7 @@ export function UserMenu({
                     <Link
                         href="/profile"
                         onClick={close}
-                        className={itemClass}
+                        className={menuItemClass}
                     >
                         <User
                             size={14}
@@ -96,7 +94,7 @@ export function UserMenu({
                                 userImage: image,
                             });
                         }}
-                        className={itemClass}
+                        className={menuItemClass}
                     >
                         <Settings
                             size={14}
@@ -119,7 +117,7 @@ export function UserMenu({
                                 },
                             });
                         }}
-                        className={itemClass}
+                        className={menuItemClass}
                     >
                         <LogOut
                             size={14}

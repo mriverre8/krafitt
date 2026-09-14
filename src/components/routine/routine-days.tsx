@@ -1,22 +1,11 @@
 'use client';
 
+import { useDirtyDays } from '@/lib/edit-mode';
 import type { DayAction } from '@/lib/forms';
-import type { ExerciseFault } from '@/lib/validate';
+import type { RoutineDay } from '@/lib/types';
 import { useId, useState } from 'react';
 import { DaySwitcher } from '@/components/routine/day-switcher';
-import { useDirtyDays } from '@/components/routine/edit-mode';
-import type { ExerciseView } from '@/components/workout/workout-exercise';
 import { WorkoutEditor } from '@/components/workout/workout-editor';
-
-export type RoutineDay = {
-    id: string;
-    name: string;
-    exercises: ExerciseView[];
-    /** What this day is still missing, as last saved. */
-    problems: string[];
-    /** The same holes as fields to paint, by exercise id. */
-    faults: Record<string, ExerciseFault>;
-};
 
 /**
  * One day of the routine on screen at a time, with the rack above to move

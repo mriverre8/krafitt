@@ -1,26 +1,8 @@
 'use client';
 
 import { useLocale, useT } from '@/i18n/use-t';
-import { cardClass } from '@/lib/ui';
-
-const DAY_MS = 86_400_000;
-
-const dayKey = (date: Date) => date.toISOString().slice(0, 10);
-const utc = (year: number, month: number, day: number) =>
-    Date.UTC(year, month, day);
-/** Monday = 0, so the week starts where the calendar in every locale we ship does. */
-const weekday = (time: number) => (new Date(time).getUTCDay() + 6) % 7;
-
-/** Rest, then three steps of volt. A worked day is around 15-20 sets, so the
-    steps sit either side of that: a short session, a normal one, a long one. */
-const fills = ['bg-surface2', 'bg-volt/30', 'bg-volt/65', 'bg-volt'];
-
-function level(sets: number) {
-    if (sets === 0) return 0;
-    if (sets < 10) return 1;
-    if (sets < 18) return 2;
-    return 3;
-}
+import { cardClass, yearFillClasses } from '@/lib/ui';
+import { DAY_MS, dayKey, trainingLevel, utc, weekday } from '@/lib/year';
 
 /**
  * The training year: January to December of the year `end` falls in, one square
@@ -144,7 +126,11 @@ export function TrainingYear({
                                                     })
                                         }
                                         className={`aspect-square rounded-xs ${
-                                            outside ? '' : fills[level(sets)]
+                                            outside
+                                                ? ''
+                                                : yearFillClasses[
+                                                      trainingLevel(sets)
+                                                  ]
                                         }`}
                                     />
                                 );
@@ -160,7 +146,7 @@ export function TrainingYear({
                         className="text-muted flex items-center gap-1 text-[10px] font-semibold uppercase"
                     >
                         {t('profile.less')}
-                        {fills.map((fill) => (
+                        {yearFillClasses.map((fill) => (
                             <span
                                 key={fill}
                                 className={`size-2.5 rounded-xs ${fill}`}

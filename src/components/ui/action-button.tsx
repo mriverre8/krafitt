@@ -1,5 +1,6 @@
 'use client';
 
+import { subtleButtonClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import { useTransition } from 'react';
 
@@ -7,7 +8,7 @@ import { useTransition } from 'react';
 export function ActionButton({
     action,
     children,
-    className = 'text-sm font-semibold text-muted transition-colors hover:text-pulse',
+    className = subtleButtonClass,
     confirm,
     label,
 }: {

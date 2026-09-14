@@ -1,24 +1,12 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import {
-    setTrend,
-    type SetTrend,
-    type SetValue,
-    type WeekState,
-} from '@/lib/progress';
+import { setTrend, type SetTrend, type SetValue } from '@/lib/progress';
 import { formatReps } from '@/lib/reps';
 import { setName, setPlaces, setShortLabel } from '@/lib/sets';
+import type { ExerciseView, HistoryRow } from '@/lib/types';
 import { cardClass, iconButtonClass } from '@/lib/ui';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { ExerciseView } from '@/components/workout/workout-exercise';
-
-export type HistoryRow = {
-    week: number;
-    state: WeekState;
-    /** What this exercise was given that week, by set index. */
-    sets: Record<number, SetValue | undefined>;
-};
 
 /**
  * One exercise's whole history as a grid: a week per row, a set per column.

@@ -1,4 +1,6 @@
-import { Bar, RoutineCardSkeleton, Skeleton } from '@/components/ui/skeleton';
+import { Bar } from '@/components/skeleton/bar';
+import { RoutineCardSkeleton } from '@/components/skeleton/routine-card-skeleton';
+import { Skeleton } from '@/components/skeleton/skeleton';
 import { cardClass } from '@/lib/ui';
 
 export default function Loading() {

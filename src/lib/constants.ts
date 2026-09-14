@@ -24,3 +24,12 @@ export const DROP_PERCENT = { min: 1, max: 99, digits: 2 };
 /** How long the pause of a rest-pause set lasts, in seconds. */
 export const REST_SECONDS = { min: 1, max: 60, digits: 2 };
 export const WEIGHT = { min: 0, max: 1000, step: 0.5 };
+
+/** The limits a set's own value box takes, by the kind of set it belongs to. A
+    working set has no value of its own; `normal` is here so the lookup never
+    comes back undefined. */
+export const VALUE_LIMITS = {
+    drop: DROP_PERCENT,
+    rest: REST_SECONDS,
+    normal: REPS,
+};

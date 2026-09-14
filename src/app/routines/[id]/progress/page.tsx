@@ -4,6 +4,7 @@ import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { routineHistory } from '@/lib/queries';
+import { emptyClass } from '@/lib/ui';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutineProgressPage({
@@ -37,9 +38,7 @@ export default async function RoutineProgressPage({
             </header>
 
             {routine.workouts.length === 0 ? (
-                <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">
-                    {t('routine.noWorkouts')}
-                </p>
+                <p className={emptyClass}>{t('routine.noWorkouts')}</p>
             ) : (
                 <RoutineHistory
                     days={routine.workouts.map((workout) => ({

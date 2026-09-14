@@ -9,7 +9,8 @@ import {
     type Logs,
     type PreviousLogs,
 } from '@/lib/progress';
-import { ghostClass } from '@/lib/ui';
+import type { ExerciseView } from '@/lib/types';
+import { emptyClass, ghostClass } from '@/lib/ui';
 import { HistoryLink } from '@/components/ui/history-link';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
@@ -18,10 +19,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { showModal } from '@/store/modal';
 import { FormError } from '@/components/ui/form-error';
-import {
-    WorkoutExercise,
-    type ExerciseView,
-} from '@/components/workout/workout-exercise';
+import { WorkoutExercise } from '@/components/workout/workout-exercise';
 
 export type TodayWorkoutProps = {
     routineId: string;
@@ -141,9 +139,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
             <FormError message={error} />
 
             {workout.exercises.length === 0 && (
-                <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">
-                    {t('today.noExercises')}
-                </p>
+                <p className={emptyClass}>{t('today.noExercises')}</p>
             )}
 
             {workout.exercises.map((exercise) => (

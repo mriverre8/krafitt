@@ -2,16 +2,12 @@
 
 import { useT } from '@/i18n/use-t';
 import type { Theme } from '@/lib/theme';
-import { iconButtonClass } from '@/lib/ui';
+import { iconButtonClass, navLinkClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Wordmark } from '@/components/ui/wordmark';
 import { UserMenu } from '@/components/chrome/user-menu';
-
-const linkClass =
-    'flex items-center gap-1.5 font-display text-sm md:text-base font-bold uppercase tracking-wide ' +
-    'text-muted transition-colors hover:text-pulse';
 
 export function NavBar({
     userName,
@@ -40,7 +36,7 @@ export function NavBar({
                     <div className="hidden items-center gap-3 md:flex">
                         <Link
                             href="/"
-                            className={linkClass}
+                            className={navLinkClass}
                         >
                             <CalendarDays
                                 size={14}
@@ -50,7 +46,7 @@ export function NavBar({
                         </Link>
                         <Link
                             href="/routines"
-                            className={linkClass}
+                            className={navLinkClass}
                         >
                             <Dumbbell
                                 size={14}

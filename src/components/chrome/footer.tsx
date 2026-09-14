@@ -1,17 +1,10 @@
 import { Wordmark } from '@/components/ui/wordmark';
 import { getT } from '@/i18n/server';
-import { iconButtonClass } from '@/lib/ui';
+import { CONTACT_EMAIL, PROFILE_URL, REPO_URL } from '@/lib/site';
+import { iconButtonClass, legalLinkClass } from '@/lib/ui';
 import { AtSign, Code, Mail } from 'lucide-react';
 import Link from 'next/link';
 import pkg from '../../../package.json';
-
-const GITHUB_USER = 'mriverre8';
-export const REPO_URL = `https://github.com/${GITHUB_USER}/krafitt`;
-const PROFILE_URL = `https://github.com/${GITHUB_USER}`;
-const EMAIL = 'krafitt@gmail.com';
-
-const legalClass =
-    'eyebrow text-muted hover:text-pulse inline-flex min-h-11 items-center transition-colors';
 
 export async function Footer() {
     const t = await getT();
@@ -57,7 +50,7 @@ export async function Footer() {
                         />
                     </a>
                     <a
-                        href={`mailto:${EMAIL}`}
+                        href={`mailto:${CONTACT_EMAIL}`}
                         aria-label={t('footer.contact')}
                         title={t('footer.contact')}
                         className={iconButtonClass}
@@ -78,19 +71,19 @@ export async function Footer() {
                     >
                         <Link
                             href="/legal/privacy"
-                            className={legalClass}
+                            className={legalLinkClass}
                         >
                             {t('legal.privacy')}
                         </Link>
                         <Link
                             href="/legal/terms"
-                            className={legalClass}
+                            className={legalLinkClass}
                         >
                             {t('legal.terms')}
                         </Link>
                         <Link
                             href="/legal/cookies"
-                            className={legalClass}
+                            className={legalLinkClass}
                         >
                             {t('legal.cookies')}
                         </Link>

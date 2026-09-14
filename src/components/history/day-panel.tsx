@@ -1,20 +1,11 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { isSessionComplete, type Logs, type WeekState } from '@/lib/progress';
+import { isSessionComplete } from '@/lib/progress';
+import type { HistoryDay, WeekRow } from '@/lib/types';
+import { emptyClass } from '@/lib/ui';
 import { useState } from 'react';
 import { HistoryExercise } from '@/components/history/history-exercise';
-import type { ExerciseView } from '@/components/workout/workout-exercise';
-
-export type HistoryDay = {
-    id: string;
-    name: string;
-    exercises: ExerciseView[];
-    /** What was logged on this day, by week. A week nobody trained is absent. */
-    weeks: Record<number, Logs>;
-};
-
-export type WeekRow = { week: number; state: WeekState; logs: Logs };
 
 /**
  * One day of the routine: its weeks summed up, and one exercise of it at a time.
@@ -66,9 +57,7 @@ export function DayPanel({
             </div>
 
             {!exercise ? (
-                <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">
-                    {t('today.noExercises')}
-                </p>
+                <p className={emptyClass}>{t('today.noExercises')}</p>
             ) : (
                 <>
                     <p className="text-muted flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">

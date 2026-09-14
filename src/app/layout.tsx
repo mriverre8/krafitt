@@ -4,23 +4,10 @@ import { NavBar } from '@/components/chrome/nav-bar';
 import { I18nProvider } from '@/i18n/i18n-provider';
 import { getDictionary, getLocale } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
+import { bodyFont, displayFont } from '@/lib/fonts';
 import { getTheme } from '@/lib/theme-server';
 import type { Metadata, Viewport } from 'next';
-import { Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
-
-// The Sports/Fitness pairing: condensed for impact, regular for everything read.
-const display = Barlow_Condensed({
-    variable: '--font-barlow-condensed',
-    subsets: ['latin'],
-    weight: ['600', '700', '800'],
-});
-
-const body = Barlow({
-    variable: '--font-barlow',
-    subsets: ['latin'],
-    weight: ['400', '500', '600', '700'],
-});
 
 // The price of sub-16px fields: iOS Safari zooms into any focused input whose
 // font-size is under 16px, and capping the scale is the only thing that stops
@@ -50,7 +37,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
     return (
         <html
             lang={locale}
-            className={`${display.variable} ${body.variable} h-full antialiased ${
+            className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased ${
                 theme === 'dark' ? 'dark' : ''
             }`}
         >

@@ -1,8 +1,5 @@
-import {
-    DayPanel,
-    type HistoryDay,
-    type WeekRow,
-} from '@/components/history/day-panel';
+import { DayPanel } from '@/components/history/day-panel';
+import type { HistoryDay, WeekRow } from '@/lib/types';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 

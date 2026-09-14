@@ -1,11 +1,10 @@
 'use client';
 
 import { weekState } from '@/lib/progress';
+import type { HistoryDay } from '@/lib/types';
 import { useId, useState } from 'react';
-import { DayPanel, type HistoryDay } from '@/components/history/day-panel';
+import { DayPanel } from '@/components/history/day-panel';
 import { DaySwitcher } from '@/components/routine/day-switcher';
-
-export type { HistoryDay };
 
 /**
  * A routine's history, one day per page — the same rack of numbered plates that

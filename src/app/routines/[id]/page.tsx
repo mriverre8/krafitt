@@ -9,12 +9,10 @@ import { ActionButton } from '@/components/ui/action-button';
 import { AddWorkoutForm } from '@/components/routine/add-workout-form';
 import { BackButton } from '@/components/ui/back-button';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
-import {
-    EditModeProvider,
-    EditModeToggle,
-    WhenEditing,
-    WhenNotEditing,
-} from '@/components/routine/edit-mode';
+import { EditModeProvider } from '@/components/routine/edit-mode-provider';
+import { EditModeToggle } from '@/components/routine/edit-mode-toggle';
+import { WhenEditing } from '@/components/routine/when-editing';
+import { WhenNotEditing } from '@/components/routine/when-not-editing';
 import { HistoryLink } from '@/components/ui/history-link';
 import { RoutineDays } from '@/components/routine/routine-days';
 import { getT } from '@/i18n/server';

@@ -5,6 +5,7 @@ import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines } from '@/lib/queries';
+import { emptyBoxClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
@@ -38,9 +39,7 @@ export default async function RoutinesPage() {
                     />
                 ))}
                 {routines.length === 0 && (
-                    <li className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center">
-                        {t('routines.empty')}
-                    </li>
+                    <li className={emptyBoxClass}>{t('routines.empty')}</li>
                 )}
             </ul>
 

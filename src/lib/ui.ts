@@ -88,3 +88,78 @@ export const iconButtonClass =
 /** Uppercase pill, for a count or a status. */
 export const badgeClass =
     'eyebrow inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5';
+
+/** The dashed box that stands in for a list with nothing in it. Dashed rather
+    than solid: a card outline would read as something that is there. */
+export const emptyBoxClass =
+    'border-line text-muted rounded-md border-2 border-dashed p-6 text-center';
+
+/** The same box at the size the rest of the app's secondary copy is set in. */
+export const emptyClass = `${emptyBoxClass} text-sm`;
+
+/** One row of a dropdown panel, wherever the panel hangs from. */
+export const menuItemClass =
+    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold ' +
+    'text-muted transition-colors hover:bg-surface2 hover:text-pulse';
+
+/** An app link in the bar. */
+export const navLinkClass =
+    'flex items-center gap-1.5 font-display text-sm md:text-base font-bold uppercase tracking-wide ' +
+    'text-muted transition-colors hover:text-pulse';
+
+/** A legal link in the footer. 44px of target on its own line. */
+export const legalLinkClass =
+    'eyebrow text-muted hover:text-pulse inline-flex min-h-11 items-center transition-colors';
+
+/** Default for a button that fires an action and has no shell of its own. */
+export const subtleButtonClass =
+    'text-sm font-semibold text-muted transition-colors hover:text-pulse';
+
+// ---------- the exercise editor's set rows ----------
+
+/** One height for everything on a set row, so the row ends flat whatever mix of
+    boxes the rep mode puts in it. */
+export const rowFieldClass = 'h-12';
+
+/** How a number box looks. How it takes its width is left to the caller: the
+    reps share out their slot, the drop or rest-pause value takes the line. */
+export const numberClass = (wrong: boolean) =>
+    `${wrong ? wrongFieldClass : fieldClass} ${rowFieldClass} min-w-0 ` +
+    `px-1 text-center md:px-3`;
+
+/** The reps are one column from md up, whatever the mode puts in it: two boxes
+    for a range, one wide box for a fixed count, a dash for AMRAP. The width is
+    held so the technique column lines up across rows, and a field the mode does
+    not need is gone rather than an invisible box leaving a hole.
+
+    On a phone a working set has the line to itself and its reps take the rest
+    of it. A drop or rest-pause set shares that line with its own value, so
+    there the reps take everything the fixed value box leaves: same width on
+    every one of those rows, and the line ends flush on any screen.
+
+    `min-w-0` is what makes that second case work. A flex item's automatic
+    minimum is its content, and for a box holding `<input>`s that is their
+    intrinsic ~170px each — so a range would blow the row open and push the
+    value onto a line of its own however little the reps were given. */
+export const repsSlotClass = (sub: boolean) =>
+    sub
+        ? 'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2'
+        : 'contents md:flex md:w-48 md:shrink-0 md:gap-2';
+
+/** Joins the two boxes of a range, so the pair reads as one prescription
+    instead of two loose numbers. */
+export const rangeJoinClass = 'text-muted shrink-0 self-center text-sm';
+
+/** A row action worded rather than drawn: adding a drop set has no icon anyone
+    would read, so these say what they do. */
+export const rowButtonClass = `${labelClass} flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`;
+
+/** Rest, then three steps of volt, for the training year. A worked day is
+    around 15-20 sets, so the steps sit either side of that: a short session, a
+    normal one, a long one. */
+export const yearFillClasses = [
+    'bg-surface2',
+    'bg-volt/30',
+    'bg-volt/65',
+    'bg-volt',
+];

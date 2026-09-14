@@ -2,133 +2,40 @@
 
 import { useT } from '@/i18n/use-t';
 import {
-    DROP_PERCENT,
     NAME_MAX,
     REPS,
-    REST_SECONDS,
     SETS,
     USER_NAME_MAX,
+    VALUE_LIMITS,
 } from '@/lib/constants';
-import { isRepMode, REP_MODES, type RepMode } from '@/lib/reps';
+import { emptySet, noFault } from '@/lib/drafts';
+import { REP_MODES, type RepMode } from '@/lib/reps';
 import {
     groupAt,
-    setKind,
     setName,
     setPlaces,
     setShortLabel,
     SUB_KINDS,
-    type SetKind,
     type SubKind,
 } from '@/lib/sets';
+import type { ExerciseDraft, SetDraft } from '@/lib/types';
 import type { ExerciseFault } from '@/lib/validate';
 import {
     cardClass,
     fieldClass,
-    labelClass,
+    menuItemClass,
+    numberClass,
+    rangeJoinClass,
     removeButtonClass,
+    repsSlotClass,
+    rowButtonClass,
+    rowFieldClass,
     titleInputClass,
-    wrongFieldClass,
     wrongTitleInputClass,
 } from '@/lib/ui';
 import { Plus, X } from 'lucide-react';
 import { useId } from 'react';
 import { Dropdown } from '@/components/ui/dropdown';
-import type { ExerciseView } from '@/components/workout/workout-exercise';
-
-export type SetDraft = {
-    kind: SetKind;
-    mode: RepMode;
-    repMin: string;
-    repMax: string;
-    /** Per cent for a drop, seconds for a rest-pause; blank for a working set. */
-    value: string;
-    technique: string;
-};
-
-/** `id` is null until the exercise has been saved for the first time. */
-export type ExerciseDraft = {
-    id: string | null;
-    name: string;
-    sets: SetDraft[];
-};
-
-export const emptySet: SetDraft = {
-    kind: 'normal',
-    mode: 'range',
-    repMin: '',
-    repMax: '',
-    value: '',
-    technique: '',
-};
-
-export const emptyExercise: ExerciseDraft = {
-    id: null,
-    name: '',
-    sets: [emptySet],
-};
-
-/**
- * The day always shows at least one exercise, the same way an exercise always
- * shows at least one set. Key order matters: the drafts are compared and
- * submitted as JSON.
- */
-export function toDrafts(exercises: ExerciseView[]): ExerciseDraft[] {
-    if (exercises.length === 0) return [emptyExercise];
-    return exercises.map((exercise) => ({
-        id: exercise.id,
-        name: exercise.name,
-        sets: exercise.sets.map((set) => ({
-            kind: setKind(set),
-            mode: isRepMode(set.repMode) ? set.repMode : 'range',
-            repMin: set.repMin?.toString() ?? '',
-            repMax: set.repMax?.toString() ?? '',
-            value: set.value?.toString() ?? '',
-            technique: set.technique,
-        })),
-    }));
-}
-
-const rowFieldClass = 'h-12';
-
-/** How a number box looks. How it takes its width is left to the caller: the
-    reps share out their slot, the drop or rest-pause value takes the line. */
-const numberClass = (wrong: boolean) =>
-    `${wrong ? wrongFieldClass : fieldClass} ${rowFieldClass} min-w-0 ` +
-    `px-1 text-center md:px-3`;
-
-const noFault = { min: false, max: false, value: false };
-
-/** The reps are one column from md up, whatever the mode puts in it: two boxes
-    for a range, one wide box for a fixed count, a dash for AMRAP. The width is
-    held so the technique column lines up across rows, and a field the mode does
-    not need is gone rather than an invisible box leaving a hole.
-
-    On a phone a working set has the line to itself and its reps take the rest
-    of it. A drop or rest-pause set shares that line with its own value, so
-    there the reps take everything the fixed value box leaves: same width on
-    every one of those rows, and the line ends flush on any screen.
-
-    `min-w-0` is what makes that second case work. A flex item's automatic
-    minimum is its content, and for a box holding `<input>`s that is their
-    intrinsic ~170px each — so a range would blow the row open and push the
-    value onto a line of its own however little the reps were given. */
-const repsSlotClass = (sub: boolean) =>
-    sub
-        ? 'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2'
-        : 'contents md:flex md:w-48 md:shrink-0 md:gap-2';
-
-/** Joins the two boxes of a range, so the pair reads as one prescription
-    instead of two loose numbers. */
-const rangeJoinClass = 'text-muted shrink-0 self-center text-sm';
-
-/** A row action worded rather than drawn: adding a drop set has no icon anyone
-    would read, so these say what they do. */
-const rowButtonClass = `${labelClass} flex items-center gap-1.5 py-1 transition-colors disabled:opacity-30`;
-
-const menuItemClass =
-    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-pulse';
-
-const valueLimits = { drop: DROP_PERCENT, rest: REST_SECONDS, normal: REPS };
 
 /**
  * One exercise of the day, in a card of its own. Holds no state: the whole day
@@ -232,7 +139,7 @@ export function ExerciseFields({
                     const place = places[setIndex];
                     const sub = place.kind !== 'normal';
                     const n = setName(place);
-                    const limit = valueLimits[place.kind];
+                    const limit = VALUE_LIMITS[place.kind];
 
                     const group = sub ? null : groupAt(exercise.sets, setIndex);
                     const count = group ? group.insertAt - setIndex : 1;

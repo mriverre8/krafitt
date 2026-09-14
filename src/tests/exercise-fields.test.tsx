@@ -1,11 +1,6 @@
-import {
-    emptyExercise,
-    emptySet,
-    ExerciseFields,
-    toDrafts,
-    type ExerciseDraft,
-    type SetDraft,
-} from '@/components/workout/exercise-fields';
+import { ExerciseFields } from '@/components/workout/exercise-fields';
+import { emptySet } from '@/lib/drafts';
+import type { ExerciseDraft, SetDraft } from '@/lib/types';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -43,46 +38,6 @@ const fields = (props: Partial<Parameters<typeof ExerciseFields>[0]> = {}) =>
             {...props}
         />
     );
-
-describe('toDrafts', () => {
-    it('gives an empty day one blank exercise to start from', () => {
-        expect(toDrafts([])).toEqual([emptyExercise]);
-    });
-
-    it('reads a stored exercise back into the form', () => {
-        expect(
-            toDrafts([
-                {
-                    id: 'e1',
-                    name: 'Bench press',
-                    sets: [
-                        {
-                            repMode: 'fixed',
-                            repMin: 8,
-                            repMax: null,
-                            technique: 'Top set',
-                        },
-                    ],
-                },
-            ])
-        ).toEqual([
-            {
-                id: 'e1',
-                name: 'Bench press',
-                sets: [
-                    {
-                        kind: 'normal',
-                        mode: 'fixed',
-                        repMin: '8',
-                        repMax: '',
-                        value: '',
-                        technique: 'Top set',
-                    },
-                ],
-            },
-        ]);
-    });
-});
 
 describe('ExerciseFields', () => {
     it('opens on what the draft holds', () => {

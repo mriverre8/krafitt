@@ -12,84 +12,15 @@
  * a form you have to poke at to discover.
  */
 
-import type { Translate } from '@/i18n/config';
 import { useT } from '@/i18n/use-t';
-import { EXERCISES, SETS, WEEKS } from '@/lib/constants';
+import { CHIPS, editorSpecs } from '@/lib/landing';
 import { badgeClass, cardClass, ghostClass, primaryClass } from '@/lib/ui';
-import { ArrowDown, ChevronsDown, Repeat, Tag } from 'lucide-react';
-import type { ComponentType } from 'react';
+import { ArrowDown } from 'lucide-react';
 import { AuthForms } from '@/components/auth/auth-forms';
 import { Wordmark } from '@/components/ui/wordmark';
-import { ProgressDemo, TodayPreview } from '@/components/landing/demos';
+import { ProgressDemo } from '@/components/landing/progress-demo';
+import { TodayPreview } from '@/components/landing/today-preview';
 import { Section } from '@/components/landing/section';
-
-type Icon = ComponentType<{ size?: number; className?: string }>;
-
-const CHIPS = ['landing.chip1', 'landing.chip2', 'landing.chip3'] as const;
-
-/** A card of the editor spec: either a hard limit, shown as the number itself,
-    or a choice, shown as the options it actually offers. */
-type Spec = {
-    /** The limit, as a volt plate. Numbers come from `lib/constants.ts`, so a
-        card can never outlive the rule it is quoting. */
-    stat?: number;
-    Icon?: Icon;
-    title: string;
-    body: string;
-    /** Worded from the app's own dictionary, so the examples on the card are
-        literally the strings the editor writes. */
-    chips?: readonly string[];
-};
-
-function editorSpecs(t: Translate): readonly Spec[] {
-    return [
-        {
-            stat: WEEKS.max,
-            title: t('landing.spec1Title', { n: WEEKS.max }),
-            body: t('landing.spec1Body'),
-        },
-        {
-            stat: EXERCISES.max,
-            title: t('landing.spec2Title', { n: EXERCISES.max }),
-            body: t('landing.spec2Body'),
-        },
-        {
-            stat: SETS.max,
-            title: t('landing.spec3Title', { n: SETS.max }),
-            body: t('landing.spec3Body'),
-        },
-        {
-            Icon: Repeat,
-            title: t('landing.spec4Title'),
-            body: t('landing.spec4Body'),
-            chips: [
-                t('today.setPlan', { min: 8, max: 10 }),
-                t('today.setPlanFixed', { reps: 10 }),
-                t('reps.amrap'),
-            ],
-        },
-        {
-            Icon: Tag,
-            title: t('landing.spec5Title'),
-            body: t('landing.spec5Body'),
-            chips: [
-                t('technique.warmup'),
-                t('technique.topset'),
-                t('technique.backoff'),
-                t('technique.linear'),
-            ],
-        },
-        {
-            Icon: ChevronsDown,
-            title: t('landing.spec6Title'),
-            body: t('landing.spec6Body'),
-            chips: [
-                t('set.dropWith', { value: 20 }),
-                t('set.restWith', { value: 15 }),
-            ],
-        },
-    ];
-}
 
 export function Landing() {
     const t = useT();

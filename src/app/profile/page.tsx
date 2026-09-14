@@ -5,11 +5,8 @@ import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines, trainingDays } from '@/lib/queries';
-import { cardClass } from '@/lib/ui';
+import { cardClass, emptyClass } from '@/lib/ui';
 import { redirect } from 'next/navigation';
-
-const emptyClass =
-    'border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm';
 
 export default async function ProfilePage() {
     const user = await currentUser();
