@@ -92,9 +92,6 @@ export default async function RoutinePage({
                                             )}
                                         />
                                     </WhenNotEditing>
-                                    {/* Nothing but the way out while editing:
-                                        rename and delete are both a click away
-                                        from days that are not saved yet. */}
                                     <WhenEditing>
                                         <EditModeToggle />
                                     </WhenEditing>
