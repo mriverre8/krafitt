@@ -68,8 +68,6 @@ export default async function RoutinePage({
                             })}
                         </p>
                         <div className="flex shrink-0 items-center gap-4">
-                            {/* A locked routine never enters edit mode, so the
-                                menu is all it ever shows. */}
                             <WhenNotEditing>
                                 <RoutineOptions
                                     name={routine.name}
