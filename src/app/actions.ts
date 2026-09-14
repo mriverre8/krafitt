@@ -102,6 +102,28 @@ export async function setActiveRoutine(routineId: string) {
     revalidatePath('/routines');
 }
 
+/** The name on its own. Everything else about a routine is edited in place; this
+    is the one field with no home on the page, so it is asked for in a dialog. */
+export async function renameRoutine(
+    routineId: string,
+    _previous: FormState,
+    data: FormData
+): Promise<FormState> {
+    const user = await requireUser();
+    const t = await getT();
+    const name = str(data, 'name');
+
+    if (!name) return { error: t('error.routineName') };
+    if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
+    await requireRoutine(routineId, user.id);
+
+    await prisma.routine.update({ where: { id: routineId }, data: { name } });
+    revalidatePath(`/routines/${routineId}`);
+    revalidatePath('/routines');
+    revalidatePath('/');
+    return { ok: true };
+}
+
 export async function deleteRoutine(routineId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);

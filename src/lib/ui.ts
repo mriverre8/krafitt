@@ -85,6 +85,11 @@ export const iconButtonClass =
     'p-2 text-muted transition-colors hover:bg-surface2 hover:text-pulse ' +
     'md:min-h-0 md:min-w-0';
 
+/** A row inside a Dropdown panel — link or button alike. */
+export const menuItemClass =
+    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted ' +
+    'transition-colors hover:bg-surface2 hover:text-pulse';
+
 /** Uppercase pill, for a count or a status. */
 export const badgeClass =
     'eyebrow inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5';

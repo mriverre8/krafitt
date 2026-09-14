@@ -196,6 +196,8 @@ export const ca: Dict = {
     'routine.dayPlaceholder': 'Nou dia (ex. Push A)',
     'routine.dayLabel': 'Nom del dia',
     'routine.addDay': 'Afegir',
+    'routine.options': 'Opcions',
+    'routine.rename': 'Canviar el nom',
     'routine.edit': 'Editar',
     'routine.doneEditing': 'Fet',
     'routine.discardTitle': 'Canvis sense desar',

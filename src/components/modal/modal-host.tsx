@@ -20,6 +20,9 @@ const modals = {
     confirm: dynamic(() =>
         import('./confirm-modal').then((m) => m.ConfirmModal)
     ),
+    rename: dynamic(() =>
+        import('./rename-routine-modal').then((m) => m.RenameRoutineModal)
+    ),
     settings: dynamic(() =>
         import('./settings-modal').then((m) => m.SettingsModal)
     ),

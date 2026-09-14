@@ -196,6 +196,8 @@ export const es: Dict = {
     'routine.dayPlaceholder': 'Nuevo día (ej. Push A)',
     'routine.dayLabel': 'Nombre del día',
     'routine.addDay': 'Añadir',
+    'routine.options': 'Opciones',
+    'routine.rename': 'Cambiar nombre',
     'routine.edit': 'Editar',
     'routine.doneEditing': 'Listo',
     'routine.discardTitle': 'Cambios sin guardar',
