@@ -13,11 +13,18 @@ export type RepSpec = {
     repMax: number | null;
 };
 
-export const REP_MODES = ['range', 'fixed', 'amrap'] as const;
+export const REP_MODES = ['range', 'fixed', 'amrap', 'unspecified'] as const;
 export type RepMode = (typeof REP_MODES)[number];
 
 export function isRepMode(value: unknown): value is RepMode {
     return REP_MODES.includes(value as RepMode);
+}
+
+/** These modes prescribe no number: AMRAP by design, unspecified because the
+    routine leaves the call to the day. Neither takes a rep field, and neither
+    can be half-written. */
+export function hasNoReps(repMode: string): boolean {
+    return repMode === 'amrap' || repMode === 'unspecified';
 }
 
 const inRange = (value: number | null) =>
@@ -35,7 +42,7 @@ export function badRepFields({ repMode, repMin, repMax }: RepSpec): {
     min: boolean;
     max: boolean;
 } {
-    if (repMode === 'amrap') return { min: false, max: false };
+    if (hasNoReps(repMode)) return { min: false, max: false };
     const min = !inRange(repMin);
     if (repMode === 'fixed') return { min, max: false };
     // A range that starts and ends on the same number is not a range: that
@@ -54,6 +61,8 @@ export function formatReps(set: RepSpec, t: Translate): string {
     switch (set.repMode) {
         case 'amrap':
             return t('reps.amrap');
+        case 'unspecified':
+            return t('reps.unspecified');
         case 'fixed':
             return t('today.setPlanFixed', { reps: set.repMin! });
         default:

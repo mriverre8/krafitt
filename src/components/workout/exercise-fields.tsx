@@ -9,7 +9,7 @@ import {
     SETS,
     USER_NAME_MAX,
 } from '@/lib/constants';
-import { isRepMode, REP_MODES, type RepMode } from '@/lib/reps';
+import { hasNoReps, isRepMode, REP_MODES, type RepMode } from '@/lib/reps';
 import {
     groupAt,
     setKind,
@@ -406,7 +406,7 @@ export function ExerciseFields({
                                     ))}
                                 </select>
                                 <div className={repsSlotClass(sub)}>
-                                    {set.mode === 'amrap' ? (
+                                    {hasNoReps(set.mode) ? (
                                         <span
                                             aria-hidden
                                             className={`${rowFieldClass} text-muted flex flex-1 items-center justify-center`}

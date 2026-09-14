@@ -16,11 +16,25 @@ describe('reps', () => {
         expect(
             formatReps({ repMode: 'amrap', repMin: null, repMax: null }, t)
         ).toBe('AMRAP');
+        expect(
+            formatReps(
+                { repMode: 'unspecified', repMin: null, repMax: null },
+                t
+            )
+        ).toBe('N/A reps');
     });
 
     it('tells a blank set apart from an AMRAP one', () => {
         expect(
             isSetComplete({ repMode: 'amrap', repMin: null, repMax: null })
+        ).toBe(true);
+        // Unspecified prescribes no number either, so it is complete as is.
+        expect(
+            isSetComplete({
+                repMode: 'unspecified',
+                repMin: null,
+                repMax: null,
+            })
         ).toBe(true);
         expect(
             isSetComplete({ repMode: 'range', repMin: null, repMax: null })
