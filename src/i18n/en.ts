@@ -194,6 +194,8 @@ export const en = {
     'routine.dayPlaceholder': 'New day (e.g. Push A)',
     'routine.dayLabel': 'Day name',
     'routine.addDay': 'Add',
+    'routine.options': 'Options',
+    'routine.rename': 'Rename routine',
     'routine.edit': 'Edit',
     'routine.doneEditing': 'Done',
     'routine.discardTitle': 'Unsaved changes',

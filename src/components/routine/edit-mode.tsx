@@ -133,8 +133,15 @@ export function WhenNotEditing({ children }: { children: ReactNode }) {
 
 /** Set like the delete link it shares a line with, so the two read as one pair
     of routine-level moves — pulse rather than danger: this one breaks nothing
-    that was saved. */
-export function EditModeToggle() {
+    that was saved. Given a className it is a row of the options menu instead. */
+export function EditModeToggle({
+    className,
+    onClick,
+}: {
+    className?: string;
+    /** Run after the toggle, for a menu that has to close behind it. */
+    onClick?: () => void;
+} = {}) {
     const t = useT();
     const { editing, toggle } = useContext(EditModeContext);
     const label = t(editing ? 'routine.doneEditing' : 'routine.edit');
@@ -142,9 +149,15 @@ export function EditModeToggle() {
     return (
         <button
             type="button"
-            onClick={toggle}
+            onClick={() => {
+                toggle();
+                onClick?.();
+            }}
             aria-pressed={editing}
-            className={`${labelClass} hover:text-pulse flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
+            className={
+                className ??
+                `${labelClass} hover:text-pulse flex shrink-0 items-center gap-1.5 py-1 transition-colors`
+            }
         >
             {editing ? (
                 <Check

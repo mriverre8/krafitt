@@ -2,6 +2,7 @@ import {
     addWorkout,
     deleteRoutine,
     deleteWorkout,
+    renameRoutine,
     saveExercises,
     setActiveRoutine,
 } from '@/app/actions';
@@ -17,6 +18,7 @@ import {
 } from '@/components/routine/edit-mode';
 import { HistoryLink } from '@/components/ui/history-link';
 import { RoutineDays } from '@/components/routine/routine-days';
+import { RoutineOptions } from '@/components/routine/routine-options';
 import { getT } from '@/i18n/server';
 import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
@@ -77,16 +79,22 @@ export default async function RoutinePage({
                                 />
                             ) : (
                                 <>
-                                    <WhenEditing>
-                                        <DeleteRoutineButton
+                                    <WhenNotEditing>
+                                        <RoutineOptions
                                             name={routine.name}
+                                            rename={renameRoutine.bind(
+                                                null,
+                                                routine.id
+                                            )}
                                             onDelete={deleteRoutine.bind(
                                                 null,
                                                 routine.id
                                             )}
                                         />
+                                    </WhenNotEditing>
+                                    <WhenEditing>
+                                        <EditModeToggle />
                                     </WhenEditing>
-                                    <EditModeToggle />
                                 </>
                             )}
                         </div>

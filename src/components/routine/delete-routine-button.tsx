@@ -15,9 +15,12 @@ import { ActionButton } from '@/components/ui/action-button';
 export function DeleteRoutineButton({
     name,
     onDelete,
+    className,
 }: {
     name: string;
     onDelete: () => Promise<unknown>;
+    /** Its styling where it sits as a row of a menu rather than on its own. */
+    className?: string;
 }) {
     const t = useT();
 
@@ -28,7 +31,10 @@ export function DeleteRoutineButton({
                 title: t('routine.delete'),
                 message: t('routine.deleteConfirm', { name }),
             }}
-            className="text-danger hover:text-danger/70 eyebrow flex shrink-0 items-center gap-1.5 transition-colors"
+            className={
+                className ??
+                'text-danger hover:text-danger/70 eyebrow flex shrink-0 items-center gap-1.5 transition-colors'
+            }
         >
             <Trash
                 size={14}
