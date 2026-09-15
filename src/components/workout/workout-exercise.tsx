@@ -44,7 +44,10 @@ export function WorkoutExercise({
                                     {`${
                                         sub
                                             ? setFullLabel(set, t)
-                                            : set.technique
+                                            : set.technique?.trim() ||
+                                              t('today.set', {
+                                                  n: setName(place),
+                                              })
                                     } · `}
                                 </span>
                                 {formatReps(set, t)}

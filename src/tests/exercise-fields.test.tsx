@@ -6,7 +6,13 @@ import {
     type ExerciseDraft,
     type SetDraft,
 } from '@/components/workout/exercise-fields';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const draft: ExerciseDraft = {
@@ -156,6 +162,25 @@ describe('ExerciseFields', () => {
             })[0]
         );
         expect(onChange.mock.calls[1][0].sets).toEqual([draft.sets[0]]);
+    });
+
+    // A numbered set drops itself from the bar of actions under its row; only a
+    // drop or rest-pause still wears an × beside its fields. The phone keeps its
+    // own worded button on every row. jsdom hides neither layout, so the text is
+    // what tells the two of them apart.
+    it('drops a numbered set from its actions and a sub set from its ×', () => {
+        fields({
+            exercise: {
+                ...draft,
+                sets: [draft.sets[0], { ...draft.sets[0], kind: 'drop' }],
+            },
+        });
+        const remove = (n: string) =>
+            screen
+                .getAllByRole('button', { name: `Exercise 1, remove set ${n}` })
+                .map((button) => button.textContent);
+        expect(remove('1')).toEqual(['Remove set', 'Remove set']);
+        expect(remove('DS1')).toEqual(['Remove set', '']);
     });
 
     describe('drop and rest-pause sets', () => {
@@ -327,8 +352,18 @@ describe('ExerciseFields', () => {
                 fault: {
                     name: false,
                     sets: [
-                        { min: false, max: false, value: false },
-                        { min: false, max: false, value: true },
+                        {
+                            min: false,
+                            max: false,
+                            value: false,
+                            technique: false,
+                        },
+                        {
+                            min: false,
+                            max: false,
+                            value: true,
+                            technique: false,
+                        },
                     ],
                 },
             });
@@ -403,8 +438,18 @@ describe('ExerciseFields', () => {
                 fault: {
                     name: true,
                     sets: [
-                        { min: false, max: true, value: false },
-                        { min: false, max: false, value: false },
+                        {
+                            min: false,
+                            max: true,
+                            value: false,
+                            technique: false,
+                        },
+                        {
+                            min: false,
+                            max: false,
+                            value: false,
+                            technique: false,
+                        },
                     ],
                 },
             });
@@ -435,16 +480,276 @@ describe('ExerciseFields', () => {
         });
     });
 
-    it('suggests the known techniques', () => {
-        const { container } = fields();
-        const options = [...container.querySelectorAll('datalist option')].map(
-            (option) => option.getAttribute('value')
-        );
-        expect(options).toEqual([
-            'Straight sets',
-            'Warm-up set',
-            'Top set',
-            'Back off',
-        ]);
+    describe('the technique', () => {
+        const one = (technique: string | null) => ({
+            ...draft,
+            sets: [{ ...draft.sets[0], technique }],
+        });
+        // Both screens offer the menu — the phone as a field-shaped placeholder,
+        // the desktop as a row action — so every trigger answers to one name.
+        const openMenu = () =>
+            fireEvent.click(
+                screen.getAllByRole('button', {
+                    name: 'Exercise 1, add technique to set 1',
+                })[0]
+            );
+
+        it('is a menu until the set is given one', () => {
+            fields({ exercise: one(null) });
+            expect(
+                screen.queryByLabelText('Exercise 1, technique set 1')
+            ).not.toBeInTheDocument();
+
+            openMenu();
+            expect(
+                screen
+                    .getAllByRole('button')
+                    .map((button) => button.textContent)
+            ).toEqual(
+                expect.arrayContaining([
+                    'Warm-up set',
+                    'Straight sets',
+                    'Top set',
+                    'Back off',
+                    'Custom',
+                ])
+            );
+        });
+
+        it('takes what the menu was asked for, Custom taking nothing', () => {
+            const onChange = vi.fn();
+            fields({ exercise: one(null), onChange });
+            openMenu();
+            fireEvent.click(screen.getByRole('button', { name: 'Top set' }));
+            expect(onChange.mock.calls[0][0].sets[0].technique).toBe('Top set');
+
+            openMenu();
+            fireEvent.click(screen.getByRole('button', { name: 'Custom' }));
+            expect(onChange.mock.calls[1][0].sets[0].technique).toBe('');
+        });
+
+        // One the menu wrote is shown rather than typed; Custom is the way in.
+        it('is read-only for a menu technique and open for a custom one', () => {
+            const { unmount } = fields({ exercise: one('Top set') });
+            expect(
+                screen.getByLabelText('Exercise 1, technique set 1')
+            ).toHaveAttribute('readonly');
+            unmount();
+
+            fields({ exercise: one('My own') });
+            expect(
+                screen.getByLabelText('Exercise 1, technique set 1')
+            ).not.toHaveAttribute('readonly');
+        });
+
+        // The phone's way out, inside the field itself.
+        it('comes back off the set from the field it filled', () => {
+            const onChange = vi.fn();
+            fields({ exercise: one('Top set'), onChange });
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, remove technique set 1',
+                })
+            );
+            expect(onChange).toHaveBeenLastCalledWith({
+                sets: [{ ...draft.sets[0], technique: null }],
+            });
+        });
+
+        // The desktop's: the button beside the drop / rest-pause one turns into
+        // Edit, and swapping a technique is picking again from the same menu.
+        it('edits the one it has, taking it off from the foot of the menu', () => {
+            const onChange = vi.fn();
+            fields({ exercise: one('Top set'), onChange });
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Exercise 1, add technique to set 1',
+                })
+            ).not.toBeInTheDocument();
+
+            const trigger = screen.getByRole('button', {
+                name: 'Exercise 1, edit technique set 1',
+            });
+            fireEvent.click(trigger);
+            const menu = within(trigger.parentElement!)
+                .getAllByRole('button')
+                .map((button) => button.textContent);
+            expect(menu.slice(1)).toEqual([
+                'Warm-up set',
+                'Straight sets',
+                'Top set',
+                'Back off',
+                'Custom',
+                'Remove technique',
+            ]);
+
+            fireEvent.click(screen.getByRole('button', { name: 'Back off' }));
+            expect(onChange.mock.calls[0][0].sets[0].technique).toBe(
+                'Back off'
+            );
+
+            fireEvent.click(trigger);
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Remove technique' })
+            );
+            expect(onChange).toHaveBeenLastCalledWith({
+                sets: [{ ...draft.sets[0], technique: null }],
+            });
+        });
+
+        // Saving a blank one is allowed; it is the routine that reports it.
+        it('is marked once it has been added and left blank', () => {
+            fields({
+                exercise: one(''),
+                fault: {
+                    name: false,
+                    sets: [
+                        {
+                            min: false,
+                            max: false,
+                            value: false,
+                            technique: true,
+                        },
+                    ],
+                },
+            });
+            expect(
+                screen.getByLabelText('Exercise 1, technique set 1')
+            ).toHaveClass('border-danger');
+        });
+
+        it('offers nothing to press while the routine is being read', () => {
+            fields({ exercise: one(null), readOnly: true });
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Exercise 1, add technique to set 1',
+                })
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    describe("the drop set's per cent", () => {
+        const dropped = (value: string) => ({
+            ...draft,
+            sets: [
+                draft.sets[0],
+                { ...draft.sets[0], kind: 'drop' as const, value },
+            ],
+        });
+        const trigger = () =>
+            screen.getByRole('button', { name: 'Exercise 1, DS1 amount' });
+
+        it('is a menu, and says what it holds once it has one', () => {
+            const onChange = vi.fn();
+            const { unmount } = fields({ exercise: dropped(''), onChange });
+            // The phone's label is the unit on its own; md up spells it out.
+            expect(trigger()).toHaveTextContent('Add %');
+
+            fireEvent.click(trigger());
+            const menu = within(trigger().parentElement!)
+                .getAllByRole('button')
+                .map((button) => button.textContent);
+            expect(menu.slice(1)).toEqual(['10%', '20%', '30%', '40%', '50%']);
+
+            fireEvent.click(screen.getByRole('button', { name: '30%' }));
+            expect(onChange.mock.calls[0][0].sets[1].value).toBe('30');
+            unmount();
+
+            fields({ exercise: dropped('30') });
+            expect(trigger()).toHaveTextContent('30%');
+        });
+
+        // A drop with no per cent trains fine, so the row that says so is only
+        // worth offering once one has been picked.
+        it('offers to go back to unspecified once it holds something', () => {
+            const onChange = vi.fn();
+            const { unmount } = fields({ exercise: dropped('') });
+            fireEvent.click(trigger());
+            expect(
+                screen.queryByRole('button', { name: 'Unspecified' })
+            ).not.toBeInTheDocument();
+            unmount();
+
+            fields({ exercise: dropped('30'), onChange });
+            fireEvent.click(trigger());
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Unspecified' })
+            );
+            expect(onChange.mock.calls[0][0].sets[1].value).toBe('');
+        });
+
+        // The pause of a rest-pause is typed, not picked: it is the set's whole
+        // point and any second of it counts.
+        it('leaves the rest-pause seconds and the read view as fields', () => {
+            const { unmount } = fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        {
+                            ...draft.sets[0],
+                            kind: 'rest' as const,
+                            value: '15',
+                        },
+                    ],
+                },
+            });
+            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
+                15
+            );
+            unmount();
+
+            fields({ exercise: dropped('30'), readOnly: true });
+            expect(screen.getByLabelText('Exercise 1, DS1 amount')).toHaveValue(
+                '−30%'
+            );
+        });
+
+        // Read rather than typed, the amount carries its unit: a drop is a cut
+        // and a pause is a length of time, and the box says which.
+        it('carries its unit while the routine is being read', () => {
+            const { unmount } = fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        {
+                            ...draft.sets[0],
+                            kind: 'rest' as const,
+                            value: '15',
+                        },
+                    ],
+                },
+                readOnly: true,
+            });
+            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
+                '15s'
+            );
+            unmount();
+
+            // A pause never given one is a hole, so its box stays empty.
+            fields({
+                exercise: {
+                    ...draft,
+                    sets: [
+                        draft.sets[0],
+                        { ...draft.sets[0], kind: 'rest' as const, value: '' },
+                    ],
+                },
+                readOnly: true,
+            });
+            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
+                ''
+            );
+        });
+
+        // Reading the routine, a drop with no per cent has nothing to say, so
+        // it says nothing rather than showing an empty box.
+        it('is not there at all while reading, with nothing in it', () => {
+            fields({ exercise: dropped(''), readOnly: true });
+            expect(
+                screen.queryByLabelText('Exercise 1, DS1 amount')
+            ).not.toBeInTheDocument();
+        });
     });
 });

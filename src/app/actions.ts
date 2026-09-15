@@ -248,12 +248,13 @@ function readPlan(raw: string, t: Translate) {
                 repMin: min,
                 repMax: max,
                 value: amount,
+                // Null is a set with no technique at all, which is most of
+                // them; blank is one the user added and has yet to name, and it
+                // is kept as such so the routine can go on reporting it.
                 technique:
-                    setKind !== 'normal'
-                        ? ''
-                        : (typeof technique === 'string' &&
-                              technique.trim().slice(0, NAME_MAX)) ||
-                          t('technique.linear'),
+                    setKind !== 'normal' || typeof technique !== 'string'
+                        ? null
+                        : technique.trim().slice(0, NAME_MAX),
             });
         }
         exercises.push({ id, name: name.trim(), sets: rows });

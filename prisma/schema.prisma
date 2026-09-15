@@ -116,7 +116,9 @@ model ExerciseSet {
   repMode    String   @default("range")
   repMin     Int?
   repMax     Int?
-  technique  String
+  /// Null when the set has none: the plan just calls it "Set N". Blank is a
+  /// technique the user added and has not named yet, which the routine reports.
+  technique  String?
   /// "normal" | "drop" | "rest"
   kind       String   @default("normal")
   /// Per cent dropped for a drop set, seconds of pause for a rest-pause. Unused by a working set.

@@ -2,9 +2,9 @@
 
 import type { Translate } from '@/i18n/config';
 import { badRepFields, type RepSpec } from './reps';
-import { badSetValue, type KindedSet } from './sets';
+import { badSetValue, badTechnique, type KindedSet } from './sets';
 
-export type PlannedSet = RepSpec & KindedSet;
+export type PlannedSet = RepSpec & KindedSet & { technique?: string | null };
 
 export type ExercisePlan = { name: string; sets: PlannedSet[] };
 
@@ -13,10 +13,11 @@ export type WorkoutPlan = { exercises: ExercisePlan[] };
 export type RoutinePlan = { workouts: WorkoutPlan[] };
 
 /** Every field of one exercise that is holding the day back, sets included.
-    `value` is the pause a rest-pause set has not been given. */
+    `value` is the pause a rest-pause set has not been given, `technique` a
+    technique added to a set and never named. */
 export type ExerciseFault = {
     name: boolean;
-    sets: { min: boolean; max: boolean; value: boolean }[];
+    sets: { min: boolean; max: boolean; value: boolean; technique: boolean }[];
 };
 
 function exerciseFault(exercise: ExercisePlan): ExerciseFault {
@@ -25,6 +26,7 @@ function exerciseFault(exercise: ExercisePlan): ExerciseFault {
         sets: exercise.sets.map((set) => ({
             ...badRepFields(set),
             value: badSetValue(set),
+            technique: badTechnique(set),
         })),
     };
 }
@@ -63,7 +65,9 @@ export function workoutProblems(workout: WorkoutPlan, t: Translate): string[] {
         if (fault.name) problems.push(t('validate.noName', { where }));
         if (
             exercise.sets.length === 0 ||
-            fault.sets.some((set) => set.min || set.max || set.value)
+            fault.sets.some(
+                (set) => set.min || set.max || set.value || set.technique
+            )
         ) {
             problems.push(t('validate.badSets', { where }));
         }
