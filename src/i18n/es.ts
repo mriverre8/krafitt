@@ -199,6 +199,10 @@ export const es: Dict = {
     'routine.addDay': 'Añadir',
     'routine.options': 'Opciones',
     'routine.rename': 'Cambiar nombre',
+    'routine.emptyTitle': 'Esta rutina no tiene días',
+    'routine.emptyBody':
+        'Añade los días de entrenamiento y los ejercicios de cada uno. Cuando estén todos completos podrás empezar a entrenarla.',
+    'routine.build': 'Montar rutina',
     'routine.deactivate': 'Desactivar',
     'routine.edit': 'Editar',
     'routine.doneEditing': 'Listo',
@@ -248,7 +252,6 @@ export const es: Dict = {
     'reps.to': 'a',
 
     'validate.ok': 'La rutina está completa. Ya puedes marcarla como activa.',
-    'validate.noWorkouts': 'La rutina no tiene días.',
     'validate.exerciseN': 'Ejercicio {n}',
     'validate.noName': '{where}: ponle un nombre.',
     'validate.badSets': '{where}: las series no están bien definidas.',

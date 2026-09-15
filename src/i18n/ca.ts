@@ -199,6 +199,10 @@ export const ca: Dict = {
     'routine.addDay': 'Afegir',
     'routine.options': 'Opcions',
     'routine.rename': 'Canviar el nom',
+    'routine.emptyTitle': 'Aquesta rutina no té dies',
+    'routine.emptyBody':
+        "Afegeix els dies d'entrenament i els exercicis de cadascun. Quan estiguin tots complets podràs començar a entrenar-la.",
+    'routine.build': 'Muntar rutina',
     'routine.deactivate': 'Desactivar',
     'routine.edit': 'Editar',
     'routine.doneEditing': 'Fet',
@@ -248,7 +252,6 @@ export const ca: Dict = {
     'reps.to': 'a',
 
     'validate.ok': 'La rutina està completa. Ja pots marcar-la com a activa.',
-    'validate.noWorkouts': 'La rutina no té dies.',
     'validate.exerciseN': 'Exercici {n}',
     'validate.noName': '{where}: posa-li un nom.',
     'validate.badSets': '{where}: les sèries no estan ben definides.',

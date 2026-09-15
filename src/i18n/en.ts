@@ -197,6 +197,10 @@ export const en = {
     'routine.addDay': 'Add',
     'routine.options': 'Options',
     'routine.rename': 'Rename routine',
+    'routine.emptyTitle': 'This routine has no days',
+    'routine.emptyBody':
+        'Add your training days and the exercises in each one. Once every day is filled in you can start training it.',
+    'routine.build': 'Build routine',
     'routine.deactivate': 'Deactivate',
     'routine.edit': 'Edit',
     'routine.doneEditing': 'Done',
@@ -245,7 +249,6 @@ export const en = {
     'reps.to': 'to',
 
     'validate.ok': 'The routine is complete. You can set it as active.',
-    'validate.noWorkouts': 'The routine has no days.',
     'validate.exerciseN': 'Exercise {n}',
     'validate.noName': '{where}: give it a name.',
     'validate.badSets': '{where}: the sets are not properly defined.',
