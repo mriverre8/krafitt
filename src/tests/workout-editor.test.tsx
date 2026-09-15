@@ -379,6 +379,27 @@ describe('WorkoutEditor', () => {
         expect(name).not.toHaveClass('border-danger');
     });
 
+    // The blank card a fresh day opens on is in no save, so it has no id in
+    // faults — and the highlight used to skip it, leaving the button dead on
+    // the one day whose every field is wrong.
+    it('points at the blank card a day with nothing saved opens on', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+                problems={[
+                    'Exercise 1: give it a name.',
+                    'Exercise 1: the sets are not properly defined.',
+                ]}
+            />
+        );
+        const name = screen.getByLabelText('Exercise 1 name');
+        expect(name).not.toHaveClass('border-danger');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Show errors' }));
+        expect(name).toHaveClass('border-danger');
+    });
+
     it('leaves an exercise the errors say nothing about alone', () => {
         render(
             <WorkoutEditor

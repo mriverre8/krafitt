@@ -252,7 +252,6 @@ export const es: Dict = {
     'reps.to': 'a',
 
     'validate.ok': 'La rutina está completa. Ya puedes marcarla como activa.',
-    'validate.emptyDay': 'Sin ejercicios todavía.',
     'validate.exerciseN': 'Ejercicio {n}',
     'validate.noName': '{where}: ponle un nombre.',
     'validate.badSets': '{where}: las series no están bien definidas.',

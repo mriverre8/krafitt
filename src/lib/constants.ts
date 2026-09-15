@@ -24,3 +24,12 @@ export const DROP_PERCENT = { min: 1, max: 99, digits: 2 };
 /** How long the pause of a rest-pause set lasts, in seconds. */
 export const REST_SECONDS = { min: 1, max: 60, digits: 2 };
 export const WEIGHT = { min: 0, max: 1000, step: 0.5 };
+
+/**
+ * The most a field of this many digits can hold, and so the widest a typed
+ * value ever gets. The server reads a plan against this rather than against the
+ * `min`/`max` above: a number outside those is a hole in the routine, which the
+ * day reports and `isRoutineComplete` counts, not a payload to throw out. Past
+ * this, no form could have produced it.
+ */
+export const maxDigits = (digits: number) => 10 ** digits - 1;

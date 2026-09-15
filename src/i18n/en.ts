@@ -249,7 +249,6 @@ export const en = {
     'reps.to': 'to',
 
     'validate.ok': 'The routine is complete. You can set it as active.',
-    'validate.emptyDay': 'No exercises yet.',
     'validate.exerciseN': 'Exercise {n}',
     'validate.noName': '{where}: give it a name.',
     'validate.badSets': '{where}: the sets are not properly defined.',

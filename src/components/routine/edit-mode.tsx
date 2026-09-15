@@ -1,7 +1,6 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { labelClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import { Check, Pencil } from 'lucide-react';
 import {
@@ -131,9 +130,17 @@ export function WhenNotEditing({ children }: { children: ReactNode }) {
     return useEditMode() ? null : children;
 }
 
+/** Its own colour rather than `labelClass`, which ends in a text-muted: two
+    text- utilities on one element and the winner comes down to the order
+    Tailwind emits them in, not the order they are written. */
+const toggleClass =
+    'eyebrow flex shrink-0 items-center gap-1.5 py-1 transition-colors';
+
 /** Set like the delete link it shares a line with, so the two read as one pair
     of routine-level moves — pulse rather than danger: this one breaks nothing
-    that was saved. Given a className it is a row of the options menu instead. */
+    that was saved. On the way out it turns surge, the green everything else in
+    the app finishes on, because by then it is the button that closes the edit.
+    Given a className it is a row of the options menu instead. */
 export function EditModeToggle({
     className,
     onClick,
@@ -156,7 +163,11 @@ export function EditModeToggle({
             aria-pressed={editing}
             className={
                 className ??
-                `${labelClass} hover:text-pulse flex shrink-0 items-center gap-1.5 py-1 transition-colors`
+                `${toggleClass} ${
+                    editing
+                        ? 'text-surge hover:text-surge/70'
+                        : 'text-muted hover:text-pulse'
+                }`
             }
         >
             {editing ? (
