@@ -1,18 +1,30 @@
 import { createRoutine } from '@/app/actions';
 import { CreateRoutineForm } from '@/components/routine/create-routine-form';
 import { RoutineCard } from '@/components/routine/routine-card';
+import { Pagination } from '@/components/ui/pagination';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
+import { paginate } from '@/lib/pagination';
 import { isRoutineFinished } from '@/lib/progress';
-import { myRoutines } from '@/lib/queries';
+import { countRoutines, myRoutines } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
-export default async function RoutinesPage() {
+export default async function RoutinesPage({
+    searchParams,
+}: PageProps<'/routines'>) {
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const [routines, t] = await Promise.all([myRoutines(user.id), getT()]);
+    // The count comes first: which page exists is only knowable from the total,
+    // and the page decides which rows to ask for.
+    const [{ page: asked }, total, t] = await Promise.all([
+        searchParams,
+        countRoutines(user.id),
+        getT(),
+    ]);
+    const { page, totalPages, skip, take } = paginate(asked, total);
+    const routines = await myRoutines(user.id, { skip, take });
 
     return (
         <div className="space-y-6">
@@ -43,6 +55,11 @@ export default async function RoutinesPage() {
                     </li>
                 )}
             </ul>
+
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+            />
 
             <CreateRoutineForm action={createRoutine} />
         </div>

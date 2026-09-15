@@ -11,6 +11,11 @@ export const es: Dict = {
     'common.delete': 'Borrar',
     'common.save': 'Guardar',
 
+    'pagination.label': 'Paginación',
+    'pagination.previous': 'Anterior',
+    'pagination.next': 'Siguiente',
+    'pagination.status': 'Página {page} de {total}',
+
     'nav.today': 'Hoy',
     'nav.routines': 'Rutinas',
     'nav.signOut': 'Cerrar sesión',

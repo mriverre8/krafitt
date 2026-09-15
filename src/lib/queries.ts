@@ -109,11 +109,22 @@ export async function todayWorkout(userId: string) {
     };
 }
 
-/** The list also carries the plan itself, so each card knows if it can go active. */
-export async function myRoutines(userId: string) {
+/**
+ * The list also carries the plan itself, so each card knows if it can go active.
+ *
+ * `page` cuts it down at the database rather than in the screen, because every
+ * row drags its whole plan — days, exercises, sets — along with it. Left out,
+ * the query is the whole list: the profile needs all of them to count what the
+ * user has done.
+ */
+export async function myRoutines(
+    userId: string,
+    page?: { skip: number; take: number }
+) {
     return prisma.routine.findMany({
         where: { creatorId: userId },
         orderBy: { createdAt: 'desc' },
+        ...page,
         include: {
             _count: { select: { workouts: true } },
             workouts: {
@@ -138,6 +149,10 @@ export async function myRoutines(userId: string) {
             },
         },
     });
+}
+
+export function countRoutines(userId: string) {
+    return prisma.routine.count({ where: { creatorId: userId } });
 }
 
 /**

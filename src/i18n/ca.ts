@@ -11,6 +11,11 @@ export const ca: Dict = {
     'common.loading': 'Carregant',
     'common.save': 'Desar',
 
+    'pagination.label': 'Paginació',
+    'pagination.previous': 'Anterior',
+    'pagination.next': 'Següent',
+    'pagination.status': 'Pàgina {page} de {total}',
+
     'nav.today': 'Avui',
     'nav.routines': 'Rutines',
     'nav.signOut': 'Tancar sessió',
