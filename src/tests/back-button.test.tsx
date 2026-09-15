@@ -1,5 +1,16 @@
+import {
+    EditModeBackButton,
+    EditModeProvider,
+    EditModeToggle,
+    useDiscardSignal,
+} from '@/components/routine/edit-mode';
 import { BackButton } from '@/components/ui/back-button';
-import { renderWithLocale } from '@/tests/setup-helpers';
+import {
+    acceptConfirm,
+    openConfirm,
+    renderWithLocale,
+    withModals,
+} from '@/tests/setup-helpers';
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -40,5 +51,81 @@ describe('BackButton', () => {
     it('labels itself in the active locale', () => {
         renderWithLocale(<BackButton fallback="/routines" />, 'es');
         expect(screen.getByRole('button')).toHaveTextContent('Volver');
+    });
+
+    it('runs an onBack instead of leaving the page', () => {
+        setHistoryLength(3);
+        const onBack = vi.fn();
+        renderWithLocale(
+            <BackButton
+                fallback="/routines"
+                onBack={onBack}
+            />
+        );
+        fireEvent.click(screen.getByRole('button'));
+        expect(onBack).toHaveBeenCalled();
+        expect(back).not.toHaveBeenCalled();
+        expect(push).not.toHaveBeenCalled();
+    });
+});
+
+/** A day that says it is unsaved, so the routine has something to ask about. */
+function DirtyDay() {
+    useDiscardSignal('d1', true);
+    return null;
+}
+
+/** The routine's header as the page builds it, with or without a dirty day. */
+function routine({ dirty = false } = {}) {
+    renderWithLocale(
+        withModals(
+            <EditModeProvider>
+                <EditModeBackButton fallback="/routines" />
+                <EditModeToggle />
+                {dirty && <DirtyDay />}
+            </EditModeProvider>
+        )
+    );
+    return {
+        back: () => screen.getByRole('button', { name: 'Back' }),
+        edit: (name: 'Edit' | 'Done') => screen.getByRole('button', { name }),
+    };
+}
+
+describe('EditModeBackButton', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        setHistoryLength(3);
+    });
+
+    it('leaves the page while the routine is only being read', () => {
+        const ui = routine();
+        fireEvent.click(ui.back());
+        expect(back).toHaveBeenCalled();
+    });
+
+    it('steps out of edit mode and stays on the page', () => {
+        const ui = routine();
+        fireEvent.click(ui.edit('Edit'));
+        fireEvent.click(ui.back());
+
+        expect(back).not.toHaveBeenCalled();
+        expect(push).not.toHaveBeenCalled();
+        expect(ui.edit('Edit')).toBeInTheDocument();
+    });
+
+    // The same question Done asks, because it throws the same drafts away.
+    it('asks first when a day is unsaved, and waits', async () => {
+        const ui = routine({ dirty: true });
+        fireEvent.click(ui.edit('Edit'));
+        fireEvent.click(ui.back());
+
+        const dialog = await openConfirm();
+        expect(dialog).toHaveTextContent('Unsaved changes');
+        expect(ui.edit('Done')).toBeInTheDocument();
+
+        await acceptConfirm('Discard changes');
+        expect(ui.edit('Edit')).toBeInTheDocument();
+        expect(back).not.toHaveBeenCalled();
     });
 });

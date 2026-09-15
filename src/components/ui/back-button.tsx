@@ -10,7 +10,15 @@ import { useRouter } from 'next/navigation';
  * tab, a refresh — there is no previous entry to go back to, so `fallback`
  * takes over and the button is never dead.
  */
-export function BackButton({ fallback }: { fallback: string }) {
+export function BackButton({
+    fallback,
+    onBack,
+}: {
+    fallback: string;
+    /** Somewhere nearer to come back from than the last page: the routine in
+        edit mode steps out of that first, and the page waits. */
+    onBack?: () => void;
+}) {
     const t = useT();
     const router = useRouter();
 
@@ -18,9 +26,11 @@ export function BackButton({ fallback }: { fallback: string }) {
         <button
             type="button"
             onClick={() =>
-                window.history.length > 1
-                    ? router.back()
-                    : router.push(fallback)
+                onBack
+                    ? onBack()
+                    : window.history.length > 1
+                      ? router.back()
+                      : router.push(fallback)
             }
             className={`${ghostClass} mb-4 inline-flex items-center justify-center gap-2`}
         >

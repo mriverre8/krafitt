@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import { showModal } from '@/store/modal';
+import { BackButton } from '@/components/ui/back-button';
 import { Check, Pencil } from 'lucide-react';
 import {
     createContext,
@@ -135,6 +136,22 @@ export function WhenNotEditing({ children }: { children: ReactNode }) {
     Tailwind emits them in, not the order they are written. */
 const toggleClass =
     'eyebrow flex shrink-0 items-center gap-1.5 py-1 transition-colors';
+
+/**
+ * The routine's own Back. In edit mode there is somewhere nearer to come back
+ * from than the last page, so it steps out of the mode and stays put — asking
+ * first if any day is unsaved, the same question Done asks, since it throws
+ * the same drafts away. Out of edit mode it is the ordinary Back.
+ */
+export function EditModeBackButton({ fallback }: { fallback: string }) {
+    const { editing, toggle } = useContext(EditModeContext);
+    return (
+        <BackButton
+            fallback={fallback}
+            onBack={editing ? toggle : undefined}
+        />
+    );
+}
 
 /** Set like the delete link it shares a line with, so the two read as one pair
     of routine-level moves — pulse rather than danger: this one breaks nothing
