@@ -191,6 +191,8 @@ export const ca: Dict = {
     'routine.prevDay': 'Dia anterior',
     'routine.nextDay': 'Dia següent',
     'routine.unsaved': 'canvis sense desar',
+    'routine.dayOptions': 'Opcions del dia',
+    'routine.renameDay': 'Canviar el nom',
     'routine.deleteDay': 'Esborrar dia',
     'routine.deleteDayConfirm': 'Esborrar {name} i els seus exercicis?',
     'routine.noWorkouts': 'Aquesta rutina encara no té entrenaments.',

@@ -9,6 +9,7 @@ import {
     render as rtlRender,
     screen,
     waitFor,
+    within,
 } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -63,6 +64,7 @@ const base = {
     problems: [],
     faults: {},
     saveExercises: noopAction,
+    onRenameWorkout: noopAction,
     onDeleteWorkout: async () => {},
 };
 
@@ -79,6 +81,10 @@ const undo = () => screen.getByRole('button', { name: 'Undo changes' });
 const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
 const deleteExercise = (e: number) =>
     screen.getByRole('button', { name: `Delete exercise ${e}` });
+
+/** Rename and delete both live behind the day's options menu. */
+const openDayOptions = () =>
+    fireEvent.click(screen.getByRole('button', { name: 'Day options' }));
 
 describe('WorkoutEditor', () => {
     it('shows one form per exercise of the day', () => {
@@ -439,6 +445,7 @@ describe('WorkoutEditor', () => {
                 onDeleteWorkout={onDeleteWorkout}
             />
         );
+        openDayOptions();
         fireEvent.click(screen.getByRole('button', { name: 'Delete day' }));
         expect(await openConfirm()).toHaveTextContent(
             'Delete Push A and its exercises?'
@@ -447,6 +454,22 @@ describe('WorkoutEditor', () => {
 
         await acceptConfirm('Delete');
         await waitFor(() => expect(onDeleteWorkout).toHaveBeenCalledWith('w1'));
+    });
+
+    it('renames the day from the same menu', async () => {
+        const onRenameWorkout = vi.fn(noopAction);
+        render(
+            <WorkoutEditor
+                {...base}
+                onRenameWorkout={onRenameWorkout}
+            />
+        );
+        openDayOptions();
+        fireEvent.click(screen.getByRole('button', { name: 'Rename day' }));
+
+        const dialog = await screen.findByRole('dialog');
+        expect(dialog).toHaveTextContent('Rename day');
+        expect(within(dialog).getByLabelText('Day name')).toHaveValue('Push A');
     });
 });
 

@@ -4,6 +4,7 @@ import {
     deleteRoutine,
     deleteWorkout,
     renameRoutine,
+    renameWorkout,
     saveExercises,
     setActiveRoutine,
 } from '@/app/actions';
@@ -177,6 +178,7 @@ export default async function RoutinePage({
                         faults: workoutFaults(workout.exercises),
                     }))}
                     saveExercises={saveExercises}
+                    renameWorkout={renameWorkout}
                     onDeleteWorkout={deleteWorkout}
                 />
             </div>

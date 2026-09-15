@@ -33,6 +33,7 @@ const days = [
 const base = {
     days,
     saveExercises: noopAction,
+    renameWorkout: noopAction,
     onDeleteWorkout: async () => {},
 };
 
