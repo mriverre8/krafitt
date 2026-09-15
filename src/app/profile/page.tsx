@@ -1,11 +1,12 @@
 import { Avatar } from '@/components/ui/avatar';
 import { TrainingYear } from '@/components/profile/training-year';
-import { RoutineSummary } from '@/components/routine/routine-summary';
+import { RoutineCard } from '@/components/routine/routine-card';
 import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines, trainingDays } from '@/lib/queries';
 import { cardClass } from '@/lib/ui';
+import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
 const emptyClass =
@@ -35,6 +36,7 @@ export default async function ProfilePage() {
             routine._count.workouts,
             routine.durationWeeks
         ),
+        canActivate: isRoutineComplete(routine, t),
     }));
 
     const active = summaries.find((r) => r.isActive && !r.finished);
@@ -83,10 +85,7 @@ export default async function ProfilePage() {
                     {t('profile.activeTitle')}
                 </h2>
                 {active ? (
-                    <RoutineSummary
-                        {...active}
-                        state="active"
-                    />
+                    <RoutineCard {...active} />
                 ) : (
                     <p className={emptyClass}>{t('home.noRoutineTitle')}</p>
                 )}
@@ -100,10 +99,7 @@ export default async function ProfilePage() {
                     <ul className="space-y-3">
                         {finished.map((routine) => (
                             <li key={routine.id}>
-                                <RoutineSummary
-                                    {...routine}
-                                    state="finished"
-                                />
+                                <RoutineCard {...routine} />
                             </li>
                         ))}
                     </ul>
