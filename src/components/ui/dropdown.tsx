@@ -64,7 +64,7 @@ export function Dropdown({
             {open && (
                 <div
                     aria-label={label}
-                    className={`border-line bg-surface absolute top-full z-50 mt-2 flex w-56 flex-col gap-1 rounded-md border-2 p-2 shadow-2xl ${
+                    className={`border-line bg-surface absolute top-full z-15 mt-2 flex w-56 flex-col gap-1 rounded-md border-2 p-2 shadow-2xl ${
                         align === 'left' ? 'left-0' : 'right-0'
                     }`}
                 >

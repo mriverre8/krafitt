@@ -121,6 +121,15 @@ export function badSetValue(set: KindedSet): boolean {
 }
 
 /**
+ * Whether the technique is holding the routine back. A working set is free to
+ * have none — the plan then just calls it by its number — but one the user
+ * added and left blank names nothing, so it is a hole like any other.
+ */
+export function badTechnique(set: Kinded & { technique?: string | null }) {
+    return setKind(set) === 'normal' && set.technique?.trim() === '';
+}
+
+/**
  * The per cent or the pause, read off a form field. `null` is a blank one,
  * `undefined` a number the form should never have been able to produce.
  *

@@ -25,13 +25,13 @@ import {
     cardClass,
     fieldClass,
     labelClass,
+    menuDangerClass,
     removeButtonClass,
     titleInputClass,
     wrongFieldClass,
     wrongTitleInputClass,
 } from '@/lib/ui';
-import { Plus, X } from 'lucide-react';
-import { useId } from 'react';
+import { Pencil, Plus, Type, X } from 'lucide-react';
 import { Dropdown } from '@/components/ui/dropdown';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
@@ -42,7 +42,9 @@ export type SetDraft = {
     repMax: string;
     /** Per cent for a drop, seconds for a rest-pause; blank for a working set. */
     value: string;
-    technique: string;
+    /** Null until the set is given one. Blank is a technique that was added and
+        has yet to be named, which is a hole in the routine rather than none. */
+    technique: string | null;
 };
 
 /** `id` is null until the exercise has been saved for the first time. */
@@ -58,7 +60,7 @@ export const emptySet: SetDraft = {
     repMin: '',
     repMax: '',
     value: '',
-    technique: '',
+    technique: null,
 };
 
 export const emptyExercise: ExerciseDraft = {
@@ -96,7 +98,7 @@ const numberClass = (wrong: boolean) =>
     `${wrong ? wrongFieldClass : fieldClass} ${rowFieldClass} min-w-0 ` +
     `px-1 text-center md:px-3`;
 
-const noFault = { min: false, max: false, value: false };
+const noFault = { min: false, max: false, value: false, technique: false };
 
 /** The reps are one column from md up, whatever the mode puts in it: two boxes
     for a range, one wide box for a fixed count, a dash for AMRAP. The width is
@@ -127,6 +129,26 @@ const rowButtonClass = `${labelClass} flex items-center gap-1.5 py-1 transition-
 
 const menuItemClass =
     'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted transition-colors hover:bg-surface2 hover:text-pulse';
+
+/** The techniques the menu offers before Custom, in the order it offers them:
+    a warm-up opens the exercise, so it opens the list too. */
+const TECHNIQUES = ['warmup', 'linear', 'topset', 'backoff'] as const;
+
+/** Stands in for a field that is not there yet, the way the dashed card at the
+    foot of the day stands in for an exercise. Its size comes from the caller:
+    it has to take up exactly what the field it stands in for would. */
+const addFieldClass =
+    'lift flex items-center justify-center gap-2 rounded-md border-2 ' +
+    'border-dashed border-line font-display text-sm font-bold tracking-wide uppercase ' +
+    'text-muted transition-colors hover:border-pulse hover:text-pulse';
+
+/** The column a drop or rest-pause set puts its own amount in. Wider than the
+    number needs from md up, where the drop's menu says what it would add. */
+const valueSlotClass = 'w-16 shrink-0 md:w-32';
+
+/** The per cents the drop menu offers. Round, and well inside DROP_PERCENT: a
+    drop is sized by feel, and the odd numbers are not worth a keyboard. */
+const DROP_VALUES = [10, 20, 30, 40, 50];
 
 const valueLimits = { drop: DROP_PERCENT, rest: REST_SECONDS, normal: REPS };
 
@@ -163,12 +185,14 @@ export function ExerciseFields({
     canRemove: boolean;
 }) {
     const t = useT();
-    const techniqueListId = useId();
     // Labels carry the exercise number too: a day holds several of these, and
     // "Min reps set 1" on its own would name four different inputs.
     const e = index + 1;
     const places = setPlaces(exercise.sets);
     const full = exercise.sets.length >= SETS.max;
+    // What the menu offers. A set showing one of these was picked rather than
+    // typed, so its field is read-only: Custom is the way to write your own.
+    const presets: string[] = TECHNIQUES.map((key) => t(`technique.${key}`));
 
     function updateSet(setIndex: number, patch: Partial<SetDraft>) {
         onChange({
@@ -206,7 +230,9 @@ export function ExerciseFields({
     const wrongAnywhere =
         !!fault &&
         (fault.name ||
-            fault.sets.some((set) => set.min || set.max || set.value));
+            fault.sets.some(
+                (set) => set.min || set.max || set.value || set.technique
+            ));
 
     return (
         <div
@@ -238,6 +264,9 @@ export function ExerciseFields({
                     const count = group ? group.insertAt - setIndex : 1;
                     const canRemoveSet = exercise.sets.length > count;
 
+                    /** The × beside the fields. From md up only a drop or
+                        rest-pause set still wears one: a numbered set drops its
+                        row from the bar of actions under it instead. */
                     const removeButton = !readOnly && (
                         <button
                             type="button"
@@ -252,6 +281,144 @@ export function ExerciseFields({
                             />
                         </button>
                     );
+
+                    /** The same, worded: the phone's own row action, and the
+                        numbered set's from md up. */
+                    const removeSetButton = !readOnly && (
+                        <button
+                            type="button"
+                            disabled={!canRemoveSet}
+                            onClick={() => removeSet(setIndex, count)}
+                            aria-label={t('exercise.removeSet', { e, n })}
+                            className={`${rowButtonClass} hover:text-danger`}
+                        >
+                            <X
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('exercise.removeSetShort')}
+                        </button>
+                    );
+
+                    /** A drop that was never given a per cent, while the routine
+                        is being read. It has nothing to say, so it says nothing:
+                        the field is gone rather than standing there empty. */
+                    const blankDrop =
+                        readOnly && place.kind === 'drop' && !set.value;
+
+                    /** The amount as the routine is read rather than written:
+                        a drop is a cut, a pause is a length of time, and both
+                        say which right there in the box. A pause that was never
+                        given one stays blank — that is a hole to be filled. */
+                    const readValue = !set.value
+                        ? ''
+                        : place.kind === 'drop'
+                          ? `−${set.value}${t('set.dropUnit')}`
+                          : `${set.value}${t('set.restSymbol')}`;
+
+                    // Null is a set with no technique; the menu hands it one,
+                    // and Custom hands it a blank field to write its own in.
+                    const technique = set.technique;
+                    const removeTechnique = () =>
+                        updateSet(setIndex, { technique: null });
+                    const techniqueMenu = (close: () => void) => (
+                        <>
+                            {presets.map((preset) => (
+                                <button
+                                    key={preset}
+                                    type="button"
+                                    onClick={() => {
+                                        updateSet(setIndex, {
+                                            technique: preset,
+                                        });
+                                        close();
+                                    }}
+                                    className={menuItemClass}
+                                >
+                                    {preset}
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    updateSet(setIndex, { technique: '' });
+                                    close();
+                                }}
+                                className={menuItemClass}
+                            >
+                                <Type
+                                    size={14}
+                                    aria-hidden
+                                />
+                                {t('technique.custom')}
+                            </button>
+                            {technique !== null && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        removeTechnique();
+                                        close();
+                                    }}
+                                    className={menuDangerClass}
+                                >
+                                    <X
+                                        size={14}
+                                        aria-hidden
+                                    />
+                                    {t('exercise.removeTechnique')}
+                                </button>
+                            )}
+                        </>
+                    );
+
+                    /** The menu, worn as whatever the screen it opens on asks
+                        for: a field-shaped placeholder on a phone, a row action
+                        beside the drop / rest-pause one from md up. It adds a
+                        technique while the set has none and edits the one it
+                        has after that, the menu itself being the same either
+                        way — swapping a technique is picking another one. */
+                    const techniqueDropdown = (className: string) => (
+                        <Dropdown
+                            label={t(
+                                technique === null
+                                    ? 'exercise.addTechniqueLabel'
+                                    : 'exercise.editTechniqueLabel',
+                                { e, n }
+                            )}
+                            className={className}
+                            align="left"
+                            icon={
+                                <>
+                                    {technique === null ? (
+                                        <Plus
+                                            size={14}
+                                            aria-hidden
+                                        />
+                                    ) : (
+                                        <Pencil
+                                            size={14}
+                                            aria-hidden
+                                        />
+                                    )}
+                                    {t(
+                                        technique === null
+                                            ? 'exercise.addTechnique'
+                                            : 'exercise.editTechnique'
+                                    )}
+                                </>
+                            }
+                        >
+                            {techniqueMenu}
+                        </Dropdown>
+                    );
+
+                    // Beside the drop / rest-pause button, from md up.
+                    const techniqueButton =
+                        readOnly || sub
+                            ? null
+                            : techniqueDropdown(
+                                  `${rowButtonClass} hover:text-pulse`
+                              );
 
                     const taken = group?.kind ?? null;
                     const addButton =
@@ -315,250 +482,378 @@ export function ExerciseFields({
                     return (
                         <div
                             key={setIndex}
-                            className={`space-y-1.5 transition-colors md:border-l-4 md:pl-3 ${
+                            className={`space-y-1.5 ${
                                 sub
-                                    ? 'mt-2 md:mt-0 md:pt-2'
+                                    ? 'mt-2 md:mt-0'
                                     : setIndex > 0
                                       ? 'mt-7'
                                       : ''
-                            } ${
-                                wrong.min || wrong.max || wrong.value
-                                    ? 'border-danger'
-                                    : 'border-line'
                             }`}
                         >
-                            <div className="flex items-center gap-2 md:hidden">
-                                <p
-                                    aria-hidden
-                                    className="eyebrow text-pulse"
-                                >
-                                    {sub
-                                        ? `${t('today.set', {
-                                              n: setShortLabel(
-                                                  places[place.parent]
-                                              ),
-                                          })} · ${t(
-                                              place.kind === 'drop'
-                                                  ? 'set.drop'
-                                                  : 'set.rest'
-                                          )}`
-                                        : t('today.set', { n })}
-                                </p>
-                                {addButton}
-                                <span className="ml-auto">
-                                    {!readOnly && (
-                                        <button
-                                            type="button"
-                                            disabled={!canRemoveSet}
-                                            onClick={() =>
-                                                removeSet(setIndex, count)
-                                            }
-                                            aria-label={t(
-                                                'exercise.removeSet',
-                                                { e, n }
-                                            )}
-                                            className={`${rowButtonClass} hover:text-danger`}
-                                        >
-                                            <X
-                                                size={14}
-                                                aria-hidden
-                                            />
-                                            {t('exercise.removeSetShort')}
-                                        </button>
-                                    )}
-                                </span>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                                <span
-                                    aria-hidden
-                                    className={`figure hidden w-8 shrink-0 md:block ${
-                                        sub
-                                            ? 'text-muted text-sm'
-                                            : 'text-ink text-lg font-bold'
-                                    }`}
-                                >
-                                    {setShortLabel(place)}
-                                </span>
-                                <select
-                                    value={set.mode}
-                                    tabIndex={readOnly ? -1 : undefined}
-                                    aria-readonly={readOnly}
-                                    onChange={(event) =>
-                                        updateSet(setIndex, {
-                                            mode: event.target.value as RepMode,
-                                        })
-                                    }
-                                    aria-label={t('exercise.repMode', {
-                                        e,
-                                        n,
-                                    })}
-                                    className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3 ${
-                                        readOnly ? 'pointer-events-none' : ''
-                                    }`}
-                                >
-                                    {REP_MODES.map((mode) => (
-                                        <option
-                                            key={mode}
-                                            value={mode}
-                                        >
-                                            {t(`reps.${mode}`)}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className={repsSlotClass(sub)}>
-                                    {hasNoReps(set.mode) ? (
-                                        <span
-                                            aria-hidden
-                                            className={`${rowFieldClass} text-muted flex flex-1 items-center justify-center`}
-                                        >
-                                            —
-                                        </span>
-                                    ) : (
-                                        <>
-                                            <input
-                                                type="number"
-                                                inputMode="numeric"
-                                                min={REPS.min}
-                                                max={REPS.max}
-                                                value={set.repMin}
-                                                readOnly={readOnly}
-                                                onChange={(event) =>
-                                                    updateSet(setIndex, {
-                                                        repMin: event.target.value.slice(
-                                                            0,
-                                                            REPS.digits
-                                                        ),
-                                                    })
-                                                }
-                                                placeholder={t('today.reps')}
-                                                aria-label={t(
-                                                    'exercise.repMin',
-                                                    { e, n }
-                                                )}
-                                                className={`${numberClass(
-                                                    wrong.min
-                                                )} flex-1`}
-                                            />
-                                            {set.mode === 'range' && (
-                                                <>
-                                                    <span
-                                                        aria-hidden
-                                                        className={
-                                                            rangeJoinClass
-                                                        }
-                                                    >
-                                                        {t('reps.to')}
-                                                    </span>
-                                                    <input
-                                                        type="number"
-                                                        inputMode="numeric"
-                                                        min={REPS.min}
-                                                        max={REPS.max}
-                                                        value={set.repMax}
-                                                        readOnly={readOnly}
-                                                        onChange={(event) =>
-                                                            updateSet(
-                                                                setIndex,
-                                                                {
-                                                                    repMax: event.target.value.slice(
-                                                                        0,
-                                                                        REPS.digits
-                                                                    ),
-                                                                }
-                                                            )
-                                                        }
-                                                        placeholder={t(
-                                                            'today.reps'
-                                                        )}
-                                                        aria-label={t(
-                                                            'exercise.repMax',
-                                                            { e, n }
-                                                        )}
-                                                        className={`${numberClass(
-                                                            wrong.max
-                                                        )} flex-1`}
-                                                    />
-                                                </>
-                                            )}
-                                        </>
-                                    )}
+                            {(addButton || techniqueButton) && (
+                                <div className="hidden items-center gap-5 pl-14 md:flex">
+                                    {addButton}
+                                    {techniqueButton}
+                                    {!sub && removeSetButton}
                                 </div>
-                                {!readOnly && (
-                                    <div className="hidden md:order-last md:block">
-                                        {removeButton}
-                                    </div>
-                                )}
-                                {sub ? (
-                                    <input
-                                        type="number"
-                                        inputMode="numeric"
-                                        min={limit.min}
-                                        max={limit.max}
-                                        value={set.value}
-                                        readOnly={readOnly}
+                            )}
+                            <div
+                                className={`space-y-1.5 transition-colors md:border-l-4 md:pl-3 ${
+                                    sub ? 'md:pt-2' : ''
+                                } ${
+                                    wrong.min ||
+                                    wrong.max ||
+                                    wrong.value ||
+                                    wrong.technique
+                                        ? 'border-danger'
+                                        : 'border-line'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2 md:hidden">
+                                    <p
+                                        aria-hidden
+                                        className="eyebrow text-pulse"
+                                    >
+                                        {sub
+                                            ? `${t('today.set', {
+                                                  n: setShortLabel(
+                                                      places[place.parent]
+                                                  ),
+                                              })} · ${t(
+                                                  place.kind === 'drop'
+                                                      ? 'set.drop'
+                                                      : 'set.rest'
+                                              )}`
+                                            : t('today.set', { n })}
+                                    </p>
+                                    {addButton}
+                                    <span className="ml-auto">
+                                        {removeSetButton}
+                                    </span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                                    <span
+                                        aria-hidden
+                                        className={`figure hidden w-8 shrink-0 md:block ${
+                                            sub
+                                                ? 'text-muted text-sm'
+                                                : 'text-ink text-lg font-bold'
+                                        }`}
+                                    >
+                                        {setShortLabel(place)}
+                                    </span>
+                                    <select
+                                        value={set.mode}
+                                        tabIndex={readOnly ? -1 : undefined}
+                                        aria-readonly={readOnly}
                                         onChange={(event) =>
                                             updateSet(setIndex, {
-                                                value: event.target.value.slice(
-                                                    0,
-                                                    limit.digits
-                                                ),
+                                                mode: event.target
+                                                    .value as RepMode,
                                             })
                                         }
-                                        placeholder={t(
-                                            place.kind === 'drop'
-                                                ? 'set.dropUnit'
-                                                : 'set.restUnit'
-                                        )}
-                                        aria-label={t('exercise.setValue', {
-                                            e,
-                                            label: n,
-                                        })}
-                                        className={`${numberClass(
-                                            wrong.value
-                                        )} w-16 shrink-0 md:w-20`}
-                                    />
-                                ) : (
-                                    <input
-                                        list={
-                                            readOnly
-                                                ? undefined
-                                                : techniqueListId
-                                        }
-                                        value={set.technique}
-                                        readOnly={readOnly}
-                                        onChange={(event) =>
-                                            updateSet(setIndex, {
-                                                technique: event.target.value,
-                                            })
-                                        }
-                                        maxLength={USER_NAME_MAX}
-                                        placeholder={t(
-                                            'exercise.techniquePlaceholder'
-                                        )}
-                                        aria-label={t('exercise.technique', {
+                                        aria-label={t('exercise.repMode', {
                                             e,
                                             n,
                                         })}
-                                        className={`${fieldClass} ${rowFieldClass} min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto`}
-                                    />
-                                )}
-                            </div>
-                            {addButton && (
-                                <div className="hidden pl-10 md:block">
-                                    {addButton}
+                                        className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3 ${
+                                            readOnly
+                                                ? 'pointer-events-none'
+                                                : ''
+                                        }`}
+                                    >
+                                        {REP_MODES.map((mode) => (
+                                            <option
+                                                key={mode}
+                                                value={mode}
+                                            >
+                                                {t(`reps.${mode}`)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className={repsSlotClass(sub)}>
+                                        {hasNoReps(set.mode) ? (
+                                            <span
+                                                aria-hidden
+                                                className={`${rowFieldClass} text-muted flex flex-1 items-center justify-center`}
+                                            >
+                                                —
+                                            </span>
+                                        ) : (
+                                            <>
+                                                <input
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    min={REPS.min}
+                                                    max={REPS.max}
+                                                    value={set.repMin}
+                                                    readOnly={readOnly}
+                                                    onChange={(event) =>
+                                                        updateSet(setIndex, {
+                                                            repMin: event.target.value.slice(
+                                                                0,
+                                                                REPS.digits
+                                                            ),
+                                                        })
+                                                    }
+                                                    placeholder={t(
+                                                        'today.reps'
+                                                    )}
+                                                    aria-label={t(
+                                                        'exercise.repMin',
+                                                        { e, n }
+                                                    )}
+                                                    className={`${numberClass(
+                                                        wrong.min
+                                                    )} flex-1`}
+                                                />
+                                                {set.mode === 'range' && (
+                                                    <>
+                                                        <span
+                                                            aria-hidden
+                                                            className={
+                                                                rangeJoinClass
+                                                            }
+                                                        >
+                                                            {t('reps.to')}
+                                                        </span>
+                                                        <input
+                                                            type="number"
+                                                            inputMode="numeric"
+                                                            min={REPS.min}
+                                                            max={REPS.max}
+                                                            value={set.repMax}
+                                                            readOnly={readOnly}
+                                                            onChange={(event) =>
+                                                                updateSet(
+                                                                    setIndex,
+                                                                    {
+                                                                        repMax: event.target.value.slice(
+                                                                            0,
+                                                                            REPS.digits
+                                                                        ),
+                                                                    }
+                                                                )
+                                                            }
+                                                            placeholder={t(
+                                                                'today.reps'
+                                                            )}
+                                                            aria-label={t(
+                                                                'exercise.repMax',
+                                                                { e, n }
+                                                            )}
+                                                            className={`${numberClass(
+                                                                wrong.max
+                                                            )} flex-1`}
+                                                        />
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                    {sub && !readOnly && (
+                                        <div className="hidden md:order-last md:block">
+                                            {removeButton}
+                                        </div>
+                                    )}
+                                    {sub &&
+                                    place.kind === 'drop' &&
+                                    !readOnly ? (
+                                        <Dropdown
+                                            label={t('exercise.setValue', {
+                                                e,
+                                                label: n,
+                                            })}
+                                            className={
+                                                set.value
+                                                    ? `${numberClass(false)} ${valueSlotClass}`
+                                                    : `${addFieldClass} ${rowFieldClass} ${valueSlotClass} px-1`
+                                            }
+                                            icon={
+                                                set.value ? (
+                                                    `${set.value}${t('set.dropUnit')}`
+                                                ) : (
+                                                    <>
+                                                        <Plus
+                                                            size={14}
+                                                            aria-hidden
+                                                        />
+                                                        <span className="hidden md:inline">
+                                                            {t(
+                                                                'exercise.addDropValue'
+                                                            )}
+                                                        </span>
+                                                        <span className="md:hidden">
+                                                            {t('set.dropUnit')}
+                                                        </span>
+                                                    </>
+                                                )
+                                            }
+                                        >
+                                            {(close) => (
+                                                <>
+                                                    {DROP_VALUES.map(
+                                                        (percent) => (
+                                                            <button
+                                                                key={percent}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    updateSet(
+                                                                        setIndex,
+                                                                        {
+                                                                            value: String(
+                                                                                percent
+                                                                            ),
+                                                                        }
+                                                                    );
+                                                                    close();
+                                                                }}
+                                                                className={
+                                                                    menuItemClass
+                                                                }
+                                                            >
+                                                                {`${percent}${t('set.dropUnit')}`}
+                                                            </button>
+                                                        )
+                                                    )}
+                                                    {set.value !== '' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                updateSet(
+                                                                    setIndex,
+                                                                    {
+                                                                        value: '',
+                                                                    }
+                                                                );
+                                                                close();
+                                                            }}
+                                                            className={
+                                                                menuItemClass
+                                                            }
+                                                        >
+                                                            {t(
+                                                                'exercise.noDropValue'
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+                                        </Dropdown>
+                                    ) : sub && readOnly ? (
+                                        blankDrop ? null : (
+                                            <input
+                                                type="text"
+                                                readOnly
+                                                value={readValue}
+                                                placeholder={t('set.restUnit')}
+                                                aria-label={t(
+                                                    'exercise.setValue',
+                                                    { e, label: n }
+                                                )}
+                                                className={`${numberClass(
+                                                    wrong.value
+                                                )} ${valueSlotClass}`}
+                                            />
+                                        )
+                                    ) : sub ? (
+                                        <input
+                                            type="number"
+                                            inputMode="numeric"
+                                            min={limit.min}
+                                            max={limit.max}
+                                            value={set.value}
+                                            onChange={(event) =>
+                                                updateSet(setIndex, {
+                                                    value: event.target.value.slice(
+                                                        0,
+                                                        limit.digits
+                                                    ),
+                                                })
+                                            }
+                                            placeholder={t(
+                                                place.kind === 'drop'
+                                                    ? 'set.dropUnit'
+                                                    : 'set.restUnit'
+                                            )}
+                                            aria-label={t('exercise.setValue', {
+                                                e,
+                                                label: n,
+                                            })}
+                                            className={`${numberClass(
+                                                wrong.value
+                                            )} ${valueSlotClass}`}
+                                        />
+                                    ) : technique !== null ? (
+                                        <div className="relative min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto">
+                                            <input
+                                                value={technique}
+                                                readOnly={
+                                                    readOnly ||
+                                                    presets.includes(technique)
+                                                }
+                                                onChange={(event) =>
+                                                    updateSet(setIndex, {
+                                                        technique:
+                                                            event.target.value,
+                                                    })
+                                                }
+                                                maxLength={USER_NAME_MAX}
+                                                placeholder={t(
+                                                    'exercise.techniquePlaceholder'
+                                                )}
+                                                aria-label={t(
+                                                    'exercise.technique',
+                                                    { e, n }
+                                                )}
+                                                className={`${
+                                                    wrong.technique
+                                                        ? wrongFieldClass
+                                                        : fieldClass
+                                                } ${rowFieldClass} w-full ${
+                                                    readOnly
+                                                        ? ''
+                                                        : 'pr-12 md:pr-3'
+                                                }`}
+                                            />
+                                            {!readOnly && (
+                                                <button
+                                                    type="button"
+                                                    onClick={removeTechnique}
+                                                    aria-label={t(
+                                                        'exercise.removeTechniqueLabel',
+                                                        { e, n }
+                                                    )}
+                                                    className={`${removeButtonClass} absolute top-1/2 right-0.5 -translate-y-1/2 md:hidden`}
+                                                >
+                                                    <X
+                                                        size={14}
+                                                        aria-hidden
+                                                    />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {!readOnly && (
+                                                <div className="basis-full md:hidden">
+                                                    {techniqueDropdown(
+                                                        `${addFieldClass} ${rowFieldClass} w-full`
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div
+                                                aria-hidden
+                                                className="hidden md:block md:min-w-0 md:flex-1"
+                                            />
+                                        </>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     );
                 })}
             </div>
-            <datalist id={techniqueListId}>
-                <option value={t('technique.linear')} />
-                <option value={t('technique.warmup')} />
-                <option value={t('technique.topset')} />
-                <option value={t('technique.backoff')} />
-            </datalist>
-
             {!readOnly && (
                 <div className="flex items-center justify-between gap-2">
                     <button

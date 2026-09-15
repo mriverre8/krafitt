@@ -72,7 +72,10 @@ const base = {
 const flagged = {
     problems: ['Exercise 1: give it a name.'],
     faults: {
-        e1: { name: true, sets: [{ min: false, max: false, value: false }] },
+        e1: {
+            name: true,
+            sets: [{ min: false, max: false, value: false, technique: false }],
+        },
     },
 };
 
@@ -217,7 +220,7 @@ describe('WorkoutEditor', () => {
                         repMin: '',
                         repMax: '',
                         value: '',
-                        technique: '',
+                        technique: null,
                     },
                 ],
             },
@@ -266,25 +269,31 @@ describe('WorkoutEditor', () => {
         expect(mode).toHaveValue('fixed');
     });
 
-    // Clearing the technique stores the default instead, which can leave the day
-    // byte for byte as it was: there is nothing in the props for the editor to
-    // notice, so it has to take the answer the save itself came back with.
-    it('takes back the defaults the save filled in', async () => {
+    // A technique saved with nothing but spaces in it comes back trimmed, which
+    // can leave the day byte for byte as it was: there is nothing in the props
+    // for the editor to notice, so it has to take the answer the save came back
+    // with. The field stays — blank is a hole to fill, not a technique removed.
+    it('takes back what the save trimmed', async () => {
+        const set = workout.exercises[0].sets[0];
+        const withTechnique = (technique: string) => [
+            { ...workout.exercises[0], sets: [{ ...set, technique }] },
+        ];
         render(
             <WorkoutEditor
                 {...base}
+                workout={{ ...workout, exercises: withTechnique('My own') }}
                 saveExercises={async () => ({
                     ok: true as const,
-                    saved: workout.exercises,
+                    saved: withTechnique(''),
                 })}
             />
         );
         const technique = screen.getByLabelText('Exercise 1, technique set 1');
-        fireEvent.change(technique, { target: { value: '' } });
+        fireEvent.change(technique, { target: { value: '  ' } });
         expect(save()).toBeEnabled();
 
         fireEvent.click(save());
-        await waitFor(() => expect(technique).toHaveValue('Top set'));
+        await waitFor(() => expect(technique).toHaveValue(''));
         expect(save()).toBeDisabled();
     });
 

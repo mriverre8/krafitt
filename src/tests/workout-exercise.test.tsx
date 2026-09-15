@@ -32,6 +32,25 @@ describe('WorkoutExercise', () => {
         expect(screen.getAllByText('Back off ·')).toHaveLength(2);
     });
 
+    // A set with no technique is named by its number instead: the tag is where
+    // the row says what it is, and it can never be left saying nothing.
+    it('calls a set with no technique by its number', () => {
+        render(
+            <WorkoutExercise
+                {...base}
+                exercise={{
+                    ...exercise,
+                    sets: [
+                        { ...exercise.sets[0], technique: null },
+                        { ...exercise.sets[1], technique: '' },
+                    ],
+                }}
+            />
+        );
+        expect(screen.getByText('Set 1 ·')).toBeInTheDocument();
+        expect(screen.getByText('Set 2 ·')).toBeInTheDocument();
+    });
+
     it('renders one row per set', () => {
         render(<WorkoutExercise {...base} />);
         expect(screen.getAllByLabelText(/^Weight set/)).toHaveLength(3);

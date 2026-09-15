@@ -6,13 +6,14 @@ import {
     isRoutineComplete,
     workoutFaults,
     workoutProblems,
+    type PlannedSet,
 } from '@/lib/validate';
 import { describe, expect, it } from 'vitest';
 
 const t = createT(en);
 
 const set: RepSpec = { repMode: 'range', repMin: 6, repMax: 8 };
-const day = (sets: RepSpec[], name = 'Bench') => ({
+const day = (sets: PlannedSet[], name = 'Bench') => ({
     exercises: [{ name, sets }],
 });
 
@@ -37,7 +38,7 @@ describe('workoutProblems', () => {
     it('flags every field of that blank card for the highlight', () => {
         expect(blankExerciseFault).toEqual({
             name: true,
-            sets: [{ min: true, max: true, value: false }],
+            sets: [{ min: true, max: true, value: false, technique: false }],
         });
     });
 
@@ -83,6 +84,20 @@ describe('workoutProblems', () => {
             )
         ).toEqual([]);
     });
+
+    // A set is free to have no technique at all — the plan then calls it by its
+    // number. One that was added and left blank names nothing, and is a hole.
+    it('accepts a set with no technique but not a blank one', () => {
+        expect(workoutProblems(day([{ ...set, technique: null }]), t)).toEqual(
+            []
+        );
+        expect(
+            workoutProblems(day([{ ...set, technique: 'Top set' }]), t)
+        ).toEqual([]);
+        expect(workoutProblems(day([{ ...set, technique: '  ' }]), t)).toEqual([
+            'Bench: the sets are not properly defined.',
+        ]);
+    });
 });
 
 describe('workoutFaults', () => {
@@ -100,10 +115,17 @@ describe('workoutFaults', () => {
             'Exercise 1: the sets are not properly defined.',
         ]);
         expect(workoutFaults(exercises)).toEqual({
-            e1: { name: true, sets: [{ min: false, max: true, value: false }] },
+            e1: {
+                name: true,
+                sets: [
+                    { min: false, max: true, value: false, technique: false },
+                ],
+            },
             e2: {
                 name: false,
-                sets: [{ min: false, max: false, value: false }],
+                sets: [
+                    { min: false, max: false, value: false, technique: false },
+                ],
             },
         });
     });
