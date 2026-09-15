@@ -2,6 +2,7 @@ import { createT } from '@/i18n/config';
 import { en } from '@/i18n/en';
 import type { RepSpec } from '@/lib/reps';
 import {
+    blankExerciseFault,
     isRoutineComplete,
     workoutFaults,
     workoutProblems,
@@ -20,10 +21,24 @@ describe('workoutProblems', () => {
         expect(workoutProblems(day([set]), t)).toEqual([]);
     });
 
-    it('catches a day with no exercises', () => {
+    // A day is added with nothing on it, but the editor opens a blank card on
+    // it straight away: the complaints have to be about that card's fields, or
+    // they point at nothing the user can see.
+    it('reads a day with no exercises as the blank card shown for it', () => {
         expect(workoutProblems({ exercises: [] }, t)).toEqual([
-            'No exercises yet.',
+            'Exercise 1: give it a name.',
+            'Exercise 1: the sets are not properly defined.',
         ]);
+    });
+
+    // Show errors paints from this one, since the blank card is in no save and
+    // so has no id in workoutFaults. It has to cover the row the editor draws:
+    // the name and the set's two rep boxes.
+    it('flags every field of that blank card for the highlight', () => {
+        expect(blankExerciseFault).toEqual({
+            name: true,
+            sets: [{ min: true, max: true, value: false }],
+        });
     });
 
     it('names the exercise by its position while it is still blank', () => {

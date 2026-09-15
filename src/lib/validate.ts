@@ -29,14 +29,33 @@ function exerciseFault(exercise: ExercisePlan): ExerciseFault {
     };
 }
 
+/** What a day with nothing saved yet is really holding: the editor opens one
+    blank card on it, so that card is what the day is short of. Mirrors
+    `emptyExercise` down to the single blank set, so the faults below line up
+    with the row the editor actually draws. */
+const blankExercise: ExercisePlan = {
+    name: '',
+    sets: [{ repMode: 'range', repMin: null, repMax: null }],
+};
+
+/** That blank card's own faults. The editor paints from `workoutFaults`, which
+    files faults by exercise id, and this card has no id to be filed under: it is
+    in no save. */
+export const blankExerciseFault: ExerciseFault = exerciseFault(blankExercise);
+
 /**
  * Human-readable list of holes in one day, worded for the day's own card: the
  * day is the context, so nothing here repeats its name.
+ *
+ * A day with no exercises is read as the one blank card the editor shows for it
+ * — `toDrafts` never renders a day with nothing on it — so a freshly added day
+ * complains about the fields on screen rather than about being empty.
  */
 export function workoutProblems(workout: WorkoutPlan, t: Translate): string[] {
-    if (workout.exercises.length === 0) return [t('validate.emptyDay')];
+    const exercises =
+        workout.exercises.length > 0 ? workout.exercises : [blankExercise];
 
-    return workout.exercises.flatMap((exercise, index) => {
+    return exercises.flatMap((exercise, index) => {
         const fault = exerciseFault(exercise);
         const where =
             exercise.name.trim() || t('validate.exerciseN', { n: index + 1 });

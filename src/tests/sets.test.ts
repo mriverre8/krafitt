@@ -97,13 +97,21 @@ describe('badSetValue', () => {
 });
 
 describe('readSetValue', () => {
-    it('keeps a blank blank and rejects what is out of range', () => {
+    it('keeps a blank blank and rejects what no field could hold', () => {
         expect(readSetValue('', 'drop')).toBeNull();
         expect(readSetValue('20', 'drop')).toBe(20);
-        expect(readSetValue('120', 'drop')).toBeUndefined();
-        expect(readSetValue('0', 'rest')).toBeUndefined();
-        expect(readSetValue('90', 'rest')).toBeUndefined();
         expect(readSetValue('45', 'rest')).toBe(45);
+        // Three digits in a two-digit box: not typed, so not saved.
+        expect(readSetValue('120', 'drop')).toBeUndefined();
+    });
+
+    // A pause of 90 seconds is past REST_SECONDS.max but the box holds it, so it
+    // is the user's typing and belongs in the day's problems, not in a refusal
+    // that saves nothing.
+    it('keeps a typed value the limits call wrong, for badSetValue to flag', () => {
+        expect(readSetValue('0', 'rest')).toBe(0);
+        expect(readSetValue('90', 'rest')).toBe(90);
+        expect(badSetValue({ kind: 'rest', value: 90 })).toBe(true);
     });
 
     it('drops whatever a working set was sent', () => {
