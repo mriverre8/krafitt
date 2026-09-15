@@ -3,7 +3,7 @@
 import { useT } from '@/i18n/use-t';
 import { EXERCISES } from '@/lib/constants';
 import type { DayAction } from '@/lib/forms';
-import type { ExerciseFault } from '@/lib/validate';
+import { blankExerciseFault, type ExerciseFault } from '@/lib/validate';
 import {
     ghostClass,
     iconButtonClass,
@@ -84,6 +84,21 @@ export function WorkoutEditor({
     if (discarded !== lastDiscarded) {
         setLastDiscarded(discarded);
         setDrafts(toDrafts(server));
+    }
+
+    /**
+     * The saved faults this card is owed. A card the user has only just added
+     * is in no save yet, so nothing is known to be wrong with it and it stays
+     * unpainted — with one exception: the blank card a day with nothing saved
+     * opens with is the very card the problems above are about, and it has no
+     * id to be filed under.
+     */
+    function faultOf(draft: ExerciseDraft, index: number) {
+        if (!showProblems || !highlight) return undefined;
+        if (draft.id) return faults[draft.id];
+        return workout.exercises.length === 0 && index === 0
+            ? blankExerciseFault
+            : undefined;
     }
 
     function update(index: number, patch: Partial<ExerciseDraft>) {
@@ -178,11 +193,7 @@ export function WorkoutEditor({
                         key={index}
                         exercise={draft}
                         index={index}
-                        fault={
-                            showProblems && highlight && draft.id
-                                ? faults[draft.id]
-                                : undefined
-                        }
+                        fault={faultOf(draft, index)}
                         readOnly={!editing}
                         onChange={(patch) => update(index, patch)}
                         onRemove={() =>
