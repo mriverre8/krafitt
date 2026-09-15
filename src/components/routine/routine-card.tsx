@@ -19,6 +19,15 @@ export type RoutineCardProps = {
     canActivate: boolean;
 };
 
+/**
+ * A routine as a list shows it: what it is, how far it got, and what state it is
+ * in. Both places that list routines — /routines and the profile — render this
+ * one, and neither changes anything: the whole card is one link, and activating,
+ * renaming and deleting all live on the routine's own page.
+ *
+ * Renders no <li> of its own, so a caller is free to put it in a list or, as the
+ * profile does with the active routine, on its own.
+ */
 export function RoutineCard(props: RoutineCardProps) {
     const t = useT();
     const total = props.workoutCount * props.durationWeeks;
@@ -31,19 +40,15 @@ export function RoutineCard(props: RoutineCardProps) {
     const training = props.isActive && !props.finished;
 
     return (
-        <li
-            className={`${cardLinkClass} ${
+        <Link
+            href={`/routines/${props.id}`}
+            className={`${cardLinkClass} block ${
                 training ? 'border-l-volt border-l-[6px]' : ''
             }`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <Link
-                        href={`/routines/${props.id}`}
-                        className="display hover:text-pulse text-3xl transition-colors"
-                    >
-                        {props.name}
-                    </Link>
+                    <p className="display truncate text-3xl">{props.name}</p>
                     <p className="eyebrow text-muted mt-1.5">
                         {t('routines.meta', {
                             weeks: props.durationWeeks,
@@ -95,6 +100,6 @@ export function RoutineCard(props: RoutineCardProps) {
                 />
                 <p className="figure text-muted text-sm">{progress}</p>
             </div>
-        </li>
+        </Link>
     );
 }

@@ -24,6 +24,14 @@ describe('RoutineCard', () => {
         expect(screen.getByText('6/12 workouts')).toBeInTheDocument();
     });
 
+    it('makes the whole card one link into the routine', () => {
+        render(<RoutineCard {...props} />);
+        expect(screen.getByRole('link')).toHaveAttribute(
+            'href',
+            '/routines/r1'
+        );
+    });
+
     it('never reports more progress than the routine has', () => {
         render(
             <RoutineCard

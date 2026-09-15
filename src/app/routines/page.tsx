@@ -20,21 +20,22 @@ export default async function RoutinesPage() {
 
             <ul className="space-y-3">
                 {routines.map((routine) => (
-                    <RoutineCard
-                        key={routine.id}
-                        id={routine.id}
-                        name={routine.name}
-                        durationWeeks={routine.durationWeeks}
-                        workoutCount={routine._count.workouts}
-                        cursor={routine.cursor}
-                        isActive={routine.isActive}
-                        finished={isRoutineFinished(
-                            routine.cursor,
-                            routine._count.workouts,
-                            routine.durationWeeks
-                        )}
-                        canActivate={isRoutineComplete(routine, t)}
-                    />
+                    <li key={routine.id}>
+                        <RoutineCard
+                            id={routine.id}
+                            name={routine.name}
+                            durationWeeks={routine.durationWeeks}
+                            workoutCount={routine._count.workouts}
+                            cursor={routine.cursor}
+                            isActive={routine.isActive}
+                            finished={isRoutineFinished(
+                                routine.cursor,
+                                routine._count.workouts,
+                                routine.durationWeeks
+                            )}
+                            canActivate={isRoutineComplete(routine, t)}
+                        />
+                    </li>
                 ))}
                 {routines.length === 0 && (
                     <li className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center">
