@@ -9,6 +9,11 @@ export const en = {
     'common.delete': 'Delete',
     'common.save': 'Save',
 
+    'pagination.label': 'Pagination',
+    'pagination.previous': 'Previous',
+    'pagination.next': 'Next',
+    'pagination.status': 'Page {page} of {total}',
+
     'nav.today': 'Today',
     'nav.routines': 'Routines',
     'nav.signOut': 'Sign out',

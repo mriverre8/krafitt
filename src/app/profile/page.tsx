@@ -1,8 +1,10 @@
 import { Avatar } from '@/components/ui/avatar';
 import { TrainingYear } from '@/components/profile/training-year';
 import { RoutineCard } from '@/components/routine/routine-card';
+import { Pagination } from '@/components/ui/pagination';
 import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
+import { paginate } from '@/lib/pagination';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines, trainingDays } from '@/lib/queries';
 import { cardClass } from '@/lib/ui';
@@ -12,17 +14,24 @@ import { redirect } from 'next/navigation';
 const emptyClass =
     'border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm';
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+    searchParams,
+}: PageProps<'/profile'>) {
     const user = await currentUser();
     if (!user) redirect('/');
 
     const today = new Date();
-    const [routines, days, t, locale] = await Promise.all([
-        myRoutines(user.id),
-        trainingDays(user.id, new Date(Date.UTC(today.getUTCFullYear(), 0, 1))),
-        getT(),
-        getLocale(),
-    ]);
+    const [{ finished: askedPage }, routines, days, t, locale] =
+        await Promise.all([
+            searchParams,
+            myRoutines(user.id),
+            trainingDays(
+                user.id,
+                new Date(Date.UTC(today.getUTCFullYear(), 0, 1))
+            ),
+            getT(),
+            getLocale(),
+        ]);
 
     const summaries = routines.map((routine) => ({
         id: routine.id,
@@ -40,7 +49,15 @@ export default async function ProfilePage() {
     }));
 
     const active = summaries.find((r) => r.isActive && !r.finished);
+
+    // Sliced here rather than in the query: "finished" is the cursor measured
+    // against the plan's own length, which is not a column to filter on, and
+    // the counts above need every routine anyway.
     const finished = summaries.filter((r) => r.finished);
+    const { page, totalPages, skip, take } = paginate(
+        askedPage,
+        finished.length
+    );
     const workoutsDone = summaries.reduce(
         (sum, r) => sum + Math.min(r.cursor, r.workoutCount * r.durationWeeks),
         0
@@ -96,13 +113,22 @@ export default async function ProfilePage() {
                     {t('profile.finishedTitle')}
                 </h2>
                 {finished.length > 0 ? (
-                    <ul className="space-y-3">
-                        {finished.map((routine) => (
-                            <li key={routine.id}>
-                                <RoutineCard {...routine} />
-                            </li>
-                        ))}
-                    </ul>
+                    <>
+                        <ul className="space-y-3">
+                            {finished
+                                .slice(skip, skip + take)
+                                .map((routine) => (
+                                    <li key={routine.id}>
+                                        <RoutineCard {...routine} />
+                                    </li>
+                                ))}
+                        </ul>
+                        <Pagination
+                            page={page}
+                            totalPages={totalPages}
+                            param="finished"
+                        />
+                    </>
                 ) : (
                     <p className={emptyClass}>{t('profile.noFinished')}</p>
                 )}
