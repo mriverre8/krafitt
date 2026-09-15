@@ -2,8 +2,8 @@ import {
     RoutineCard,
     type RoutineCardProps,
 } from '@/components/routine/routine-card';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 const props: RoutineCardProps = {
     id: 'r1',
@@ -14,7 +14,6 @@ const props: RoutineCardProps = {
     isActive: false,
     finished: false,
     canActivate: true,
-    onSetActive: async () => {},
 };
 
 describe('RoutineCard', () => {
@@ -35,19 +34,15 @@ describe('RoutineCard', () => {
         expect(screen.getByText('12/12 workouts')).toBeInTheDocument();
     });
 
-    it('offers to activate a routine that is not active', async () => {
-        const onSetActive = vi.fn().mockResolvedValue(undefined);
-        render(
-            <RoutineCard
-                {...props}
-                onSetActive={onSetActive}
-            />
-        );
-        fireEvent.click(screen.getByRole('button', { name: 'Set active' }));
-        await waitFor(() => expect(onSetActive).toHaveBeenCalledWith('r1'));
+    // The card only reports state now: activating happens on the routine's own
+    // page, so nothing here is clickable but the name.
+    it('marks a ready but inactive routine as pending, with nothing to press', () => {
+        render(<RoutineCard {...props} />);
+        expect(screen.getByText('Pending')).toBeInTheDocument();
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
-    it('withholds the button until the routine is fully defined', () => {
+    it('says so when the routine is not fully defined', () => {
         render(
             <RoutineCard
                 {...props}
@@ -55,12 +50,10 @@ describe('RoutineCard', () => {
             />
         );
         expect(screen.getByText('Incomplete')).toBeInTheDocument();
-        expect(
-            screen.queryByRole('button', { name: 'Set active' })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Pending')).not.toBeInTheDocument();
     });
 
-    it('will not offer to activate a routine that is over', () => {
+    it('will not call a routine that is over pending', () => {
         render(
             <RoutineCard
                 {...props}
@@ -68,9 +61,7 @@ describe('RoutineCard', () => {
             />
         );
         expect(screen.getByText('Finished')).toBeInTheDocument();
-        expect(
-            screen.queryByRole('button', { name: 'Set active' })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Pending')).not.toBeInTheDocument();
     });
 
     // The flag survives the last workout, but the card has to stop calling it
@@ -87,7 +78,7 @@ describe('RoutineCard', () => {
         expect(screen.queryByText('Active')).not.toBeInTheDocument();
     });
 
-    it('shows a badge instead of the button when already active', () => {
+    it('shows the active badge when the routine is the one being trained', () => {
         render(
             <RoutineCard
                 {...props}
@@ -95,8 +86,6 @@ describe('RoutineCard', () => {
             />
         );
         expect(screen.getByText('Active')).toBeInTheDocument();
-        expect(
-            screen.queryByRole('button', { name: 'Set active' })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Pending')).not.toBeInTheDocument();
     });
 });

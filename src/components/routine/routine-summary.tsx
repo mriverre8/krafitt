@@ -56,7 +56,7 @@ export function RoutineSummary(props: RoutineSummaryProps) {
                     </span>
                 ) : (
                     <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
+                        className={`${badgeClass} border-surge text-surge shrink-0 border-2`}
                     >
                         <CircleCheck
                             size={13}

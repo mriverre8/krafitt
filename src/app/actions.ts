@@ -102,6 +102,22 @@ export async function setActiveRoutine(routineId: string) {
     revalidatePath('/routines');
 }
 
+/** Puts the routine back on the shelf. The cursor stays where it is, so
+    activating it again picks the training up where it was left; the home screen
+    goes back to having nothing to train. No completeness guard: whatever state
+    the routine is in, stopping is always allowed. */
+export async function deactivateRoutine(routineId: string) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+
+    await prisma.routine.update({
+        where: { id: routineId },
+        data: { isActive: false },
+    });
+    revalidatePath('/');
+    revalidatePath('/routines');
+}
+
 /** The name on its own. Everything else about a routine is edited in place; this
     is the one field with no home on the page, so it is asked for in a dialog. */
 export async function renameRoutine(
