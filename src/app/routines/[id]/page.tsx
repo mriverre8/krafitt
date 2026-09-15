@@ -1,5 +1,6 @@
 import {
     addWorkout,
+    deactivateRoutine,
     deleteRoutine,
     deleteWorkout,
     renameRoutine,
@@ -96,7 +97,7 @@ export default async function RoutinePage({
                 <div className="flex flex-wrap items-center gap-4">
                     {finished ? (
                         <p
-                            className={`${badgeClass} border-line text-muted border-2`}
+                            className={`${badgeClass} border-surge text-surge border-2`}
                         >
                             <CircleCheck
                                 size={13}
@@ -105,13 +106,26 @@ export default async function RoutinePage({
                             {t('routines.finished')}
                         </p>
                     ) : routine.isActive ? (
-                        <p className={`${badgeClass} bg-volt text-on-volt`}>
-                            <Flame
-                                size={13}
-                                aria-hidden
-                            />
-                            {t('routines.active')}
-                        </p>
+                        <>
+                            <p className={`${badgeClass} bg-volt text-on-volt`}>
+                                <Flame
+                                    size={13}
+                                    aria-hidden
+                                />
+                                {t('routines.active')}
+                            </p>
+                            <WhenNotEditing>
+                                <ActionButton
+                                    action={deactivateRoutine.bind(
+                                        null,
+                                        routine.id
+                                    )}
+                                    className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
+                                >
+                                    {t('routine.deactivate')}
+                                </ActionButton>
+                            </WhenNotEditing>
+                        </>
                     ) : !complete ? (
                         <p
                             className={`${badgeClass} border-line text-muted border-2 border-dashed`}

@@ -4,7 +4,6 @@ import { useT } from '@/i18n/use-t';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
-import { ActionButton } from '@/components/ui/action-button';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 
 export type RoutineCardProps = {
@@ -18,7 +17,6 @@ export type RoutineCardProps = {
     finished: boolean;
     /** A routine with holes in it cannot be trained, so it cannot go active. */
     canActivate: boolean;
-    onSetActive: (routineId: string) => Promise<void>;
 };
 
 export function RoutineCard(props: RoutineCardProps) {
@@ -56,7 +54,7 @@ export function RoutineCard(props: RoutineCardProps) {
 
                 {props.finished ? (
                     <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
+                        className={`${badgeClass} border-surge text-surge shrink-0 border-2`}
                     >
                         <CircleCheck
                             size={13}
@@ -75,12 +73,11 @@ export function RoutineCard(props: RoutineCardProps) {
                         {t('routines.active')}
                     </span>
                 ) : props.canActivate ? (
-                    <ActionButton
-                        action={() => props.onSetActive(props.id)}
-                        className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse shrink-0 border-2`}
+                    <span
+                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
                     >
-                        {t('routines.markActive')}
-                    </ActionButton>
+                        {t('routines.pending')}
+                    </span>
                 ) : (
                     <span
                         className={`${badgeClass} border-line text-muted shrink-0 border-2 border-dashed`}
