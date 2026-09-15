@@ -21,7 +21,9 @@ export function EmptyRoutine() {
     return (
         <div className={cardClass}>
             <h2 className="display text-3xl">{t('routine.emptyTitle')}</h2>
-            <p className="text-muted mt-2 text-sm md:text-base">{t('routine.emptyBody')}</p>
+            <p className="text-muted mt-2 text-sm md:text-base">
+                {t('routine.emptyBody')}
+            </p>
             <button
                 type="button"
                 onClick={toggle}

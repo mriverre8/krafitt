@@ -1,7 +1,4 @@
-import {
-    EditModeProvider,
-    WhenEditing,
-} from '@/components/routine/edit-mode';
+import { EditModeProvider, WhenEditing } from '@/components/routine/edit-mode';
 import { EmptyRoutine } from '@/components/routine/empty-routine';
 import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
