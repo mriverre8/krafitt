@@ -10,7 +10,7 @@
  */
 
 import type { Translate } from '@/i18n/config';
-import { DROP_PERCENT, REST_SECONDS } from './constants';
+import { DROP_PERCENT, maxDigits, REST_SECONDS } from './constants';
 
 export const SET_KINDS = ['normal', 'drop', 'rest'] as const;
 export type SetKind = (typeof SET_KINDS)[number];
@@ -120,8 +120,15 @@ export function badSetValue(set: KindedSet): boolean {
     );
 }
 
-/** The per cent or the pause, read off a form field. `null` is a blank one,
-    `undefined` a number the form should never have been able to produce. */
+/**
+ * The per cent or the pause, read off a form field. `null` is a blank one,
+ * `undefined` a number the form should never have been able to produce.
+ *
+ * A pause of 90 seconds is kept rather than refused: the field holds two digits
+ * and the user typed it, so it is a hole in the routine — `badSetValue` says so,
+ * the day reports it and the highlight paints it. Turning the save away would
+ * strand it under the form with nowhere to go and nothing saved.
+ */
 export function readSetValue(
     raw: unknown,
     kind: SetKind
@@ -129,8 +136,11 @@ export function readSetValue(
     if (kind === 'normal') return null;
     if (raw === '' || raw === null || raw === undefined) return null;
     const value = Number.parseInt(String(raw), 10);
-    const limit = limits[kind];
-    if (!Number.isInteger(value) || value < limit.min || value > limit.max) {
+    if (
+        !Number.isInteger(value) ||
+        value < 0 ||
+        value > maxDigits(limits[kind].digits)
+    ) {
         return undefined;
     }
     return value;

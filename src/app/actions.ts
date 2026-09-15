@@ -13,6 +13,7 @@ import {
     EXERCISES,
     NAME_MAX,
     REPS,
+    maxDigits,
     SETS,
     WEEKS,
     WEIGHT,
@@ -168,11 +169,18 @@ export async function addWorkout(
     return { ok: true };
 }
 
-/** A blank field, or a number the form should never have been able to produce. */
+/**
+ * A blank field, or a number the form should never have been able to produce.
+ *
+ * Read against what three digits can hold rather than against `REPS`: a 0 is
+ * typeable, so it is saved and left to `badRepFields` to call a hole in the day
+ * — same as a range that runs backwards, which has always been saved this way.
+ * A refusal here would only put it under the form with nothing stored.
+ */
 function readReps(value: unknown): number | null | undefined {
     if (value === '' || value === null || value === undefined) return null;
     const reps = Number.parseInt(String(value), 10);
-    if (!Number.isInteger(reps) || reps < REPS.min || reps > REPS.max) {
+    if (!Number.isInteger(reps) || reps < 0 || reps > maxDigits(REPS.digits)) {
         return undefined;
     }
     return reps;
