@@ -16,6 +16,7 @@ import {
     WhenEditing,
     WhenNotEditing,
 } from '@/components/routine/edit-mode';
+import { EmptyRoutine } from '@/components/routine/empty-routine';
 import { HistoryLink } from '@/components/ui/history-link';
 import { RoutineDays } from '@/components/routine/routine-days';
 import { RoutineOptions } from '@/components/routine/routine-options';
@@ -158,11 +159,7 @@ export default async function RoutinePage({
                     )}
                     {locked && <HistoryLink routineId={routine.id} />}
                 </div>
-                {routine.workouts.length === 0 && (
-                    <p className="text-danger text-sm">
-                        {t('validate.noWorkouts')}
-                    </p>
-                )}
+                {routine.workouts.length === 0 && <EmptyRoutine />}
 
                 <WhenEditing>
                     <AddWorkoutForm
