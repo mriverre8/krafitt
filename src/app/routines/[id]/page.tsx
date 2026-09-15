@@ -9,8 +9,8 @@ import {
 } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { AddWorkoutForm } from '@/components/routine/add-workout-form';
-import { BackButton } from '@/components/ui/back-button';
 import {
+    EditModeBackButton,
     EditModeProvider,
     EditModeToggle,
     WhenEditing,
@@ -60,7 +60,7 @@ export default async function RoutinePage({
         <EditModeProvider>
             <div className="space-y-6">
                 <header>
-                    <BackButton fallback="/routines" />
+                    <EditModeBackButton fallback="/routines" />
                     <h1 className="display mt-5 text-6xl">{routine.name}</h1>
                     <div className="mt-2 flex items-center justify-between gap-3">
                         <p className="eyebrow text-muted min-w-0">
