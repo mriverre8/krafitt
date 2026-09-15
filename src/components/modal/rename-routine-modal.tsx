@@ -11,19 +11,26 @@ import { useActionState, useEffect, useState } from 'react';
 export type RenameRoutineModalProps = {
     /** The name as it stands, for the field to open on. */
     name: string;
-    /** Already bound to its routine, so this knows nothing but the new name. */
+    /** Already bound to its routine or day, so this knows nothing but the new
+        name. */
     rename: FormAction;
+    /** What is being renamed, as the dialog's heading. */
+    title: string;
+    /** Accessible name for the field, since the heading is not one. */
+    label: string;
     /** Supplied by the ModalHost. */
     onClose: () => void;
 };
 
 /**
- * The routine's name, which is the one thing about it the page shows as a
- * heading rather than as a field. Asked for here instead, from the options menu.
+ * A name the page shows as a heading rather than as a field — the routine's,
+ * or one of its days'. Asked for here instead, from the options menu.
  */
 export function RenameRoutineModal({
     name,
     rename,
+    title,
+    label,
     onClose,
 }: RenameRoutineModalProps) {
     const t = useT();
@@ -40,7 +47,7 @@ export function RenameRoutineModal({
 
     return (
         <Modal
-            title={t('routine.rename')}
+            title={title}
             onClose={onClose}
         >
             <form
@@ -51,7 +58,7 @@ export function RenameRoutineModal({
                     name="name"
                     value={value}
                     onChange={(event) => setValue(event.target.value)}
-                    aria-label={t('routines.nameLabel')}
+                    aria-label={label}
                     required
                     maxLength={NAME_MAX}
                     autoFocus

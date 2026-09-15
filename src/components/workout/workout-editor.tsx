@@ -2,17 +2,30 @@
 
 import { useT } from '@/i18n/use-t';
 import { EXERCISES } from '@/lib/constants';
-import type { DayAction } from '@/lib/forms';
+import type { DayAction, FormAction } from '@/lib/forms';
 import { blankExerciseFault, type ExerciseFault } from '@/lib/validate';
 import {
     ghostClass,
     iconButtonClass,
     labelClass,
+    menuDangerClass,
+    menuItemClass,
     primaryClass,
 } from '@/lib/ui';
-import { Eye, EyeOff, Plus, Save, Trash, Undo2 } from 'lucide-react';
+import { showModal } from '@/store/modal';
+import {
+    Ellipsis,
+    Eye,
+    EyeOff,
+    Plus,
+    Save,
+    Trash,
+    Type,
+    Undo2,
+} from 'lucide-react';
 import { startTransition, useActionState, useState } from 'react';
 import { ActionButton } from '@/components/ui/action-button';
+import { Dropdown } from '@/components/ui/dropdown';
 import { useDiscardSignal, useEditMode } from '@/components/routine/edit-mode';
 import {
     emptyExercise,
@@ -37,6 +50,7 @@ export function WorkoutEditor({
     problems,
     faults,
     saveExercises,
+    onRenameWorkout,
     onDeleteWorkout,
 }: {
     workout: { id: string; name: string; exercises: ExerciseView[] };
@@ -45,6 +59,8 @@ export function WorkoutEditor({
     /** The same holes as fields to paint, by exercise id. */
     faults: Record<string, ExerciseFault>;
     saveExercises: DayAction;
+    /** Already bound to this day. */
+    onRenameWorkout: FormAction;
     onDeleteWorkout: (workoutId: string) => Promise<void>;
 }) {
     const t = useT();
@@ -133,22 +149,59 @@ export function WorkoutEditor({
                     {workout.name}
                 </h3>
                 {editing && (
-                    <ActionButton
-                        action={() => onDeleteWorkout(workout.id)}
-                        confirm={{
-                            title: t('routine.deleteDay'),
-                            message: t('routine.deleteDayConfirm', {
-                                name: workout.name,
-                            }),
-                        }}
-                        className={`${labelClass} hover:text-danger flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
+                    <Dropdown
+                        label={t('routine.dayOptions')}
+                        className={`${labelClass} hover:text-pulse flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
+                        icon={
+                            <>
+                                <Ellipsis
+                                    size={14}
+                                    aria-hidden
+                                />
+                                {t('routine.options')}
+                            </>
+                        }
                     >
-                        <Trash
-                            size={14}
-                            aria-hidden
-                        />
-                        {t('routine.deleteDay')}
-                    </ActionButton>
+                        {(close) => (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        close();
+                                        showModal('rename', {
+                                            name: workout.name,
+                                            rename: onRenameWorkout,
+                                            title: t('routine.renameDay'),
+                                            label: t('routine.dayLabel'),
+                                        });
+                                    }}
+                                    className={menuItemClass}
+                                >
+                                    <Type
+                                        size={14}
+                                        aria-hidden
+                                    />
+                                    {t('routine.renameDay')}
+                                </button>
+                                <ActionButton
+                                    action={() => onDeleteWorkout(workout.id)}
+                                    confirm={{
+                                        title: t('routine.deleteDay'),
+                                        message: t('routine.deleteDayConfirm', {
+                                            name: workout.name,
+                                        }),
+                                    }}
+                                    className={menuDangerClass}
+                                >
+                                    <Trash
+                                        size={14}
+                                        aria-hidden
+                                    />
+                                    {t('routine.deleteDay')}
+                                </ActionButton>
+                            </>
+                        )}
+                    </Dropdown>
                 )}
             </div>
 

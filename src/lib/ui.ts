@@ -90,6 +90,13 @@ export const menuItemClass =
     'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-muted ' +
     'transition-colors hover:bg-surface2 hover:text-pulse';
 
+/** The delete row of a menu. Its own colour rather than the menu's:
+    `menuItemClass` ends in a pulse hover, and two hover:text- utilities on one
+    element come down to the order Tailwind emits them in. */
+export const menuDangerClass =
+    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-danger ' +
+    'transition-colors hover:bg-surface2 hover:text-danger/70';
+
 /** Uppercase pill, for a count or a status. */
 export const badgeClass =
     'eyebrow inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5';

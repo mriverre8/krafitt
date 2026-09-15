@@ -191,6 +191,8 @@ export const es: Dict = {
     'routine.prevDay': 'Día anterior',
     'routine.nextDay': 'Día siguiente',
     'routine.unsaved': 'cambios sin guardar',
+    'routine.dayOptions': 'Opciones del día',
+    'routine.renameDay': 'Cambiar nombre',
     'routine.deleteDay': 'Borrar día',
     'routine.deleteDayConfirm': '¿Borrar {name} y sus ejercicios?',
     'routine.noWorkouts': 'Esta rutina aún no tiene entrenamientos.',

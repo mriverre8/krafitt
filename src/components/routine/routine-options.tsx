@@ -2,19 +2,12 @@
 
 import { useT } from '@/i18n/use-t';
 import type { FormAction } from '@/lib/forms';
-import { labelClass, menuItemClass } from '@/lib/ui';
+import { labelClass, menuDangerClass, menuItemClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import { Dropdown } from '@/components/ui/dropdown';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { EditModeToggle } from '@/components/routine/edit-mode';
 import { Ellipsis, Type } from 'lucide-react';
-
-/** The delete row. Its own colour rather than the menu's: `menuItemClass` ends
-    in a pulse hover, and two hover:text- utilities on one element come down to
-    the order Tailwind emits them in. */
-const deleteItemClass =
-    'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-danger ' +
-    'transition-colors hover:bg-surface2 hover:text-danger/70';
 
 /**
  * Everything you can do to the routine as a whole, behind one trigger: the
@@ -77,7 +70,12 @@ export function RoutineOptions({
                             type="button"
                             onClick={() => {
                                 close();
-                                showModal('rename', { name, rename });
+                                showModal('rename', {
+                                    name,
+                                    rename,
+                                    title: t('routine.rename'),
+                                    label: t('routines.nameLabel'),
+                                });
                             }}
                             className={menuItemClass}
                         >
@@ -97,7 +95,7 @@ export function RoutineOptions({
                     <DeleteRoutineButton
                         name={name}
                         onDelete={onDelete}
-                        className={deleteItemClass}
+                        className={menuDangerClass}
                     />
                 </>
             )}

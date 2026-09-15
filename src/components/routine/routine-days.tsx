@@ -1,6 +1,6 @@
 'use client';
 
-import type { DayAction } from '@/lib/forms';
+import type { DayAction, FormState } from '@/lib/forms';
 import type { ExerciseFault } from '@/lib/validate';
 import { useId, useState } from 'react';
 import { DaySwitcher } from '@/components/routine/day-switcher';
@@ -29,10 +29,17 @@ export type RoutineDay = {
 export function RoutineDays({
     days,
     saveExercises,
+    renameWorkout,
     onDeleteWorkout,
 }: {
     days: RoutineDay[];
     saveExercises: DayAction;
+    /** Bound to its day by the editor that offers it. */
+    renameWorkout: (
+        workoutId: string,
+        previous: FormState,
+        data: FormData
+    ) => Promise<FormState>;
     onDeleteWorkout: (workoutId: string) => Promise<void>;
 }) {
     const baseId = useId();
@@ -70,6 +77,7 @@ export function RoutineDays({
                         problems={day.problems}
                         faults={day.faults}
                         saveExercises={saveExercises}
+                        onRenameWorkout={renameWorkout.bind(null, day.id)}
                         onDeleteWorkout={onDeleteWorkout}
                     />
                 </div>

@@ -345,6 +345,25 @@ export async function saveExercises(
     return { ok: true, saved };
 }
 
+export async function renameWorkout(
+    workoutId: string,
+    _previous: FormState,
+    data: FormData
+): Promise<FormState> {
+    const user = await requireUser();
+    const t = await getT();
+    const name = str(data, 'name');
+
+    if (!name) return { error: t('error.workoutName') };
+    if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
+    const routineId = await routineIdOfWorkout(workoutId);
+    await requireEditableRoutine(routineId, user.id);
+
+    await prisma.workout.update({ where: { id: workoutId }, data: { name } });
+    revalidatePath(`/routines/${routineId}`);
+    return { ok: true };
+}
+
 export async function deleteWorkout(workoutId: string) {
     const user = await requireUser();
     const routineId = await routineIdOfWorkout(workoutId);

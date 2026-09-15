@@ -189,6 +189,8 @@ export const en = {
     'routine.prevDay': 'Previous day',
     'routine.nextDay': 'Next day',
     'routine.unsaved': 'unsaved changes',
+    'routine.dayOptions': 'Day options',
+    'routine.renameDay': 'Rename day',
     'routine.deleteDay': 'Delete day',
     'routine.deleteDayConfirm': 'Delete {name} and its exercises?',
     'routine.noWorkouts': 'This routine has no workouts yet.',
