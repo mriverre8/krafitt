@@ -23,6 +23,23 @@ export const fieldClass = `${fieldBase} border-line hover:border-muted`;
 export const wrongFieldClass = `${fieldBase} border-danger hover:border-danger`;
 
 export const inputClass = `w-full min-w-0 ${fieldClass}`;
+
+/** One height for every control on a set row of the editor — select, number
+    box, technique field, the readout that stands in for the numbers — so the
+    columns line up down the card whatever each row is asking for. */
+export const rowFieldClass = 'h-12';
+
+/** How a number box on such a row looks. How it takes its width is left to the
+    caller: the reps share out their slot, the drop or rest-pause value takes
+    its column. */
+export const numberClass = (wrong: boolean) =>
+    `${wrong ? wrongFieldClass : fieldClass} ${rowFieldClass} min-w-0 ` +
+    `px-1 text-center md:px-3`;
+
+/** The column a drop or rest-pause set puts its own amount in. Narrow on a
+    phone — it holds two digits and a unit, and every pixel it does not need is
+    a pixel the reps beside it do — and back to field width from md up. */
+export const valueSlotClass = 'w-14 shrink-0 md:w-32';
 export const wrongInputClass = `w-full min-w-0 ${wrongFieldClass}`;
 
 /** The one field that titles the card it sits in, rather than collecting a

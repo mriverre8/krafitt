@@ -100,6 +100,28 @@ export function groupAt(
     return { kind, insertAt: end };
 }
 
+/** A working set and the drop or rest-pause sets hanging off it, as positions
+    in the flat list the exercise actually holds. */
+export type Group = { at: number; subs: number[] };
+
+/**
+ * The same runs `groupAt` answers for one set, read off a whole exercise in one
+ * pass: what the editor draws down the card, and the order it draws them in.
+ */
+export function groupsOf(places: SetPlace[]): Group[] {
+    const groups: Group[] = [];
+    places.forEach((place, index) => {
+        const last = groups[groups.length - 1];
+        // A run with no working set in front of it is a shape `readPlan`
+        // refuses, so it can never be saved — but it can still be rendered, and
+        // a row that silently vanishes is worse than one standing on its own.
+        if (place.kind === 'normal' || !last)
+            groups.push({ at: index, subs: [] });
+        else last.subs.push(index);
+    });
+    return groups;
+}
+
 const limits = { drop: DROP_PERCENT, rest: REST_SECONDS };
 
 /**

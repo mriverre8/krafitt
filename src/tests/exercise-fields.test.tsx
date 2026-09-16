@@ -1,11 +1,5 @@
-import {
-    emptyExercise,
-    emptySet,
-    ExerciseFields,
-    toDrafts,
-    type ExerciseDraft,
-    type SetDraft,
-} from '@/components/workout/exercise-fields';
+import { ExerciseFields } from '@/components/workout/exercise-fields';
+import { emptySet, type ExerciseDraft, type SetDraft } from '@/lib/drafts';
 import {
     cleanup,
     fireEvent,
@@ -49,46 +43,6 @@ const fields = (props: Partial<Parameters<typeof ExerciseFields>[0]> = {}) =>
             {...props}
         />
     );
-
-describe('toDrafts', () => {
-    it('gives an empty day one blank exercise to start from', () => {
-        expect(toDrafts([])).toEqual([emptyExercise]);
-    });
-
-    it('reads a stored exercise back into the form', () => {
-        expect(
-            toDrafts([
-                {
-                    id: 'e1',
-                    name: 'Bench press',
-                    sets: [
-                        {
-                            repMode: 'fixed',
-                            repMin: 8,
-                            repMax: null,
-                            technique: 'Top set',
-                        },
-                    ],
-                },
-            ])
-        ).toEqual([
-            {
-                id: 'e1',
-                name: 'Bench press',
-                sets: [
-                    {
-                        kind: 'normal',
-                        mode: 'fixed',
-                        repMin: '8',
-                        repMax: '',
-                        value: '',
-                        technique: 'Top set',
-                    },
-                ],
-            },
-        ]);
-    });
-});
 
 /** Everything a row can be told to do now sits behind one ⋯ at its head, so
     reaching any of it means opening that row's menu first. */

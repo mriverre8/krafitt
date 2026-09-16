@@ -27,12 +27,8 @@ import { startTransition, useActionState, useState } from 'react';
 import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useDiscardSignal, useEditMode } from '@/components/routine/edit-mode';
-import {
-    emptyExercise,
-    ExerciseFields,
-    toDrafts,
-    type ExerciseDraft,
-} from '@/components/workout/exercise-fields';
+import { emptyExercise, toDrafts, type ExerciseDraft } from '@/lib/drafts';
+import { ExerciseFields } from '@/components/workout/exercise-fields';
 import {
     blankExercise,
     ExercisePreview,
