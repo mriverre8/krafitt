@@ -103,7 +103,8 @@ describe('RoutineDays', () => {
     // The whole reason every day stays mounted: each one holds a draft that no
     // save has taken yet, and stepping away must not throw it out.
     it('keeps an unsaved draft while you look at another day', () => {
-        render(<RoutineDays {...base} />);
+        renderEditing();
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
         fireEvent.change(screen.getAllByLabelText('Exercise 1 name')[0], {
             target: { value: 'Incline press' },
         });

@@ -167,7 +167,6 @@ export function ExerciseFields({
     exercise,
     index,
     fault,
-    readOnly,
     onChange,
     onRemove,
     canRemove,
@@ -177,9 +176,6 @@ export function ExerciseFields({
     /** The fields to paint red, or nothing while the eye is off. Comes from the
         day's own errors, so it never flags something only the draft knows. */
     fault?: ExerciseFault;
-    /** The routine is being read, not edited: the fields are locked and the
-        buttons that add or drop rows are gone. */
-    readOnly?: boolean;
     onChange: (patch: Partial<ExerciseDraft>) => void;
     onRemove: () => void;
     canRemove: boolean;
@@ -242,7 +238,6 @@ export function ExerciseFields({
         >
             <input
                 value={exercise.name}
-                readOnly={readOnly}
                 onChange={(event) => onChange({ name: event.target.value })}
                 aria-label={t('exercise.nameLabel', { e })}
                 placeholder={t('exercise.namePlaceholder')}
@@ -267,7 +262,7 @@ export function ExerciseFields({
                     /** The × beside the fields. From md up only a drop or
                         rest-pause set still wears one: a numbered set drops its
                         row from the bar of actions under it instead. */
-                    const removeButton = !readOnly && (
+                    const removeButton = (
                         <button
                             type="button"
                             disabled={!canRemoveSet}
@@ -284,7 +279,7 @@ export function ExerciseFields({
 
                     /** The same, worded: the phone's own row action, and the
                         numbered set's from md up. */
-                    const removeSetButton = !readOnly && (
+                    const removeSetButton = (
                         <button
                             type="button"
                             disabled={!canRemoveSet}
@@ -299,22 +294,6 @@ export function ExerciseFields({
                             {t('exercise.removeSetShort')}
                         </button>
                     );
-
-                    /** A drop that was never given a per cent, while the routine
-                        is being read. It has nothing to say, so it says nothing:
-                        the field is gone rather than standing there empty. */
-                    const blankDrop =
-                        readOnly && place.kind === 'drop' && !set.value;
-
-                    /** The amount as the routine is read rather than written:
-                        a drop is a cut, a pause is a length of time, and both
-                        say which right there in the box. A pause that was never
-                        given one stays blank — that is a hole to be filled. */
-                    const readValue = !set.value
-                        ? ''
-                        : place.kind === 'drop'
-                          ? `−${set.value}${t('set.dropUnit')}`
-                          : `${set.value}${t('set.restSymbol')}`;
 
                     // Null is a set with no technique; the menu hands it one,
                     // and Custom hands it a blank field to write its own in.
@@ -413,16 +392,15 @@ export function ExerciseFields({
                     );
 
                     // Beside the drop / rest-pause button, from md up.
-                    const techniqueButton =
-                        readOnly || sub
-                            ? null
-                            : techniqueDropdown(
-                                  `${rowButtonClass} hover:text-pulse`
-                              );
+                    const techniqueButton = sub
+                        ? null
+                        : techniqueDropdown(
+                              `${rowButtonClass} hover:text-pulse`
+                          );
 
                     const taken = group?.kind ?? null;
                     const addButton =
-                        readOnly || sub || full ? null : taken ? (
+                        sub || full ? null : taken ? (
                             <button
                                 type="button"
                                 onClick={() => addSub(setIndex, taken)}
@@ -544,8 +522,6 @@ export function ExerciseFields({
                                     </span>
                                     <select
                                         value={set.mode}
-                                        tabIndex={readOnly ? -1 : undefined}
-                                        aria-readonly={readOnly}
                                         onChange={(event) =>
                                             updateSet(setIndex, {
                                                 mode: event.target
@@ -556,11 +532,7 @@ export function ExerciseFields({
                                             e,
                                             n,
                                         })}
-                                        className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3 ${
-                                            readOnly
-                                                ? 'pointer-events-none'
-                                                : ''
-                                        }`}
+                                        className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
                                     >
                                         {REP_MODES.map((mode) => (
                                             <option
@@ -587,7 +559,6 @@ export function ExerciseFields({
                                                     min={REPS.min}
                                                     max={REPS.max}
                                                     value={set.repMin}
-                                                    readOnly={readOnly}
                                                     onChange={(event) =>
                                                         updateSet(setIndex, {
                                                             repMin: event.target.value.slice(
@@ -623,7 +594,6 @@ export function ExerciseFields({
                                                             min={REPS.min}
                                                             max={REPS.max}
                                                             value={set.repMax}
-                                                            readOnly={readOnly}
                                                             onChange={(event) =>
                                                                 updateSet(
                                                                     setIndex,
@@ -651,14 +621,12 @@ export function ExerciseFields({
                                             </>
                                         )}
                                     </div>
-                                    {sub && !readOnly && (
+                                    {sub && (
                                         <div className="hidden md:order-last md:block">
                                             {removeButton}
                                         </div>
                                     )}
-                                    {sub &&
-                                    place.kind === 'drop' &&
-                                    !readOnly ? (
+                                    {sub && place.kind === 'drop' ? (
                                         <Dropdown
                                             label={t('exercise.setValue', {
                                                 e,
@@ -740,22 +708,6 @@ export function ExerciseFields({
                                                 </>
                                             )}
                                         </Dropdown>
-                                    ) : sub && readOnly ? (
-                                        blankDrop ? null : (
-                                            <input
-                                                type="text"
-                                                readOnly
-                                                value={readValue}
-                                                placeholder={t('set.restUnit')}
-                                                aria-label={t(
-                                                    'exercise.setValue',
-                                                    { e, label: n }
-                                                )}
-                                                className={`${numberClass(
-                                                    wrong.value
-                                                )} ${valueSlotClass}`}
-                                            />
-                                        )
                                     ) : sub ? (
                                         <input
                                             type="number"
@@ -788,10 +740,9 @@ export function ExerciseFields({
                                         <div className="relative min-w-40 basis-full md:min-w-0 md:flex-1 md:basis-auto">
                                             <input
                                                 value={technique}
-                                                readOnly={
-                                                    readOnly ||
-                                                    presets.includes(technique)
-                                                }
+                                                readOnly={presets.includes(
+                                                    technique
+                                                )}
                                                 onChange={(event) =>
                                                     updateSet(setIndex, {
                                                         technique:
@@ -810,38 +761,30 @@ export function ExerciseFields({
                                                     wrong.technique
                                                         ? wrongFieldClass
                                                         : fieldClass
-                                                } ${rowFieldClass} w-full ${
-                                                    readOnly
-                                                        ? ''
-                                                        : 'pr-12 md:pr-3'
-                                                }`}
+                                                } ${rowFieldClass} w-full pr-12 md:pr-3`}
                                             />
-                                            {!readOnly && (
-                                                <button
-                                                    type="button"
-                                                    onClick={removeTechnique}
-                                                    aria-label={t(
-                                                        'exercise.removeTechniqueLabel',
-                                                        { e, n }
-                                                    )}
-                                                    className={`${removeButtonClass} absolute top-1/2 right-0.5 -translate-y-1/2 md:hidden`}
-                                                >
-                                                    <X
-                                                        size={14}
-                                                        aria-hidden
-                                                    />
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={removeTechnique}
+                                                aria-label={t(
+                                                    'exercise.removeTechniqueLabel',
+                                                    { e, n }
+                                                )}
+                                                className={`${removeButtonClass} absolute top-1/2 right-0.5 -translate-y-1/2 md:hidden`}
+                                            >
+                                                <X
+                                                    size={14}
+                                                    aria-hidden
+                                                />
+                                            </button>
                                         </div>
                                     ) : (
                                         <>
-                                            {!readOnly && (
-                                                <div className="basis-full md:hidden">
-                                                    {techniqueDropdown(
-                                                        `${addFieldClass} ${rowFieldClass} w-full`
-                                                    )}
-                                                </div>
-                                            )}
+                                            <div className="basis-full md:hidden">
+                                                {techniqueDropdown(
+                                                    `${addFieldClass} ${rowFieldClass} w-full`
+                                                )}
+                                            </div>
                                             <div
                                                 aria-hidden
                                                 className="hidden md:block md:min-w-0 md:flex-1"
@@ -854,38 +797,36 @@ export function ExerciseFields({
                     );
                 })}
             </div>
-            {!readOnly && (
-                <div className="flex items-center justify-between gap-2">
-                    <button
-                        type="button"
-                        disabled={full}
-                        onClick={() =>
-                            onChange({ sets: [...exercise.sets, emptySet] })
-                        }
-                        aria-label={t('exercise.addSetLabel', { e })}
-                        className={`${rowButtonClass} hover:text-pulse`}
-                    >
-                        <Plus
-                            size={14}
-                            aria-hidden
-                        />
-                        {t('exercise.addSet')}
-                    </button>
-                    <button
-                        type="button"
-                        disabled={!canRemove}
-                        onClick={onRemove}
-                        aria-label={t('exercise.delete', { e })}
-                        className={`${rowButtonClass} hover:text-danger`}
-                    >
-                        <X
-                            size={14}
-                            aria-hidden
-                        />
-                        {t('exercise.removeShort')}
-                    </button>
-                </div>
-            )}
+            <div className="flex items-center justify-between gap-2">
+                <button
+                    type="button"
+                    disabled={full}
+                    onClick={() =>
+                        onChange({ sets: [...exercise.sets, emptySet] })
+                    }
+                    aria-label={t('exercise.addSetLabel', { e })}
+                    className={`${rowButtonClass} hover:text-pulse`}
+                >
+                    <Plus
+                        size={14}
+                        aria-hidden
+                    />
+                    {t('exercise.addSet')}
+                </button>
+                <button
+                    type="button"
+                    disabled={!canRemove}
+                    onClick={onRemove}
+                    aria-label={t('exercise.delete', { e })}
+                    className={`${rowButtonClass} hover:text-danger`}
+                >
+                    <X
+                        size={14}
+                        aria-hidden
+                    />
+                    {t('exercise.removeShort')}
+                </button>
+            </div>
         </div>
     );
 }

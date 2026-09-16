@@ -485,20 +485,14 @@ describe('WorkoutEditor', () => {
 // No provider here: a routine opens read-only, which is what the context
 // defaults to.
 describe('WorkoutEditor, before Edit is pressed', () => {
-    it('locks every field', () => {
-        rtlRender(<WorkoutEditor {...base} />);
-        expect(screen.getByLabelText('Exercise 1 name')).toHaveAttribute(
-            'readonly'
-        );
-        expect(
-            screen.getByLabelText('Exercise 1, min reps set 1')
-        ).toHaveAttribute('readonly');
-        expect(
-            screen.getByLabelText('Exercise 1, technique set 1')
-        ).toHaveAttribute('readonly');
-        expect(
-            screen.getByLabelText('Exercise 1, reps type set 1')
-        ).toHaveAttribute('aria-readonly', 'true');
+    // A field nobody can use should not look like one: the day is read as
+    // text, and the form only exists once Edit has been pressed.
+    it('sets the day out as text, with no fields at all', () => {
+        const { container } = rtlRender(<WorkoutEditor {...base} />);
+        expect(screen.getByText('Bench press')).toBeInTheDocument();
+        expect(screen.getByText('Top set')).toBeInTheDocument();
+        expect(screen.getByText('4-6 reps')).toBeInTheDocument();
+        expect(container.querySelector('input, select')).toBeNull();
     });
 
     // Nothing to act on here: the list is a note to whoever writes the day.
@@ -515,9 +509,6 @@ describe('WorkoutEditor, before Edit is pressed', () => {
         expect(
             screen.queryByRole('button', { name: 'Show errors' })
         ).not.toBeInTheDocument();
-        expect(screen.getByLabelText('Exercise 1 name')).not.toHaveClass(
-            'border-danger'
-        );
     });
 
     it('hides everything that would change the day', () => {
@@ -552,13 +543,15 @@ describe('leaving edit mode with unsaved work', () => {
     const edit = () => screen.getByRole('button', { name: 'Edit' });
     const done = () => screen.getByRole('button', { name: 'Done' });
     const name = () => screen.getByLabelText('Exercise 1 name');
+    /** Out of edit mode the name is a heading, not a field. */
+    const read = (value: string) => screen.getByText(value);
 
     it('leaves quietly when nothing was touched', () => {
         renderRoutine();
         fireEvent.click(edit());
         fireEvent.click(done());
         expect(confirmDialog()).not.toBeInTheDocument();
-        expect(name()).toHaveAttribute('readonly');
+        expect(read('Bench press')).toBeInTheDocument();
     });
 
     it('asks first, then throws the draft away', async () => {
@@ -571,8 +564,7 @@ describe('leaving edit mode with unsaved work', () => {
         );
 
         await acceptConfirm('Discard changes');
-        expect(name()).toHaveValue('Bench press');
-        expect(name()).toHaveAttribute('readonly');
+        expect(read('Bench press')).toBeInTheDocument();
     });
 
     it('stays in edit mode, draft intact, when the ask is refused', async () => {

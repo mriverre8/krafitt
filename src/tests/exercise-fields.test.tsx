@@ -617,15 +617,6 @@ describe('ExerciseFields', () => {
                 screen.getByLabelText('Exercise 1, technique set 1')
             ).toHaveClass('border-danger');
         });
-
-        it('offers nothing to press while the routine is being read', () => {
-            fields({ exercise: one(null), readOnly: true });
-            expect(
-                screen.queryByRole('button', {
-                    name: 'Exercise 1, add technique to set 1',
-                })
-            ).not.toBeInTheDocument();
-        });
     });
 
     describe("the drop set's per cent", () => {
@@ -680,8 +671,8 @@ describe('ExerciseFields', () => {
 
         // The pause of a rest-pause is typed, not picked: it is the set's whole
         // point and any second of it counts.
-        it('leaves the rest-pause seconds and the read view as fields', () => {
-            const { unmount } = fields({
+        it('leaves the rest-pause seconds as a field', () => {
+            fields({
                 exercise: {
                     ...draft,
                     sets: [
@@ -697,59 +688,6 @@ describe('ExerciseFields', () => {
             expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
                 15
             );
-            unmount();
-
-            fields({ exercise: dropped('30'), readOnly: true });
-            expect(screen.getByLabelText('Exercise 1, DS1 amount')).toHaveValue(
-                '−30%'
-            );
-        });
-
-        // Read rather than typed, the amount carries its unit: a drop is a cut
-        // and a pause is a length of time, and the box says which.
-        it('carries its unit while the routine is being read', () => {
-            const { unmount } = fields({
-                exercise: {
-                    ...draft,
-                    sets: [
-                        draft.sets[0],
-                        {
-                            ...draft.sets[0],
-                            kind: 'rest' as const,
-                            value: '15',
-                        },
-                    ],
-                },
-                readOnly: true,
-            });
-            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
-                '15s'
-            );
-            unmount();
-
-            // A pause never given one is a hole, so its box stays empty.
-            fields({
-                exercise: {
-                    ...draft,
-                    sets: [
-                        draft.sets[0],
-                        { ...draft.sets[0], kind: 'rest' as const, value: '' },
-                    ],
-                },
-                readOnly: true,
-            });
-            expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
-                ''
-            );
-        });
-
-        // Reading the routine, a drop with no per cent has nothing to say, so
-        // it says nothing rather than showing an empty box.
-        it('is not there at all while reading, with nothing in it', () => {
-            fields({ exercise: dropped(''), readOnly: true });
-            expect(
-                screen.queryByLabelText('Exercise 1, DS1 amount')
-            ).not.toBeInTheDocument();
         });
     });
 });

@@ -260,6 +260,7 @@ export const es: Dict = {
     'set.dropUnit': '%',
     'set.restSymbol': 's',
     'set.restUnit': 'seg',
+    'set.restUnset': 'Segundos por definir',
 
     'reps.range': 'Rango',
     'reps.fixed': 'Fijas',
