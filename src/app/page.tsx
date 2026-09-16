@@ -1,5 +1,5 @@
 import { EmptyState } from '@/components/ui/empty-state';
-import { Landing } from '@/components/auth/landing';
+import { Landing } from '@/components/landing/landing';
 import { TodayWorkout } from '@/components/workout/today-workout';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';

@@ -1,4 +1,4 @@
-import { Landing } from '@/components/auth/landing';
+import { Landing } from '@/components/landing/landing';
 import { EXERCISES, SETS, WEEKS } from '@/lib/constants';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
