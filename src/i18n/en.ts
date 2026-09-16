@@ -192,6 +192,8 @@ export const en = {
     'routine.meta': '{weeks} weeks · {days} days per week',
     'routine.workouts': 'Workouts',
     'routine.dayTab': 'Day {n}, {name}',
+    'routine.prevDay': 'Previous day',
+    'routine.nextDay': 'Next day',
     'routine.unsaved': 'unsaved changes',
     'routine.dayOptions': 'Day options',
     'routine.renameDay': 'Rename day',

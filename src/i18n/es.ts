@@ -194,6 +194,8 @@ export const es: Dict = {
     'routine.meta': '{weeks} semanas · {days} días por semana',
     'routine.workouts': 'Entrenamientos',
     'routine.dayTab': 'Día {n}, {name}',
+    'routine.prevDay': 'Día anterior',
+    'routine.nextDay': 'Día siguiente',
     'routine.unsaved': 'cambios sin guardar',
     'routine.dayOptions': 'Opciones del día',
     'routine.renameDay': 'Cambiar nombre',

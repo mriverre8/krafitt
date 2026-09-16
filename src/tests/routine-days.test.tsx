@@ -85,15 +85,21 @@ describe('RoutineDays', () => {
         expect(tab(1)).toHaveAttribute('aria-selected', 'false');
     });
 
-    // The chevrons that used to sit above the rack are gone: the plates were
-    // always the faster way between days, and the keys below still walk them.
-    it('offers the plates and nothing else to move between days', () => {
+    it('offers the workouts label and chevrons to move between days', () => {
         render(<RoutineDays {...base} />);
-        for (const name of ['Next day', 'Previous day', 'Workouts']) {
-            expect(
-                screen.queryByRole('button', { name })
-            ).not.toBeInTheDocument();
-        }
+        expect(
+            screen.getByRole('tablist', { name: 'Workouts' })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Previous day' })
+        ).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Next day' })).toBeEnabled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Next day' }));
+        expect(panelOf('Pull A')).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'Previous day' })
+        ).toBeEnabled();
     });
 
     // A new day belongs at the end of the rack it will appear in, and only

@@ -194,6 +194,8 @@ export const ca: Dict = {
     'routine.meta': '{weeks} setmanes · {days} dies per setmana',
     'routine.workouts': 'Entrenaments',
     'routine.dayTab': 'Dia {n}, {name}',
+    'routine.prevDay': 'Dia anterior',
+    'routine.nextDay': 'Dia següent',
     'routine.unsaved': 'canvis sense desar',
     'routine.dayOptions': 'Opcions del dia',
     'routine.renameDay': 'Canviar el nom',
