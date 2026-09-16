@@ -16,7 +16,6 @@ import { numberClass, rowFieldClass } from '@/lib/ui';
 const repsSlotClass =
     'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2';
 
-
 /**
  * What the set asks for in reps, in the one slot the row always gives it. The
  * slot is the component's own, not the caller's: the range fills it with two
