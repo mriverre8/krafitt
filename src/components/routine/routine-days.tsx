@@ -1,6 +1,6 @@
 'use client';
 
-import type { DayAction, FormState } from '@/lib/forms';
+import type { DayAction, FormAction, FormState } from '@/lib/forms';
 import type { ExerciseFault } from '@/lib/validate';
 import { useId, useState } from 'react';
 import { DaySwitcher } from '@/components/routine/day-switcher';
@@ -28,11 +28,14 @@ export type RoutineDay = {
  */
 export function RoutineDays({
     days,
+    addDay,
     saveExercises,
     renameWorkout,
     onDeleteWorkout,
 }: {
     days: RoutineDay[];
+    /** Already bound to its routine, for the + at the end of the rack. */
+    addDay?: FormAction;
     saveExercises: DayAction;
     /** Bound to its day by the editor that offers it. */
     renameWorkout: (
@@ -51,7 +54,7 @@ export function RoutineDays({
     if (days.length === 0) return null;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <DaySwitcher
                 days={days.map((day) => ({
                     id: day.id,
@@ -61,6 +64,7 @@ export function RoutineDays({
                 }))}
                 index={index}
                 baseId={baseId}
+                addDay={addDay}
                 onSelect={setSelected}
             />
 

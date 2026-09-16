@@ -90,6 +90,26 @@ describe('toDrafts', () => {
     });
 });
 
+/** Everything a row can be told to do now sits behind one ⋯ at its head, so
+    reaching any of it means opening that row's menu first. */
+const openSet = (n: string) =>
+    fireEvent.click(
+        screen.getByRole('button', { name: `Exercise 1, set ${n} actions` })
+    );
+
+/** The trigger and its panel are siblings, so the whole menu is what the
+    trigger's parent holds — the trigger itself being the first button in it. */
+const openTechnique = (n: string) =>
+    fireEvent.click(
+        screen.getByRole('button', { name: `Exercise 1, set ${n} technique` })
+    );
+
+const rowsOf = (label: string) =>
+    within(screen.getByRole('button', { name: label }).parentElement!)
+        .getAllByRole('button')
+        .map((button) => button.textContent)
+        .slice(1);
+
 describe('ExerciseFields', () => {
     it('opens on what the draft holds', () => {
         fields();
@@ -108,7 +128,7 @@ describe('ExerciseFields', () => {
         fields({ index: 2 });
         expect(screen.getByLabelText('Exercise 3 name')).toBeInTheDocument();
         expect(
-            screen.getByLabelText('Exercise 3, technique set 1')
+            screen.getByLabelText('Exercise 3, set 1 technique')
         ).toBeInTheDocument();
     });
 
@@ -153,46 +173,52 @@ describe('ExerciseFields', () => {
         );
         expect(onChange.mock.calls[0][0].sets).toHaveLength(3);
 
-        // Same action exists as both a desktop icon button and a mobile text
-        // link; only one is ever visible, but jsdom does not evaluate the
-        // media query that hides the other.
+        openSet('2');
         fireEvent.click(
-            screen.getAllByRole('button', {
-                name: 'Exercise 1, remove set 2',
-            })[0]
+            screen.getByRole('button', { name: 'Exercise 1, remove set 2' })
         );
         expect(onChange.mock.calls[1][0].sets).toEqual([draft.sets[0]]);
     });
 
-    // A numbered set drops itself from the bar of actions under its row; only a
-    // drop or rest-pause still wears an × beside its fields. The phone keeps its
-    // own worded button on every row. jsdom hides neither layout, so the text is
-    // what tells the two of them apart.
-    it('drops a numbered set from its actions and a sub set from its ×', () => {
+    // One mark per row, in the same place on every one of them — the working
+    // set's menu carries the whole of what a set can be asked for, a drop or
+    // rest-pause row's the one thing it can.
+    it('gives the working set a menu and the sub row its one action', () => {
         fields({
             exercise: {
                 ...draft,
                 sets: [draft.sets[0], { ...draft.sets[0], kind: 'drop' }],
             },
         });
-        const remove = (n: string) =>
-            screen
-                .getAllByRole('button', { name: `Exercise 1, remove set ${n}` })
-                .map((button) => button.textContent);
-        expect(remove('1')).toEqual(['Remove set', 'Remove set']);
-        expect(remove('DS1')).toEqual(['Remove set', '']);
+        openSet('1');
+        expect(rowsOf('Exercise 1, set 1 actions')).toEqual([
+            'Add drop set',
+            'Remove set',
+        ]);
+
+        // One option is not a menu: the sub row wears it, in the same column.
+        expect(
+            screen.queryByRole('button', {
+                name: 'Exercise 1, set DS1 actions',
+            })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Exercise 1, remove set DS1' })
+        ).toBeInTheDocument();
     });
 
     describe('drop and rest-pause sets', () => {
-        // Both layouts render the button; jsdom hides neither.
-        const add = (name: string) =>
-            fireEvent.click(screen.getAllByRole('button', { name })[0]);
+        /** Both kinds are named in the working set's own menu, so adding one is
+            open the row, pick the kind. */
+        const addFrom = (n: string, name: string) => {
+            openSet(n);
+            fireEvent.click(screen.getByRole('button', { name }));
+        };
 
         it('hangs a new one off the set it was added from', () => {
             const onChange = vi.fn();
             fields({ onChange });
-            add('Add drop / rest-pause to set 1');
-            add('Add drop set');
+            addFrom('1', 'Add drop set');
 
             const sets = onChange.mock.calls[0][0].sets;
             expect(sets.map((set: SetDraft) => set.kind)).toEqual([
@@ -211,36 +237,25 @@ describe('ExerciseFields', () => {
             ];
             fields({ exercise: { ...draft, sets }, onChange });
 
-            // The menu is gone: one working set takes one kind, not both.
+            // One working set takes one kind, not both.
+            openSet('1');
             expect(
-                screen.queryByRole('button', {
-                    name: 'Add drop / rest-pause to set 1',
-                })
+                screen.queryByRole('button', { name: 'Add rest-pause set' })
             ).not.toBeInTheDocument();
 
-            add('Add drop set');
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Add drop set' })
+            );
             expect(
                 onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
             ).toEqual(['normal', 'drop', 'drop', 'normal']);
         });
 
-        // The button lives on the working set that carries the run, however
-        // long the run gets. The row a control sits in is the wrapper the set
-        // fields share — no Tailwind in jsdom, so the utility class is what
-        // identifies it.
-        const rowOf = (el: Element) => el.closest('[class*="space-y-1.5"]')!;
-
-        it('sits on the working set while it carries no run', () => {
-            fields();
-            const button = screen.getAllByRole('button', {
-                name: 'Add drop / rest-pause to set 1',
-            })[0];
-            expect(rowOf(button)).toContainElement(
-                screen.getByLabelText('Exercise 1, reps type set 1')
-            );
-        });
-
-        it('stays on the working set once the run has grown', () => {
+        // Whatever the run grows to, it is the working set that carries it —
+        // and the working set's menu that adds to it. The sub rows have no way
+        // to add one at all, which is the other half of the same rule.
+        it('adds to the run from the working set, however long it is', () => {
+            const onChange = vi.fn();
             fields({
                 exercise: {
                     ...draft,
@@ -250,13 +265,18 @@ describe('ExerciseFields', () => {
                         { ...draft.sets[0], kind: 'drop' as const },
                     ],
                 },
+                onChange,
             });
-            const button = screen.getAllByRole('button', {
-                name: 'Add drop set',
-            })[0];
-            expect(rowOf(button)).toContainElement(
-                screen.getByLabelText('Exercise 1, reps type set 1')
-            );
+            addFrom('1', 'Add drop set');
+            expect(
+                onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
+            ).toEqual(['normal', 'drop', 'drop', 'drop']);
+
+            // A sub row cannot add to the run at all: it carries nothing but
+            // its own way out.
+            expect(
+                screen.queryByRole('button', { name: 'Add drop set' })
+            ).not.toBeInTheDocument();
         });
 
         it('takes the whole run with the working set it hangs off', () => {
@@ -273,7 +293,7 @@ describe('ExerciseFields', () => {
                 },
                 onChange,
             });
-            add('Exercise 1, remove set 1');
+            addFrom('1', 'Exercise 1, remove set 1');
             expect(
                 onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
             ).toEqual(['normal']);
@@ -292,7 +312,11 @@ describe('ExerciseFields', () => {
                 },
                 onChange,
             });
-            add('Exercise 1, remove set DS1');
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, remove set DS1',
+                })
+            );
             expect(
                 onChange.mock.calls[0][0].sets.map((set: SetDraft) => set.kind)
             ).toEqual(['normal', 'drop']);
@@ -308,11 +332,12 @@ describe('ExerciseFields', () => {
                     ],
                 },
             });
-            for (const button of screen.getAllByRole('button', {
-                name: 'Exercise 1, remove set 1',
-            })) {
-                expect(button).toBeDisabled();
-            }
+            openSet('1');
+            expect(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, remove set 1',
+                })
+            ).toBeDisabled();
         });
 
         it('swaps the technique field for the amount, and names the row DS1', () => {
@@ -375,11 +400,10 @@ describe('ExerciseFields', () => {
 
     it('keeps the last set of the exercise', () => {
         fields({ exercise: { ...draft, sets: [draft.sets[0]] } });
-        for (const button of screen.getAllByRole('button', {
-            name: 'Exercise 1, remove set 1',
-        })) {
-            expect(button).toBeDisabled();
-        }
+        openSet('1');
+        expect(
+            screen.getByRole('button', { name: 'Exercise 1, remove set 1' })
+        ).toBeDisabled();
     });
 
     // jsdom has no Tailwind, so the utility class is what we can assert on.
@@ -393,7 +417,19 @@ describe('ExerciseFields', () => {
         expect(
             screen.queryByLabelText('Exercise 1, max reps set 1')
         ).not.toBeInTheDocument();
-        expect(screen.getByText('—')).toBeInTheDocument();
+        // A mode that prescribes no number says so in the slot the numbers
+        // would have had, rather than leaving a dash to be read as a field
+        // somebody forgot to fill.
+        expect(screen.getByText('To failure')).toBeInTheDocument();
+
+        cleanup();
+        fields({
+            exercise: {
+                ...draft,
+                sets: [{ ...draft.sets[1], mode: 'unspecified' }],
+            },
+        });
+        expect(screen.getByText('Unspecified reps')).toBeInTheDocument();
 
         cleanup();
         fields({
@@ -417,19 +453,23 @@ describe('ExerciseFields', () => {
         expect(screen.getByText('to')).toBeInTheDocument();
     });
 
+    // Delete is all this card can be told, so it is a mark on the name rather
+    // than a menu holding one row.
     it('removes the whole exercise, unless it is the only one', () => {
         const onRemove = vi.fn();
+        const del = () =>
+            screen.getByRole('button', { name: 'Delete exercise 1' });
+
         const { unmount } = fields({ onRemove });
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Delete exercise 1' })
-        );
+        expect(
+            screen.queryByRole('button', { name: 'Exercise 1 actions' })
+        ).not.toBeInTheDocument();
+        fireEvent.click(del());
         expect(onRemove).toHaveBeenCalled();
         unmount();
 
         fields({ canRemove: false });
-        expect(
-            screen.getByRole('button', { name: 'Delete exercise 1' })
-        ).toBeDisabled();
+        expect(del()).toBeDisabled();
     });
 
     describe('with a fault to point at', () => {
@@ -485,35 +525,30 @@ describe('ExerciseFields', () => {
             ...draft,
             sets: [{ ...draft.sets[0], technique }],
         });
-        // Both screens offer the menu — the phone as a field-shaped placeholder,
-        // the desktop as a row action — so every trigger answers to one name.
-        const openMenu = () =>
-            fireEvent.click(
-                screen.getAllByRole('button', {
-                    name: 'Exercise 1, add technique to set 1',
-                })[0]
-            );
+        // The slot is always on the row, and the row's own menu no longer
+        // carries any of this: the field itself is the way in.
+        const openMenu = () => openTechnique('1');
 
-        it('is a menu until the set is given one', () => {
+        it('holds a slot on the row even when the set has none', () => {
             fields({ exercise: one(null) });
+            expect(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, set 1 technique',
+                })
+            ).toHaveTextContent('Unspecified technique');
             expect(
                 screen.queryByLabelText('Exercise 1, technique set 1')
             ).not.toBeInTheDocument();
 
+            // Nothing to take off yet, so the list stops at Custom.
             openMenu();
-            expect(
-                screen
-                    .getAllByRole('button')
-                    .map((button) => button.textContent)
-            ).toEqual(
-                expect.arrayContaining([
-                    'Warm-up set',
-                    'Straight sets',
-                    'Top set',
-                    'Back off',
-                    'Custom',
-                ])
-            );
+            expect(rowsOf('Exercise 1, set 1 technique')).toEqual([
+                'Warm-up set',
+                'Straight sets',
+                'Top set',
+                'Back off',
+                'Custom',
+            ]);
         });
 
         it('takes what the menu was asked for, Custom taking nothing', () => {
@@ -528,24 +563,50 @@ describe('ExerciseFields', () => {
             expect(onChange.mock.calls[1][0].sets[0].technique).toBe('');
         });
 
-        // One the menu wrote is shown rather than typed; Custom is the way in.
-        it('is read-only for a menu technique and open for a custom one', () => {
+        // One off the list is shown on the slot itself; anything else is a
+        // field to write in, and Custom opens one by handing the set a blank.
+        it('shows a listed one and gives a written one a field', () => {
             const { unmount } = fields({ exercise: one('Top set') });
             expect(
-                screen.getByLabelText('Exercise 1, technique set 1')
-            ).toHaveAttribute('readonly');
+                screen.getByRole('button', {
+                    name: 'Exercise 1, set 1 technique',
+                })
+            ).toHaveTextContent('Top set');
+            expect(
+                screen.queryByLabelText('Exercise 1, technique set 1')
+            ).not.toBeInTheDocument();
             unmount();
 
             fields({ exercise: one('My own') });
             expect(
                 screen.getByLabelText('Exercise 1, technique set 1')
-            ).not.toHaveAttribute('readonly');
+            ).toHaveValue('My own');
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Exercise 1, set 1 technique',
+                })
+            ).not.toBeInTheDocument();
         });
 
-        // The phone's way out, inside the field itself.
-        it('comes back off the set from the field it filled', () => {
+        // Swapping one is picking again from the same list, and the way off
+        // the set only appears once there is one to take off.
+        it('swaps or drops a listed one from the same menu', () => {
             const onChange = vi.fn();
             fields({ exercise: one('Top set'), onChange });
+
+            openMenu();
+            // The same word the drop's per cent uses for the same move: back
+            // to nothing, which destroys nothing.
+            expect(rowsOf('Exercise 1, set 1 technique')).toContain(
+                'Unspecified'
+            );
+
+            fireEvent.click(screen.getByRole('button', { name: 'Back off' }));
+            expect(onChange.mock.calls[0][0].sets[0].technique).toBe(
+                'Back off'
+            );
+
+            openMenu();
             fireEvent.click(
                 screen.getByRole('button', {
                     name: 'Exercise 1, remove technique set 1',
@@ -556,41 +617,13 @@ describe('ExerciseFields', () => {
             });
         });
 
-        // The desktop's: the button beside the drop / rest-pause one turns into
-        // Edit, and swapping a technique is picking again from the same menu.
-        it('edits the one it has, taking it off from the foot of the menu', () => {
+        it('hands a written one back to the empty slot from its own mark', () => {
             const onChange = vi.fn();
-            fields({ exercise: one('Top set'), onChange });
-            expect(
-                screen.queryByRole('button', {
-                    name: 'Exercise 1, add technique to set 1',
-                })
-            ).not.toBeInTheDocument();
-
-            const trigger = screen.getByRole('button', {
-                name: 'Exercise 1, edit technique set 1',
-            });
-            fireEvent.click(trigger);
-            const menu = within(trigger.parentElement!)
-                .getAllByRole('button')
-                .map((button) => button.textContent);
-            expect(menu.slice(1)).toEqual([
-                'Warm-up set',
-                'Straight sets',
-                'Top set',
-                'Back off',
-                'Custom',
-                'Remove technique',
-            ]);
-
-            fireEvent.click(screen.getByRole('button', { name: 'Back off' }));
-            expect(onChange.mock.calls[0][0].sets[0].technique).toBe(
-                'Back off'
-            );
-
-            fireEvent.click(trigger);
+            fields({ exercise: one('My own'), onChange });
             fireEvent.click(
-                screen.getByRole('button', { name: 'Remove technique' })
+                screen.getByRole('button', {
+                    name: 'Exercise 1, remove technique set 1',
+                })
             );
             expect(onChange).toHaveBeenLastCalledWith({
                 sets: [{ ...draft.sets[0], technique: null }],
@@ -633,8 +666,9 @@ describe('ExerciseFields', () => {
         it('is a menu, and says what it holds once it has one', () => {
             const onChange = vi.fn();
             const { unmount } = fields({ exercise: dropped(''), onChange });
-            // The phone's label is the unit on its own; md up spells it out.
-            expect(trigger()).toHaveTextContent('Add %');
+            // The unit on its own, on any screen: the row above it already
+            // says the set is a drop.
+            expect(trigger()).toHaveTextContent('%');
 
             fireEvent.click(trigger());
             const menu = within(trigger().parentElement!)

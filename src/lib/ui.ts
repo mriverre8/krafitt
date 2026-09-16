@@ -72,11 +72,18 @@ export const labelClass = 'eyebrow text-muted';
 
 /** The × that drops a row, exercise or set alike. One size for both, so the
     fields they sit next to end on the same edge instead of a few pixels apart.
-    A finger-sized box on a phone; from md up a mouse can have the tight one. */
+    A finger-sized box on a phone; from md up a mouse can have the tight one.
+
+    Same hover as `iconButtonClass` below, whose column it shares: the box
+    fills, so a mark that is nothing but a glyph still has an edge to be
+    pointed at. The colour it goes is the one difference, and a deliberate
+    one — the menu's hover is pulse, this one danger, because this is the mark
+    that takes something away without asking first. */
 export const removeButtonClass =
     'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md ' +
-    'text-muted transition-colors hover:text-danger disabled:opacity-30 ' +
-    'md:min-h-0 md:min-w-0 md:p-1.5';
+    'text-muted transition-colors hover:bg-surface2 hover:text-danger ' +
+    'disabled:pointer-events-none disabled:opacity-30 ' +
+    'md:min-h-0 md:min-w-0 md:p-2';
 
 /** Small text button, for destructive or secondary row actions. Same story:
     44px of target on a phone, back to its own size once there is a pointer. */
@@ -96,6 +103,15 @@ export const menuItemClass =
 export const menuDangerClass =
     'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-danger ' +
     'transition-colors hover:bg-surface2 hover:text-danger/70';
+
+/** Stands in for something not there yet: another set, another exercise, another
+    day. Dashed rather than filled, so an empty slot never reads as a control
+    with the same weight as the data around it. Size comes from the caller. */
+export const dashedActionClass =
+    'lift flex items-center justify-center gap-2 rounded-md border-2 border-dashed ' +
+    'border-line font-display text-sm font-bold tracking-wide uppercase text-muted ' +
+    'transition-colors hover:border-pulse hover:text-pulse ' +
+    'disabled:pointer-events-none disabled:opacity-40';
 
 /** Uppercase pill, for a count or a status. */
 export const badgeClass =

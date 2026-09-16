@@ -81,7 +81,12 @@ const flagged = {
 
 const save = () => screen.getByRole('button', { name: /Save changes/ });
 const undo = () => screen.getByRole('button', { name: 'Undo changes' });
+/** The bar is not a disabled pair of buttons on a clean day — it is not there
+    at all, and only arrives once the draft has moved off the last save. */
+const noBar = () => screen.queryByRole('button', { name: /Save changes/ });
 const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
+/** Delete sits on the card's name field, as the one thing the card can be
+    told: there is no menu to open first. */
 const deleteExercise = (e: number) =>
     screen.getByRole('button', { name: `Delete exercise ${e}` });
 
@@ -129,7 +134,7 @@ describe('WorkoutEditor', () => {
 
     it('only offers to save once something has changed', () => {
         render(<WorkoutEditor {...base} />);
-        expect(save()).toBeDisabled();
+        expect(noBar()).toBeNull();
 
         fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
             target: { value: 'Incline press' },
@@ -140,7 +145,7 @@ describe('WorkoutEditor', () => {
         fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
             target: { value: 'Bench press' },
         });
-        expect(save()).toBeDisabled();
+        expect(noBar()).toBeNull();
     });
 
     it('turns adding or removing an exercise into a change to save', () => {
@@ -148,12 +153,12 @@ describe('WorkoutEditor', () => {
         fireEvent.click(addExercise());
         expect(save()).toBeEnabled();
         fireEvent.click(deleteExercise(2));
-        expect(save()).toBeDisabled();
+        expect(noBar()).toBeNull();
     });
 
     it('throws the unsaved changes away on undo', () => {
         render(<WorkoutEditor {...base} />);
-        expect(undo()).toBeDisabled();
+        expect(noBar()).toBeNull();
 
         fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
             target: { value: 'Incline press' },
@@ -174,8 +179,8 @@ describe('WorkoutEditor', () => {
         expect(
             screen.queryByLabelText('Exercise 1, min reps set 2')
         ).not.toBeInTheDocument();
-        expect(save()).toBeDisabled();
-        expect(undo()).toBeDisabled();
+        expect(noBar()).toBeNull();
+        expect(noBar()).toBeNull();
     });
 
     it('submits the whole day as one plan', async () => {
@@ -246,6 +251,8 @@ describe('WorkoutEditor', () => {
         });
         fireEvent.click(save());
 
+        // Still on screen — the day is still unsaved — but shut while the
+        // action is in flight.
         await waitFor(() => expect(save()).toBeDisabled());
         finish({ ok: true });
         // Still unsaved as far as the props know, so it comes back for another go.
@@ -294,7 +301,7 @@ describe('WorkoutEditor', () => {
 
         fireEvent.click(save());
         await waitFor(() => expect(technique).toHaveValue(''));
-        expect(save()).toBeDisabled();
+        expect(noBar()).toBeNull();
     });
 
     it('picks up the id a brand new exercise was given', async () => {
@@ -324,7 +331,7 @@ describe('WorkoutEditor', () => {
                 screen.getByLabelText('Exercise 2, min reps set 1')
             ).toHaveValue(4)
         );
-        expect(save()).toBeDisabled();
+        expect(noBar()).toBeNull();
 
         // Saving again must update that exercise, not create a second one.
         fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
@@ -509,6 +516,24 @@ describe('WorkoutEditor, before Edit is pressed', () => {
         expect(
             screen.queryByRole('button', { name: 'Show errors' })
         ).not.toBeInTheDocument();
+    });
+
+    // A day added a moment ago has nothing saved in it. It reads as the one
+    // blank exercise the editor would open it on, so the card the user is about
+    // to fill is already on screen, rather than a sentence about its absence.
+    it('reads an unsaved day as one blank exercise', () => {
+        rtlRender(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+            />
+        );
+        expect(
+            screen.queryByText('This workout has no exercises yet.')
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Exercise')).toBeInTheDocument();
+        expect(screen.getByText('Set 1')).toBeInTheDocument();
+        expect(screen.getByText('Reps to define')).toBeInTheDocument();
     });
 
     it('hides everything that would change the day', () => {

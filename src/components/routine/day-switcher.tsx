@@ -1,8 +1,10 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { iconButtonClass } from '@/lib/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { FormAction } from '@/lib/forms';
+import { dashedActionClass, iconButtonClass } from '@/lib/ui';
+import { showModal } from '@/store/modal';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRef } from 'react';
 import { useEditMode } from '@/components/routine/edit-mode';
 
@@ -28,17 +30,25 @@ export type DayTab = {
  *
  * Numbers only. The day's name is the heading right below, so printing it here
  * as well would say the same thing twice and make the rack too wide to scan.
+ *
+ * The plates are the fastest way between days, while the caption and chevrons
+ * make the control discoverable and give pointer users a direct previous/next
+ * action. A new day belongs at the end of the rack it will appear in.
  */
 export function DaySwitcher({
     days,
     index,
     baseId,
+    addDay,
     onSelect,
 }: {
     days: DayTab[];
     index: number;
     /** Prefix for the tab/panel id pair, so both sides agree on the wiring. */
     baseId: string;
+    /** Already bound to its routine, so the dialog it opens sends nothing but a
+        name. Left out on a routine that can no longer take days. */
+    addDay?: FormAction;
     onSelect: (index: number) => void;
 }) {
     const t = useT();
@@ -105,73 +115,98 @@ export function DaySwitcher({
                 </div>
             </div>
 
-            <div
-                ref={listRef}
-                role="tablist"
-                aria-labelledby={`${baseId}-label`}
-                onKeyDown={(event) => {
-                    if (event.key === 'ArrowRight') move(index + 1);
-                    else if (event.key === 'ArrowLeft') move(index - 1);
-                    else if (event.key === 'Home') move(0);
-                    else if (event.key === 'End') move(last);
-                    else return;
-                    event.preventDefault();
-                }}
-                className="-mx-1.5 flex gap-2 overflow-x-auto px-1.5 py-1.5"
-            >
-                {days.map((day, position) => {
-                    const selected = position === index;
-                    return (
-                        <button
-                            key={day.id}
-                            type="button"
-                            role="tab"
-                            id={`${baseId}-tab-${position}`}
-                            aria-controls={`${baseId}-panel-${position}`}
-                            aria-selected={selected}
-                            tabIndex={selected ? 0 : -1}
-                            onClick={() => select(position)}
-                            aria-label={
-                                t('routine.dayTab', {
-                                    n: position + 1,
-                                    name: day.name,
-                                }) +
-                                (!editing
-                                    ? ''
-                                    : day.unsaved
-                                      ? `, ${t('routine.unsaved')}`
-                                      : day.ready
+            <div className="-mx-1.5 flex items-start gap-2 overflow-x-auto px-1.5 py-1.5">
+                <div
+                    ref={listRef}
+                    role="tablist"
+                    aria-labelledby={`${baseId}-label`}
+                    onKeyDown={(event) => {
+                        if (event.key === 'ArrowRight') move(index + 1);
+                        else if (event.key === 'ArrowLeft') move(index - 1);
+                        else if (event.key === 'Home') move(0);
+                        else if (event.key === 'End') move(last);
+                        else return;
+                        event.preventDefault();
+                    }}
+                    className="flex shrink-0 gap-2"
+                >
+                    {days.map((day, position) => {
+                        const selected = position === index;
+                        return (
+                            <button
+                                key={day.id}
+                                type="button"
+                                role="tab"
+                                id={`${baseId}-tab-${position}`}
+                                aria-controls={`${baseId}-panel-${position}`}
+                                aria-selected={selected}
+                                tabIndex={selected ? 0 : -1}
+                                onClick={() => select(position)}
+                                aria-label={
+                                    t('routine.dayTab', {
+                                        n: position + 1,
+                                        name: day.name,
+                                    }) +
+                                    (!editing
                                         ? ''
-                                        : `, ${t('routines.incomplete')}`)
-                            }
-                            title={day.name}
-                            className="lift group shrink-0 rounded-md"
-                        >
-                            <span
-                                aria-hidden
-                                className={`figure grid h-12 w-12 place-items-center rounded-md border-2 text-2xl leading-none ${
-                                    selected
-                                        ? 'bg-volt border-volt text-on-volt'
-                                        : 'bg-surface border-line text-muted group-hover:border-pulse group-hover:text-pulse'
-                                }`}
+                                        : day.unsaved
+                                          ? `, ${t('routine.unsaved')}`
+                                          : day.ready
+                                            ? ''
+                                            : `, ${t('routines.incomplete')}`)
+                                }
+                                title={day.name}
+                                className="lift group shrink-0 rounded-md"
                             >
-                                {position + 1}
-                            </span>
-                            {editing && (
                                 <span
                                     aria-hidden
-                                    className={`mt-1 block h-0.75 rounded-xs ${
-                                        day.unsaved
-                                            ? 'bg-draft'
-                                            : day.ready
-                                              ? 'bg-surge'
-                                              : 'bg-danger'
+                                    className={`figure grid h-12 w-12 place-items-center rounded-md border-2 text-2xl leading-none ${
+                                        selected
+                                            ? 'bg-volt border-volt text-on-volt'
+                                            : 'bg-surface border-line text-muted group-hover:border-pulse group-hover:text-pulse'
                                     }`}
-                                />
-                            )}
-                        </button>
-                    );
-                })}
+                                >
+                                    {position + 1}
+                                </span>
+                                {editing && (
+                                    <span
+                                        aria-hidden
+                                        className={`mt-1 block h-0.75 rounded-xs ${
+                                            day.unsaved
+                                                ? 'bg-draft'
+                                                : day.ready
+                                                  ? 'bg-surge'
+                                                  : 'bg-danger'
+                                        }`}
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {editing && addDay && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            showModal('rename', {
+                                name: '',
+                                rename: addDay,
+                                title: t('routine.addDayTitle'),
+                                label: t('routine.dayLabel'),
+                                placeholder: t('routine.dayPlaceholder'),
+                                confirmLabel: t('common.add'),
+                            })
+                        }
+                        aria-label={t('routine.addDayTitle')}
+                        className={`${dashedActionClass} h-12 w-12 shrink-0`}
+                    >
+                        <Plus
+                            size={18}
+                            aria-hidden
+                        />
+                    </button>
+                )}
             </div>
         </div>
     );

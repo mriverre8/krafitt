@@ -6,8 +6,10 @@ import {
     RoutineDays,
     type RoutineDay,
 } from '@/components/routine/routine-days';
+import { ModalHost } from '@/components/modal/modal-host';
+import { closeModal } from '@/store/modal';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { noopAction } from './setup-helpers';
 
 const sets = [{ repMode: 'range', repMin: 4, repMax: 6, technique: 'Top set' }];
@@ -49,13 +51,22 @@ const tab = (n: number) =>
 
 /** The rack with the real toggle above it: everything it says about a day is
     said while editing only. */
-const renderEditing = () =>
+const renderEditing = (
+    props: Partial<Parameters<typeof RoutineDays>[0]> = {}
+) =>
     render(
         <EditModeProvider>
             <EditModeToggle />
-            <RoutineDays {...base} />
+            <RoutineDays
+                {...base}
+                {...props}
+            />
+            <ModalHost />
         </EditModeProvider>
     );
+
+// The store outlives a render, so a dialog left open would greet the next test.
+afterEach(() => closeModal());
 
 describe('RoutineDays', () => {
     it('shows the first day and hides the rest', () => {
@@ -74,20 +85,47 @@ describe('RoutineDays', () => {
         expect(tab(1)).toHaveAttribute('aria-selected', 'false');
     });
 
-    it('walks the days with the arrow buttons, and stops at both ends', () => {
+    it('offers the workouts label and chevrons to move between days', () => {
         render(<RoutineDays {...base} />);
-        const next = screen.getByRole('button', { name: 'Next day' });
-        const previous = screen.getByRole('button', { name: 'Previous day' });
+        expect(
+            screen.getByRole('tablist', { name: 'Workouts' })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Previous day' })
+        ).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Next day' })).toBeEnabled();
 
-        expect(previous).toBeDisabled();
-        fireEvent.click(next);
+        fireEvent.click(screen.getByRole('button', { name: 'Next day' }));
         expect(panelOf('Pull A')).toBeVisible();
-        fireEvent.click(next);
-        expect(panelOf('Legs')).toBeVisible();
-        expect(next).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Previous day' })
+        ).toBeEnabled();
+    });
 
-        fireEvent.click(previous);
-        expect(panelOf('Pull A')).toBeVisible();
+    // A new day belongs at the end of the rack it will appear in, and only
+    // while the routine is open for editing.
+    it('offers the new day from the end of the rack, in edit mode only', async () => {
+        renderEditing({ addDay: noopAction });
+        expect(
+            screen.queryByRole('button', { name: 'Add day' })
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Add day' }));
+
+        // The same dialog the renames use, asking the same question — but with
+        // nothing to open on, so it suggests instead, and its button says which
+        // of the two things it is about to do.
+        const field = await screen.findByRole('textbox', { name: 'Day name' });
+        expect(field).toHaveValue('');
+        expect(field).toHaveAttribute(
+            'placeholder',
+            'e.g. Push, Legs, Upper A'
+        );
+        expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Save' })
+        ).not.toBeInTheDocument();
     });
 
     it('moves with the arrow keys too', () => {

@@ -1,5 +1,5 @@
 import {
-    addWorkout,
+    addWorkoutTo,
     deactivateRoutine,
     deleteRoutine,
     deleteWorkout,
@@ -9,7 +9,6 @@ import {
     setActiveRoutine,
 } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
-import { AddWorkoutForm } from '@/components/routine/add-workout-form';
 import {
     EditModeBackButton,
     EditModeProvider,
@@ -56,6 +55,8 @@ export default async function RoutinePage({
         ...routine,
         sessionCount: routine._count.sessions,
     });
+
+    const addDay = locked ? undefined : addWorkoutTo.bind(null, routine.id);
 
     return (
         <EditModeProvider>
@@ -160,16 +161,12 @@ export default async function RoutinePage({
                     )}
                     {locked && <HistoryLink routineId={routine.id} />}
                 </div>
-                {routine.workouts.length === 0 && <EmptyRoutine />}
-
-                <WhenEditing>
-                    <AddWorkoutForm
-                        action={addWorkout}
-                        routineId={routine.id}
-                    />
-                </WhenEditing>
+                {routine.workouts.length === 0 && (
+                    <EmptyRoutine addDay={addDay} />
+                )}
 
                 <RoutineDays
+                    addDay={addDay}
                     days={routine.workouts.map((workout) => ({
                         id: workout.id,
                         name: workout.name,
