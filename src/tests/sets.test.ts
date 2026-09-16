@@ -3,6 +3,7 @@ import { en } from '@/i18n/en';
 import {
     badSetValue,
     groupAt,
+    groupsOf,
     readSetValue,
     setFullLabel,
     setName,
@@ -78,6 +79,42 @@ describe('groupAt', () => {
     it('puts the next one behind the ones already there', () => {
         expect(groupAt(exercise, 0).insertAt).toBe(3);
         expect(groupAt(exercise, 3).insertAt).toBe(5);
+    });
+});
+
+describe('groupsOf', () => {
+    const runs = (sets: { kind?: string }[]) => groupsOf(setPlaces(sets));
+
+    // What the editor draws down a card: one block per working set, each
+    // carrying the run that hangs off it.
+    it('gives every working set the run that hangs off it', () => {
+        expect(runs(exercise)).toEqual([
+            { at: 0, subs: [1, 2] },
+            { at: 3, subs: [4] },
+        ]);
+    });
+
+    it('gives a set with nothing hanging off it an empty run', () => {
+        expect(runs([{ kind: 'normal' }, { kind: 'normal' }])).toEqual([
+            { at: 0, subs: [] },
+            { at: 1, subs: [] },
+        ]);
+    });
+
+    it('has nothing to draw for an exercise with no sets', () => {
+        expect(runs([])).toEqual([]);
+    });
+
+    // `readPlan` refuses a run with no working set in front of it, so it can
+    // never be saved — but it can still be rendered, and a row that silently
+    // vanishes is worse than one standing on its own.
+    it('stands an orphaned run up rather than dropping it', () => {
+        expect(
+            runs([{ kind: 'drop' }, { kind: 'drop' }, { kind: 'normal' }])
+        ).toEqual([
+            { at: 0, subs: [1] },
+            { at: 2, subs: [] },
+        ]);
     });
 });
 
