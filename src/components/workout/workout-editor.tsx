@@ -33,6 +33,7 @@ import {
     toDrafts,
     type ExerciseDraft,
 } from '@/components/workout/exercise-fields';
+import { ExercisePreview } from '@/components/workout/exercise-preview';
 import { FormError } from '@/components/ui/form-error';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
@@ -241,22 +242,34 @@ export function WorkoutEditor({
                     showProblems ? 'mt-2 md:mt-4' : 'mt-4'
                 }`}
             >
-                {drafts.map((draft, index) => (
-                    <ExerciseFields
-                        key={index}
-                        exercise={draft}
-                        index={index}
-                        fault={faultOf(draft, index)}
-                        readOnly={!editing}
-                        onChange={(patch) => update(index, patch)}
-                        onRemove={() =>
-                            setDrafts((current) =>
-                                current.filter((_, i) => i !== index)
-                            )
-                        }
-                        canRemove={drafts.length > 1}
-                    />
-                ))}
+                {editing
+                    ? drafts.map((draft, index) => (
+                          <ExerciseFields
+                              key={index}
+                              exercise={draft}
+                              index={index}
+                              fault={faultOf(draft, index)}
+                              onChange={(patch) => update(index, patch)}
+                              onRemove={() =>
+                                  setDrafts((current) =>
+                                      current.filter((_, i) => i !== index)
+                                  )
+                              }
+                              canRemove={drafts.length > 1}
+                          />
+                      ))
+                    : server.map((exercise) => (
+                          <ExercisePreview
+                              key={exercise.id}
+                              exercise={exercise}
+                          />
+                      ))}
+
+                {!editing && server.length === 0 && (
+                    <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">
+                        {t('today.noExercises')}
+                    </p>
+                )}
 
                 {editing && (
                     <button

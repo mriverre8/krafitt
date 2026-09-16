@@ -259,6 +259,7 @@ export const ca: Dict = {
     'set.dropUnit': '%',
     'set.restSymbol': 's',
     'set.restUnit': 'seg',
+    'set.restUnset': 'Segons per definir',
 
     'reps.range': 'Rang',
     'reps.fixed': 'Fixes',

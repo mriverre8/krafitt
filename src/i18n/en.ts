@@ -256,6 +256,7 @@ export const en = {
     'set.dropUnit': '%',
     'set.restSymbol': 's',
     'set.restUnit': 'sec',
+    'set.restUnset': 'Seconds to define',
 
     'reps.range': 'Range',
     'reps.fixed': 'Fixed',
