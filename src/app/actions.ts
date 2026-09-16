@@ -170,6 +170,19 @@ export async function addWorkout(
 }
 
 /**
+ * `addWorkout` with its routine already bound. The rack's + opens the same
+ * dialog the renames do, and that dialog knows how to send one field: a name.
+ */
+export async function addWorkoutTo(
+    routineId: string,
+    previous: FormState,
+    data: FormData
+): Promise<FormState> {
+    data.set('routineId', routineId);
+    return addWorkout(previous, data);
+}
+
+/**
  * A blank field, or a number the form should never have been able to produce.
  *
  * Read against what three digits can hold rather than against `REPS`: a 0 is

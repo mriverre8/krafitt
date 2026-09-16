@@ -29,12 +29,26 @@ describe('ExercisePreview', () => {
         expect(container.querySelector('input, select, button')).toBeNull();
     });
 
-    // Same rule as the day's own list: a set with no technique goes by its
-    // number, and a drop carries the cut it asks for.
-    it('names a set with no technique by its number', () => {
+    // Every working set opens on the tag that says which one it is, whether or
+    // not it has a technique to put beside it. A drop is named by what it does
+    // instead — that is the whole of what distinguishes it from the set above.
+    it('tags every working set, and names a drop by what it does', () => {
         render(<ExercisePreview exercise={exercise} />);
+        expect(screen.getByText('Set 1')).toBeInTheDocument();
         expect(screen.getByText('Set 2')).toBeInTheDocument();
         expect(screen.getByText('Drop set −30%')).toBeInTheDocument();
+    });
+
+    // Tag and technique are separate marks on one line, not one string: the tag
+    // says which set, the technique what kind.
+    it('puts the technique beside the tag, not in place of it', () => {
+        render(<ExercisePreview exercise={exercise} />);
+        const tag = screen.getByText('Set 1');
+        expect(tag.parentElement).toHaveTextContent('Set 1Top set');
+        // Set 2 has none, so its line stops at the tag.
+        expect(screen.getByText('Set 2').parentElement).toHaveTextContent(
+            'Set 2'
+        );
     });
 
     // The pause is what a rest-pause set is for, so a missing one is named.

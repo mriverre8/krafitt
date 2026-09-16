@@ -5,8 +5,9 @@ import { EXERCISES } from '@/lib/constants';
 import type { DayAction, FormAction } from '@/lib/forms';
 import { blankExerciseFault, type ExerciseFault } from '@/lib/validate';
 import {
+    cardClass,
+    dashedActionClass,
     ghostClass,
-    iconButtonClass,
     labelClass,
     menuDangerClass,
     menuItemClass,
@@ -15,11 +16,10 @@ import {
 import { showModal } from '@/store/modal';
 import {
     Ellipsis,
-    Eye,
-    EyeOff,
     Plus,
     Save,
     Trash,
+    TriangleAlert,
     Type,
     Undo2,
 } from 'lucide-react';
@@ -33,7 +33,10 @@ import {
     toDrafts,
     type ExerciseDraft,
 } from '@/components/workout/exercise-fields';
-import { ExercisePreview } from '@/components/workout/exercise-preview';
+import {
+    blankExercise,
+    ExercisePreview,
+} from '@/components/workout/exercise-preview';
 import { FormError } from '@/components/ui/form-error';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
@@ -83,6 +86,7 @@ export function WorkoutEditor({
     const server = state.saved ?? workout.exercises;
     const saved = JSON.stringify(toDrafts(server));
     const plan = JSON.stringify(drafts);
+    const dirty = plan !== saved;
 
     // Adjusting state while rendering rather than in an effect: the drafts start
     // again from the day the server sends back, defaults filled in and ids handed
@@ -96,7 +100,7 @@ export function WorkoutEditor({
     // Leaving edit mode throws unsaved work away, having asked first — the
     // routine does the asking, since it is the whole set of days that is in
     // question and not this one. Same trick as above: back to the last save.
-    const discarded = useDiscardSignal(workout.id, plan !== saved);
+    const discarded = useDiscardSignal(workout.id, dirty);
     const [lastDiscarded, setLastDiscarded] = useState(discarded);
     if (discarded !== lastDiscarded) {
         setLastDiscarded(discarded);
@@ -152,15 +156,11 @@ export function WorkoutEditor({
                 {editing && (
                     <Dropdown
                         label={t('routine.dayOptions')}
-                        className={`${labelClass} hover:text-pulse flex shrink-0 items-center gap-1.5 py-1 transition-colors`}
                         icon={
-                            <>
-                                <Ellipsis
-                                    size={14}
-                                    aria-hidden
-                                />
-                                {t('routine.options')}
-                            </>
+                            <Ellipsis
+                                size={18}
+                                aria-hidden
+                            />
                         }
                     >
                         {(close) => (
@@ -207,41 +207,38 @@ export function WorkoutEditor({
             </div>
 
             {showProblems && (
-                <div className="mt-3 flex flex-col items-start gap-2 md:flex-row md:justify-between">
-                    <ul className="text-danger list-disc space-y-1 pl-5 text-sm md:pt-1.5">
+                <div className={`${cardClass} border-l-danger mt-4`}>
+                    <div className="text-danger flex items-center gap-2">
+                        <TriangleAlert
+                            size={16}
+                            aria-hidden
+                            className="shrink-0"
+                        />
+                        <p className="eyebrow">
+                            {problems.length === 1
+                                ? t('validate.problem')
+                                : t('validate.problems', {
+                                      n: problems.length,
+                                  })}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setHighlight((shown) => !shown)}
+                            aria-pressed={highlight}
+                            className={`${labelClass} hover:text-pulse ml-auto shrink-0 py-1 transition-colors`}
+                        >
+                            {toggleLabel}
+                        </button>
+                    </div>
+                    <ul className="text-muted mt-3 space-y-1.5 text-sm">
                         {problems.map((problem, index) => (
                             <li key={index}>{problem}</li>
                         ))}
                     </ul>
-                    <button
-                        type="button"
-                        onClick={() => setHighlight((shown) => !shown)}
-                        aria-pressed={highlight}
-                        aria-label={toggleLabel}
-                        title={toggleLabel}
-                        className={`${iconButtonClass} shrink-0 self-end md:self-auto`}
-                    >
-                        {highlight ? (
-                            <EyeOff
-                                size={16}
-                                aria-hidden
-                            />
-                        ) : (
-                            <Eye
-                                size={16}
-                                aria-hidden
-                            />
-                        )}
-                        <span className="eyebrow">{toggleLabel}</span>
-                    </button>
                 </div>
             )}
 
-            <div
-                className={`space-y-3 ${
-                    showProblems ? 'mt-2 md:mt-4' : 'mt-4'
-                }`}
-            >
+            <div className="mt-4 space-y-4">
                 {editing
                     ? drafts.map((draft, index) => (
                           <ExerciseFields
@@ -266,9 +263,7 @@ export function WorkoutEditor({
                       ))}
 
                 {!editing && server.length === 0 && (
-                    <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">
-                        {t('today.noExercises')}
-                    </p>
+                    <ExercisePreview exercise={blankExercise} />
                 )}
 
                 {editing && (
@@ -278,7 +273,7 @@ export function WorkoutEditor({
                         onClick={() =>
                             setDrafts((current) => [...current, emptyExercise])
                         }
-                        className="lift border-line text-muted hover:border-pulse hover:text-pulse font-display flex w-full items-center justify-center gap-2 rounded-md border-2 border-dashed p-4 text-sm font-bold tracking-wide uppercase disabled:pointer-events-none disabled:opacity-40"
+                        className={`${dashedActionClass} w-full p-5`}
                     >
                         <Plus
                             size={14}
@@ -291,11 +286,11 @@ export function WorkoutEditor({
 
             <FormError message={state.error} />
 
-            {editing && (
+            {editing && dirty && (
                 <div className="border-line bg-bg/85 sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t px-4 py-3 backdrop-blur-md">
                     <button
                         type="button"
-                        disabled={pending || plan === saved}
+                        disabled={pending}
                         onClick={() => setDrafts(toDrafts(workout.exercises))}
                         aria-label={t('exercise.undo')}
                         className={`${ghostClass} flex flex-1 items-center justify-center gap-1.5`}
@@ -313,7 +308,7 @@ export function WorkoutEditor({
                     </button>
                     <button
                         type="button"
-                        disabled={pending || plan === saved}
+                        disabled={pending}
                         onClick={save}
                         className={`${primaryClass} flex flex-2 items-center justify-center gap-2`}
                     >

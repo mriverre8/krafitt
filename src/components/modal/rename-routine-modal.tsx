@@ -18,19 +18,33 @@ export type RenameRoutineModalProps = {
     title: string;
     /** Accessible name for the field, since the heading is not one. */
     label: string;
+    /** What the empty field suggests. Worth having when the dialog is naming
+        something for the first time and the user has no convention yet; a
+        rename opens on the name it already holds, so it never sees one. */
+    placeholder?: string;
+    /** Defaults to Save. A dialog that creates rather than renames says so on
+        the button: the same field and the same shape do two different things,
+        and the button is where the difference is read. */
+    confirmLabel?: string;
     /** Supplied by the ModalHost. */
     onClose: () => void;
 };
 
 /**
- * A name the page shows as a heading rather than as a field — the routine's,
- * or one of its days'. Asked for here instead, from the options menu.
+ * A name the page shows as a heading rather than as a field — the routine's, or
+ * one of its days'. Asked for here instead.
+ *
+ * It also asks for the name of a day that does not exist yet, which is the same
+ * question with an empty answer to start from: `name` comes in blank, the
+ * placeholder offers a few, and the button says Add rather than Save.
  */
 export function RenameRoutineModal({
     name,
     rename,
     title,
     label,
+    placeholder,
+    confirmLabel,
     onClose,
 }: RenameRoutineModalProps) {
     const t = useT();
@@ -59,6 +73,7 @@ export function RenameRoutineModal({
                     value={value}
                     onChange={(event) => setValue(event.target.value)}
                     aria-label={label}
+                    placeholder={placeholder}
                     required
                     maxLength={NAME_MAX}
                     autoFocus
@@ -78,7 +93,7 @@ export function RenameRoutineModal({
                         disabled={pending || !renamed}
                         className={`${primaryClass} py-2.5 text-sm`}
                     >
-                        {t('common.save')}
+                        {confirmLabel ?? t('common.save')}
                     </button>
                 </div>
             </form>

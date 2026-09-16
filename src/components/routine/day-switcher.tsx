@@ -1,8 +1,10 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { iconButtonClass } from '@/lib/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { FormAction } from '@/lib/forms';
+import { dashedActionClass } from '@/lib/ui';
+import { showModal } from '@/store/modal';
+import { Plus } from 'lucide-react';
 import { useRef } from 'react';
 import { useEditMode } from '@/components/routine/edit-mode';
 
@@ -28,17 +30,27 @@ export type DayTab = {
  *
  * Numbers only. The day's name is the heading right below, so printing it here
  * as well would say the same thing twice and make the rack too wide to scan.
+ *
+ * The rack is now the whole control. It used to carry a caption and a pair of
+ * chevrons above it, and the form for a new day sat in a row of its own further
+ * down — three more things on a screen that already had too many. The plates
+ * were always the faster way between days, the arrow keys still move the
+ * selection, and a new day belongs at the end of the rack it will appear in.
  */
 export function DaySwitcher({
     days,
     index,
     baseId,
+    addDay,
     onSelect,
 }: {
     days: DayTab[];
     index: number;
     /** Prefix for the tab/panel id pair, so both sides agree on the wiring. */
     baseId: string;
+    /** Already bound to its routine, so the dialog it opens sends nothing but a
+        name. Left out on a routine that can no longer take days. */
+    addDay?: FormAction;
     onSelect: (index: number) => void;
 }) {
     const t = useT();
@@ -69,46 +81,11 @@ export function DaySwitcher({
     }
 
     return (
-        <div>
-            <div className="flex items-center justify-between gap-3">
-                <h2
-                    id={`${baseId}-label`}
-                    className="eyebrow text-muted"
-                >
-                    {t('routine.workouts')}
-                </h2>
-                <div className="flex items-center">
-                    <button
-                        type="button"
-                        disabled={index === 0}
-                        onClick={() => select(index - 1)}
-                        aria-label={t('routine.prevDay')}
-                        className={`${iconButtonClass} disabled:pointer-events-none disabled:opacity-30`}
-                    >
-                        <ChevronLeft
-                            size={18}
-                            aria-hidden
-                        />
-                    </button>
-                    <button
-                        type="button"
-                        disabled={index === last}
-                        onClick={() => select(index + 1)}
-                        aria-label={t('routine.nextDay')}
-                        className={`${iconButtonClass} disabled:pointer-events-none disabled:opacity-30`}
-                    >
-                        <ChevronRight
-                            size={18}
-                            aria-hidden
-                        />
-                    </button>
-                </div>
-            </div>
-
+        <div className="-mx-1.5 flex items-start gap-2 overflow-x-auto px-1.5 py-1.5">
             <div
                 ref={listRef}
                 role="tablist"
-                aria-labelledby={`${baseId}-label`}
+                aria-label={t('routine.workouts')}
                 onKeyDown={(event) => {
                     if (event.key === 'ArrowRight') move(index + 1);
                     else if (event.key === 'ArrowLeft') move(index - 1);
@@ -117,7 +94,7 @@ export function DaySwitcher({
                     else return;
                     event.preventDefault();
                 }}
-                className="-mx-1.5 flex gap-2 overflow-x-auto px-1.5 py-1.5"
+                className="flex gap-2"
             >
                 {days.map((day, position) => {
                     const selected = position === index;
@@ -173,6 +150,29 @@ export function DaySwitcher({
                     );
                 })}
             </div>
+
+            {editing && addDay && (
+                <button
+                    type="button"
+                    onClick={() =>
+                        showModal('rename', {
+                            name: '',
+                            rename: addDay,
+                            title: t('routine.addDayTitle'),
+                            label: t('routine.dayLabel'),
+                            placeholder: t('routine.dayPlaceholder'),
+                            confirmLabel: t('common.add'),
+                        })
+                    }
+                    aria-label={t('routine.addDayTitle')}
+                    className={`${dashedActionClass} h-12 w-12 shrink-0`}
+                >
+                    <Plus
+                        size={18}
+                        aria-hidden
+                    />
+                </button>
+            )}
         </div>
     );
 }
