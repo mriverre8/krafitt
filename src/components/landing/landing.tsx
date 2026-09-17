@@ -1,95 +1,15 @@
 'use client';
 
-/**
- * The signed-out home page. Its argument is that the app is worth typing an
- * email into, and the only honest way to make it is to hand over the app: the
- * training screen and the history grid below are the product's own components
- * (see `components/landing/demos.tsx`). No screenshots, no invented numbers of
- * users, no testimonials.
- *
- * What the editor can hold is told rather than shown: its limits are numbers,
- * and a spec read straight off `lib/constants.ts` says more in one glance than
- * a form you have to poke at to discover.
- */
-
-import type { Translate } from '@/i18n/config';
 import { useT } from '@/i18n/use-t';
-import { EXERCISES, SETS, WEEKS } from '@/lib/constants';
-import { badgeClass, cardClass, ghostClass, primaryClass } from '@/lib/ui';
-import { ArrowDown, ChevronsDown, Repeat, Tag } from 'lucide-react';
-import type { ComponentType } from 'react';
+import { badgeClass, ghostClass, primaryClass } from '@/lib/ui';
+import { ArrowDown } from 'lucide-react';
 import { AuthForms } from '@/components/auth/auth-forms';
 import { Wordmark } from '@/components/ui/wordmark';
-import { ProgressDemo, TodayPreview } from '@/components/landing/demos';
+import { ProgressPreview } from '@/components/landing/progress-preview';
+import { TodayPreview } from '@/components/landing/today-preview';
+import { EditorSpecs } from '@/components/landing/editor-specs';
 import { Section } from '@/components/landing/section';
-
-type Icon = ComponentType<{ size?: number; className?: string }>;
-
-const CHIPS = ['landing.chip1', 'landing.chip2', 'landing.chip3'] as const;
-
-/** A card of the editor spec: either a hard limit, shown as the number itself,
-    or a choice, shown as the options it actually offers. */
-type Spec = {
-    /** The limit, as a volt plate. Numbers come from `lib/constants.ts`, so a
-        card can never outlive the rule it is quoting. */
-    stat?: number;
-    Icon?: Icon;
-    title: string;
-    body: string;
-    /** Worded from the app's own dictionary, so the examples on the card are
-        literally the strings the editor writes. */
-    chips?: readonly string[];
-};
-
-function editorSpecs(t: Translate): readonly Spec[] {
-    return [
-        {
-            stat: WEEKS.max,
-            title: t('landing.spec1Title', { n: WEEKS.max }),
-            body: t('landing.spec1Body'),
-        },
-        {
-            stat: EXERCISES.max,
-            title: t('landing.spec2Title', { n: EXERCISES.max }),
-            body: t('landing.spec2Body'),
-        },
-        {
-            stat: SETS.max,
-            title: t('landing.spec3Title', { n: SETS.max }),
-            body: t('landing.spec3Body'),
-        },
-        {
-            Icon: Repeat,
-            title: t('landing.spec4Title'),
-            body: t('landing.spec4Body'),
-            chips: [
-                t('today.setPlan', { min: 8, max: 10 }),
-                t('today.setPlanFixed', { reps: 10 }),
-                t('reps.amrap'),
-            ],
-        },
-        {
-            Icon: Tag,
-            title: t('landing.spec5Title'),
-            body: t('landing.spec5Body'),
-            chips: [
-                t('technique.warmup'),
-                t('technique.topset'),
-                t('technique.backoff'),
-                t('technique.linear'),
-            ],
-        },
-        {
-            Icon: ChevronsDown,
-            title: t('landing.spec6Title'),
-            body: t('landing.spec6Body'),
-            chips: [
-                t('set.dropWith', { value: 20 }),
-                t('set.restWith', { value: 15 }),
-            ],
-        },
-    ];
-}
+import { CHIPS } from '@/lib/landing';
 
 export function Landing() {
     const t = useT();
@@ -157,50 +77,7 @@ export function Landing() {
                 title="landing.editorTitle"
                 lead="landing.feature1"
             >
-                <ul className="grid gap-3 sm:grid-cols-2">
-                    {editorSpecs(t).map(
-                        ({ stat, Icon, title, body, chips }) => (
-                            <li
-                                key={title}
-                                className={`${cardClass} space-y-2`}
-                            >
-                                {stat !== undefined ? (
-                                    <span
-                                        aria-hidden
-                                        className="figure bg-volt text-on-volt inline-grid h-11 min-w-11 place-items-center rounded-md px-2 text-2xl leading-none"
-                                    >
-                                        {stat}
-                                    </span>
-                                ) : (
-                                    Icon && (
-                                        <span
-                                            aria-hidden
-                                            className="bg-surface2 text-pulse grid h-11 w-11 place-items-center rounded-md"
-                                        >
-                                            <Icon size={20} />
-                                        </span>
-                                    )
-                                )}
-                                <h3 className="display text-2xl">{title}</h3>
-                                <p className="text-muted text-sm text-pretty">
-                                    {body}
-                                </p>
-                                {chips && (
-                                    <ul className="flex flex-wrap gap-1.5 pt-1">
-                                        {chips.map((chip) => (
-                                            <li
-                                                key={chip}
-                                                className={`${badgeClass} border-line text-muted border-2`}
-                                            >
-                                                {chip}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </li>
-                        )
-                    )}
-                </ul>
+                <EditorSpecs />
             </Section>
 
             <Section
@@ -209,7 +86,7 @@ export function Landing() {
                 title="landing.progressTitle"
                 lead="landing.progressLead"
             >
-                <ProgressDemo />
+                <ProgressPreview />
             </Section>
 
             <Section
