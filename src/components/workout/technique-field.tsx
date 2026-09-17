@@ -18,14 +18,14 @@ const techniqueSlotClass =
     'relative mt-1.5 min-w-40 basis-full md:mt-0 md:min-w-0 md:flex-1 md:basis-auto';
 
 export function TechniqueField({
-    e,
-    n,
+    exerciseNumber,
+    setLabel,
     technique,
     wrong,
     onChange,
 }: {
-    e: number;
-    n: string;
+    exerciseNumber: number;
+    setLabel: string;
     technique: string | null;
     wrong: boolean;
     onChange: (technique: string | null) => void;
@@ -42,7 +42,10 @@ export function TechniqueField({
                     onChange={(event) => onChange(event.target.value)}
                     maxLength={USER_NAME_MAX}
                     placeholder={t('exercise.techniquePlaceholder')}
-                    aria-label={t('exercise.technique', { e, n })}
+                    aria-label={t('exercise.technique', {
+                        exercise: exerciseNumber,
+                        set: setLabel,
+                    })}
                     className={`${
                         wrong ? wrongFieldClass : fieldClass
                     } ${rowFieldClass} w-full pr-12`}
@@ -50,7 +53,10 @@ export function TechniqueField({
                 <button
                     type="button"
                     onClick={() => onChange(null)}
-                    aria-label={t('exercise.removeTechniqueLabel', { e, n })}
+                    aria-label={t('exercise.removeTechniqueLabel', {
+                        exercise: exerciseNumber,
+                        set: setLabel,
+                    })}
                     className="text-muted hover:text-danger absolute top-1/2 right-0.5 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-md transition-colors md:min-h-9 md:min-w-9"
                 >
                     <X
@@ -64,7 +70,10 @@ export function TechniqueField({
     return (
         <div className={techniqueSlotClass}>
             <Dropdown
-                label={t('exercise.techniqueMenu', { e, n })}
+                label={t('exercise.techniqueMenu', {
+                    exercise: exerciseNumber,
+                    set: setLabel,
+                })}
                 align="right"
                 className={
                     technique === null
@@ -122,8 +131,8 @@ export function TechniqueField({
                                     close();
                                 }}
                                 aria-label={t('exercise.removeTechniqueLabel', {
-                                    e,
-                                    n,
+                                    exercise: exerciseNumber,
+                                    set: setLabel,
                                 })}
                                 className={menuItemClass}
                             >

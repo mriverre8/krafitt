@@ -29,15 +29,15 @@ const DROP_VALUES = [10, 20, 30, 40, 50];
  * something to take off.
  */
 export function DropPercentMenu({
-    e,
-    n,
+    exerciseNumber,
+    setLabel,
     value,
     onChange,
 }: {
     /** The exercise's number in the day, and the row's name inside it (`DS1`).
         A day holds several cards, so neither one alone names the control. */
-    e: number;
-    n: string;
+    exerciseNumber: number;
+    setLabel: string;
     /** Blank until the drop has been sized. */
     value: string;
     onChange: (value: string) => void;
@@ -47,7 +47,10 @@ export function DropPercentMenu({
 
     return (
         <Dropdown
-            label={t('exercise.setValue', { e, label: n })}
+            label={t('exercise.setValue', {
+                exercise: exerciseNumber,
+                label: setLabel,
+            })}
             className={
                 value
                     ? `${numberClass(false)} ${valueSlotClass}`

@@ -15,8 +15,8 @@ const repsSlotClass =
  * readout saying so, and either way the row is one column wider than the mode.
  */
 export function RepsFields({
-    e,
-    n,
+    exerciseNumber,
+    setLabel,
     mode,
     repMin,
     repMax,
@@ -25,8 +25,8 @@ export function RepsFields({
 }: {
     /** The exercise's number in the day, and the set's name inside it: both
         boxes are labelled from them, and no two may share a name. */
-    e: number;
-    n: string;
+    exerciseNumber: number;
+    setLabel: string;
     mode: RepMode;
     repMin: string;
     repMax: string;
@@ -69,7 +69,10 @@ export function RepsFields({
                     })
                 }
                 placeholder={t('today.reps')}
-                aria-label={t('exercise.repMin', { e, n })}
+                aria-label={t('exercise.repMin', {
+                    exercise: exerciseNumber,
+                    set: setLabel,
+                })}
                 className={`${numberClass(wrong.min)} flex-1`}
             />
             {mode === 'range' && (
@@ -95,7 +98,10 @@ export function RepsFields({
                             })
                         }
                         placeholder={t('today.reps')}
-                        aria-label={t('exercise.repMax', { e, n })}
+                        aria-label={t('exercise.repMax', {
+                            exercise: exerciseNumber,
+                            set: setLabel,
+                        })}
                         className={`${numberClass(wrong.max)} flex-1`}
                     />
                 </>

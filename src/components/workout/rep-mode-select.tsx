@@ -10,16 +10,16 @@ import { fieldClass, rowFieldClass } from '@/lib/ui';
  * count, none at all for AMRAP or unspecified.
  */
 export function RepModeSelect({
-    e,
-    n,
+    exerciseNumber,
+    setLabel,
     mode,
     onChange,
 }: {
     /** The exercise's number in the day, and the set's name inside it. Labels
         carry both: a day holds several cards, and "Reps type set 1" on its own
         would name one control per card. */
-    e: number;
-    n: string;
+    exerciseNumber: number;
+    setLabel: string;
     mode: RepMode;
     onChange: (mode: RepMode) => void;
 }) {
@@ -28,7 +28,10 @@ export function RepModeSelect({
         <select
             value={mode}
             onChange={(event) => onChange(event.target.value as RepMode)}
-            aria-label={t('exercise.repMode', { e, n })}
+            aria-label={t('exercise.repMode', {
+                exercise: exerciseNumber,
+                set: setLabel,
+            })}
             className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
         >
             {REP_MODES.map((value) => (

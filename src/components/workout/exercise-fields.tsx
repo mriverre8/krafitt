@@ -78,7 +78,7 @@ export function ExerciseFields({
     const t = useT();
     // Labels carry the exercise number too: a day holds several of these, and
     // "Min reps set 1" on its own would name four different inputs.
-    const e = index + 1;
+    const exerciseNumber = index + 1;
     const places = setPlaces(exercise.sets);
     const groups = groupsOf(places);
     const full = exercise.sets.length >= SETS.max;
@@ -131,7 +131,9 @@ export function ExerciseFields({
                 <input
                     value={exercise.name}
                     onChange={(event) => onChange({ name: event.target.value })}
-                    aria-label={t('exercise.nameLabel', { e })}
+                    aria-label={t('exercise.nameLabel', {
+                        exercise: exerciseNumber,
+                    })}
                     placeholder={t('exercise.namePlaceholder')}
                     maxLength={NAME_MAX}
                     className={`${
@@ -142,7 +144,9 @@ export function ExerciseFields({
                     type="button"
                     disabled={!canRemove}
                     onClick={onRemove}
-                    aria-label={t('exercise.delete', { e })}
+                    aria-label={t('exercise.delete', {
+                        exercise: exerciseNumber,
+                    })}
                     title={t('exercise.removeShort')}
                     className={`${removeButtonClass} absolute top-1/2 right-0 -translate-y-1/2`}
                 >
@@ -156,7 +160,7 @@ export function ExerciseFields({
             {groups.map((group, position) => {
                 const setIndex = group.at;
                 const set = exercise.sets[setIndex];
-                const n = setName(places[setIndex]);
+                const setLabel = setName(places[setIndex]);
                 const wrong = fault?.sets[setIndex] ?? noFault;
                 const run = groupAt(exercise.sets, setIndex);
                 const count = run.insertAt - setIndex;
@@ -168,10 +172,10 @@ export function ExerciseFields({
                             position > 0 ? 'border-line mt-5 border-t pt-2' : ''
                         }
                     >
-                        <RowHead label={t('today.set', { n })}>
+                        <RowHead label={t('today.set', { n: setLabel })}>
                             <SetMenu
-                                e={e}
-                                n={n}
+                                exerciseNumber={exerciseNumber}
+                                setLabel={setLabel}
                                 kind={run.kind}
                                 full={full}
                                 canRemove={exercise.sets.length > count}
@@ -181,16 +185,16 @@ export function ExerciseFields({
                         </RowHead>
                         <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                             <RepModeSelect
-                                e={e}
-                                n={n}
+                                exerciseNumber={exerciseNumber}
+                                setLabel={setLabel}
                                 mode={set.mode}
                                 onChange={(mode) =>
                                     updateSet(setIndex, { mode })
                                 }
                             />
                             <RepsFields
-                                e={e}
-                                n={n}
+                                exerciseNumber={exerciseNumber}
+                                setLabel={setLabel}
                                 mode={set.mode}
                                 repMin={set.repMin}
                                 repMax={set.repMax}
@@ -198,8 +202,8 @@ export function ExerciseFields({
                                 onChange={(patch) => updateSet(setIndex, patch)}
                             />
                             <TechniqueField
-                                e={e}
-                                n={n}
+                                exerciseNumber={exerciseNumber}
+                                setLabel={setLabel}
                                 technique={set.technique}
                                 wrong={wrong.technique}
                                 onChange={(technique) =>
@@ -229,8 +233,8 @@ export function ExerciseFields({
                                         sub
                                     >
                                         <RemoveSubButton
-                                            e={e}
-                                            n={subName}
+                                            exerciseNumber={exerciseNumber}
+                                            setLabel={subName}
                                             onRemove={() =>
                                                 removeSet(subIndex, 1)
                                             }
@@ -238,16 +242,16 @@ export function ExerciseFields({
                                     </RowHead>
                                     <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                                         <RepModeSelect
-                                            e={e}
-                                            n={subName}
+                                            exerciseNumber={exerciseNumber}
+                                            setLabel={subName}
                                             mode={sub.mode}
                                             onChange={(mode) =>
                                                 updateSet(subIndex, { mode })
                                             }
                                         />
                                         <RepsFields
-                                            e={e}
-                                            n={subName}
+                                            exerciseNumber={exerciseNumber}
+                                            setLabel={subName}
                                             mode={sub.mode}
                                             repMin={sub.repMin}
                                             repMax={sub.repMax}
@@ -258,8 +262,8 @@ export function ExerciseFields({
                                         />
                                         {place.kind === 'drop' ? (
                                             <DropPercentMenu
-                                                e={e}
-                                                n={subName}
+                                                exerciseNumber={exerciseNumber}
+                                                setLabel={subName}
                                                 value={sub.value}
                                                 onChange={(value) =>
                                                     updateSet(subIndex, {
@@ -285,7 +289,11 @@ export function ExerciseFields({
                                                 placeholder={t('set.restUnit')}
                                                 aria-label={t(
                                                     'exercise.setValue',
-                                                    { e, label: subName }
+                                                    {
+                                                        exercise:
+                                                            exerciseNumber,
+                                                        label: subName,
+                                                    }
                                                 )}
                                                 className={`${numberClass(
                                                     subWrong.value
@@ -304,7 +312,9 @@ export function ExerciseFields({
                 type="button"
                 disabled={full}
                 onClick={() => onChange({ sets: [...exercise.sets, emptySet] })}
-                aria-label={t('exercise.addSetLabel', { e })}
+                aria-label={t('exercise.addSetLabel', {
+                    exercise: exerciseNumber,
+                })}
                 className={`${dashedActionClass} mt-8 w-full py-3.5`}
             >
                 <Plus

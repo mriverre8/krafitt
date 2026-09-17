@@ -8,8 +8,8 @@ const max = 'Exercise 1, max reps set 1';
 const reps = (props: Partial<Parameters<typeof RepsFields>[0]> = {}) =>
     render(
         <RepsFields
-            e={1}
-            n="1"
+            exerciseNumber={1}
+            setLabel="1"
             mode="range"
             repMin="4"
             repMax="6"
@@ -87,7 +87,7 @@ describe('RepsFields', () => {
     });
 
     it('names its boxes after the exercise and the set', () => {
-        reps({ e: 2, n: 'DS1' });
+        reps({ exerciseNumber: 2, setLabel: 'DS1' });
         expect(
             screen.getByLabelText('Exercise 2, min reps set DS1')
         ).toBeInTheDocument();

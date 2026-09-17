@@ -9,8 +9,8 @@ describe('RemoveSubButton', () => {
     it('names itself after the exercise and the row it drops', () => {
         render(
             <RemoveSubButton
-                e={2}
-                n="DS1"
+                exerciseNumber={2}
+                setLabel="DS1"
                 onRemove={() => {}}
             />
         );
@@ -23,8 +23,8 @@ describe('RemoveSubButton', () => {
         const onRemove = vi.fn();
         render(
             <RemoveSubButton
-                e={1}
-                n="RP1"
+                exerciseNumber={1}
+                setLabel="RP1"
                 onRemove={onRemove}
             />
         );
@@ -37,8 +37,8 @@ describe('RemoveSubButton', () => {
     it('translates its label', () => {
         renderWithLocale(
             <RemoveSubButton
-                e={1}
-                n="DS1"
+                exerciseNumber={1}
+                setLabel="DS1"
                 onRemove={() => {}}
             />,
             'es'
