@@ -50,9 +50,6 @@ export default async function ProfilePage({
 
     const active = summaries.find((r) => r.isActive && !r.finished);
 
-    // Sliced here rather than in the query: "finished" is the cursor measured
-    // against the plan's own length, which is not a column to filter on, and
-    // the counts above need every routine anyway.
     const finished = summaries.filter((r) => r.finished);
     const { page, totalPages, skip, take } = paginate(
         askedPage,

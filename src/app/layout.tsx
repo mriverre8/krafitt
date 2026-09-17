@@ -9,7 +9,6 @@ import type { Metadata, Viewport } from 'next';
 import { Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
 
-// The Sports/Fitness pairing: condensed for impact, regular for everything read.
 const display = Barlow_Condensed({
     variable: '--font-barlow-condensed',
     subsets: ['latin'],

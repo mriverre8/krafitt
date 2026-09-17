@@ -57,7 +57,6 @@ export async function createRoutine(
         return { error: t('error.duration') };
     }
 
-    // Never active on creation: an empty routine has nothing to train.
     const routine = await prisma.routine.create({
         data: { name, durationWeeks, creatorId: user.id },
     });
@@ -70,15 +69,13 @@ export async function setActiveRoutine(routineId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);
 
-    // Half-written routines stay on the shelf: the training screen has no way to
-    // prescribe a set whose reps were never filled in.
     const t = await getT();
     const routine = await routineDetail(routineId);
+
     if (!routine || !isRoutineComplete(routine, t)) {
         throw new Error(t('error.routineIncomplete'));
     }
-    // Nothing left to train: activating it would land the home screen straight
-    // on "you finished this". Starting it over means a new routine.
+
     if (
         isRoutineFinished(
             routine.cursor,
@@ -103,10 +100,6 @@ export async function setActiveRoutine(routineId: string) {
     revalidatePath('/routines');
 }
 
-/** Puts the routine back on the shelf. The cursor stays where it is, so
-    activating it again picks the training up where it was left; the home screen
-    goes back to having nothing to train. No completeness guard: whatever state
-    the routine is in, stopping is always allowed. */
 export async function deactivateRoutine(routineId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);
@@ -119,8 +112,6 @@ export async function deactivateRoutine(routineId: string) {
     revalidatePath('/routines');
 }
 
-/** The name on its own. Everything else about a routine is edited in place; this
-    is the one field with no home on the page, so it is asked for in a dialog. */
 export async function renameRoutine(
     routineId: string,
     _previous: FormState,
@@ -169,10 +160,6 @@ export async function addWorkout(
     return { ok: true };
 }
 
-/**
- * `addWorkout` with its routine already bound. The rack's + opens the same
- * dialog the renames do, and that dialog knows how to send one field: a name.
- */
 export async function addWorkoutTo(
     routineId: string,
     previous: FormState,
@@ -261,9 +248,6 @@ function readPlan(raw: string, t: Translate) {
                 repMin: min,
                 repMax: max,
                 value: amount,
-                // Null is a set with no technique at all, which is most of
-                // them; blank is one the user added and has yet to name, and it
-                // is kept as such so the routine can go on reporting it.
                 technique:
                     setKind !== 'normal' || typeof technique !== 'string'
                         ? null
@@ -275,11 +259,6 @@ function readPlan(raw: string, t: Translate) {
     return { exercises };
 }
 
-/**
- * Saves every exercise of a day at once. Exercises that were already there keep
- * their id, so the sessions logged against them survive an edit; the ones the
- * user dropped from the list are the only ones deleted.
- */
 export async function saveExercises(
     _previous: DayState,
     data: FormData
@@ -335,8 +314,6 @@ export async function saveExercises(
     revalidatePath(`/routines/${routineId}`);
     revalidatePath('/');
 
-    // Handed straight back to the editor: it is the only thing that knows what
-    // the defaults filled in and which ids the new exercises ended up with.
     const saved = await prisma.exercise.findMany({
         where: { workoutId },
         orderBy: { order: 'asc' },
@@ -473,7 +450,6 @@ export async function logSet(
     }
 }
 
-/** Move to the next day without training. */
 export async function skipDay(routineId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);

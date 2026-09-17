@@ -16,8 +16,6 @@ export default async function RoutinesPage({
     const user = await currentUser();
     if (!user) redirect('/');
 
-    // The count comes first: which page exists is only knowable from the total,
-    // and the page decides which rows to ask for.
     const [{ page: asked }, total, t] = await Promise.all([
         searchParams,
         countRoutines(user.id),

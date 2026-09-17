@@ -6,15 +6,8 @@ import { THEME_COOKIE, type Theme } from '@/lib/theme';
 import { Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 
-/**
- * Flips the <html> class straight away and stores the choice in a cookie so the
- * server renders the same theme on the next request.
- */
 export function ThemeToggle({ theme }: { theme: Theme }) {
     const t = useT();
-    // The <html> class is the live source of truth. This component unmounts every
-    // time the settings menu closes, so a copy of the prop would come back stale
-    // after the first flip; the prop is only the fallback for the server render.
     const [current, setCurrent] = useState<Theme>(() =>
         typeof document === 'undefined'
             ? theme

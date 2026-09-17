@@ -10,19 +10,11 @@ export type HistoryDay = {
     id: string;
     name: string;
     exercises: ExerciseView[];
-    /** What was logged on this day, by week. A week nobody trained is absent. */
     weeks: Record<number, Logs>;
 };
 
 export type WeekRow = { week: number; state: WeekState; logs: Logs };
 
-/**
- * One day of the routine: its weeks summed up, and one exercise of it at a time.
- *
- * A component of its own because each day keeps its own place in its own list of
- * exercises — walk to the third exercise of Push A, look at Legs, come back, and
- * Push A is still on the third.
- */
 export function DayPanel({
     day,
     durationWeeks,

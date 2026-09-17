@@ -7,15 +7,6 @@ import { DaySwitcher } from '@/components/routine/day-switcher';
 
 export type { HistoryDay };
 
-/**
- * A routine's history, one day per page — the same rack of numbered plates that
- * moves between the days of a routine, so the two views are navigated the same
- * way and neither has to be learned twice.
- *
- * Read-only, so every day could be rendered on demand instead of all at once;
- * they are all mounted anyway, because that is what keeps the tab panels' ids
- * stable and moving between days instant on a page with nothing to fetch.
- */
 export function RoutineHistory({
     days,
     durationWeeks,
@@ -23,8 +14,6 @@ export function RoutineHistory({
 }: {
     days: HistoryDay[];
     durationWeeks: number;
-    /** Where the routine has got to: what separates a week that was skipped
-        from one that has not come round yet. */
     cursor: number;
 }) {
     const baseId = useId();
