@@ -1,7 +1,7 @@
 import { RepModeSelect } from '@/components/workout/rep-mode-select';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 const label = 'Exercise 1, reps type set 1';
 

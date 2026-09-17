@@ -1,7 +1,7 @@
 import { ProgressPreview } from '@/components/landing/progress-preview';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 describe('ProgressPreview', () => {
     it('opens on the first exercise, with its logged weeks', () => {

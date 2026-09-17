@@ -20,7 +20,7 @@ import {
     noopAction,
     openConfirm,
     withModals,
-} from './setup-helpers';
+} from '@/tests/setup-helpers';
 
 /** The editor lives inside a routine that is read-only until Edit is pressed,
     and every test below is about what editing can do. Read mode has its own

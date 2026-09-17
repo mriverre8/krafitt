@@ -1,7 +1,7 @@
 import { CreateRoutineForm } from '@/components/routine/create-routine-form';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { noopAction, renderWithLocale } from './setup-helpers';
+import { noopAction, renderWithLocale } from '@/tests/setup-helpers';
 
 describe('CreateRoutineForm', () => {
     it('asks for a name and a duration', () => {

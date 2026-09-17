@@ -1,7 +1,7 @@
 import { DropPercentMenu } from '@/components/workout/drop-percent-menu';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 const trigger = () =>
     screen.getByRole('button', { name: 'Exercise 1, DS1 amount' });

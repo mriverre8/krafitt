@@ -2,7 +2,7 @@ import { Landing } from '@/components/landing/landing';
 import { WEEKS } from '@/lib/constants';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('@/lib/auth-client', () => ({
