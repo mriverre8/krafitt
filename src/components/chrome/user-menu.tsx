@@ -11,8 +11,6 @@ import { Dropdown } from '@/components/ui/dropdown';
 import { menuItemClass as itemClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 
-/** Every signed-in action behind a single user icon. The app links are
-    already in the bar from md up, so the menu only repeats them below it. */
 export function UserMenu({
     name,
     image,

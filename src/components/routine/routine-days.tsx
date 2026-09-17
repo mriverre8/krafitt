@@ -12,20 +12,10 @@ export type RoutineDay = {
     id: string;
     name: string;
     exercises: ExerciseView[];
-    /** What this day is still missing, as last saved. */
     problems: string[];
-    /** The same holes as fields to paint, by exercise id. */
     faults: Record<string, ExerciseFault>;
 };
 
-/**
- * One day of the routine on screen at a time, with the rack above to move
- * between them.
- *
- * Every day is mounted, and the ones you are not on are hidden rather than
- * thrown away: each holds a draft that nothing has saved yet, and moving to
- * day 2 and back must not cost you what you typed on day 1.
- */
 export function RoutineDays({
     days,
     addDay,
@@ -34,10 +24,8 @@ export function RoutineDays({
     onDeleteWorkout,
 }: {
     days: RoutineDay[];
-    /** Already bound to its routine, for the + at the end of the rack. */
     addDay?: FormAction;
     saveExercises: DayAction;
-    /** Bound to its day by the editor that offers it. */
     renameWorkout: (
         workoutId: string,
         previous: FormState,
@@ -48,7 +36,6 @@ export function RoutineDays({
     const baseId = useId();
     const dirtyDays = useDirtyDays();
     const [selected, setSelected] = useState(0);
-    // Deleting a day can leave the selection past the end of a shorter list.
     const index = Math.min(selected, Math.max(days.length - 1, 0));
 
     if (days.length === 0) return null;

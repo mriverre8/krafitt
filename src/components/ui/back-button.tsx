@@ -5,18 +5,11 @@ import { ghostClass } from '@/lib/ui';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-/**
- * Returns to wherever the user came from. Opened cold — a shared link, a new
- * tab, a refresh — there is no previous entry to go back to, so `fallback`
- * takes over and the button is never dead.
- */
 export function BackButton({
     fallback,
     onBack,
 }: {
     fallback: string;
-    /** Somewhere nearer to come back from than the last page: the routine in
-        edit mode steps out of that first, and the page waits. */
     onBack?: () => void;
 }) {
     const t = useT();

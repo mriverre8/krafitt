@@ -9,35 +9,15 @@ import { FormError } from '@/components/ui/form-error';
 import { useActionState, useEffect, useState } from 'react';
 
 export type RenameRoutineModalProps = {
-    /** The name as it stands, for the field to open on. */
     name: string;
-    /** Already bound to its routine or day, so this knows nothing but the new
-        name. */
     rename: FormAction;
-    /** What is being renamed, as the dialog's heading. */
     title: string;
-    /** Accessible name for the field, since the heading is not one. */
     label: string;
-    /** What the empty field suggests. Worth having when the dialog is naming
-        something for the first time and the user has no convention yet; a
-        rename opens on the name it already holds, so it never sees one. */
     placeholder?: string;
-    /** Defaults to Save. A dialog that creates rather than renames says so on
-        the button: the same field and the same shape do two different things,
-        and the button is where the difference is read. */
     confirmLabel?: string;
-    /** Supplied by the ModalHost. */
     onClose: () => void;
 };
 
-/**
- * A name the page shows as a heading rather than as a field — the routine's, or
- * one of its days'. Asked for here instead.
- *
- * It also asks for the name of a day that does not exist yet, which is the same
- * question with an empty answer to start from: `name` comes in blank, the
- * placeholder offers a few, and the button says Add rather than Save.
- */
 export function RenameRoutineModal({
     name,
     rename,
@@ -49,12 +29,9 @@ export function RenameRoutineModal({
 }: RenameRoutineModalProps) {
     const t = useT();
     const [state, formAction, pending] = useActionState(rename, {});
-    // Controlled, so Save can tell a real rename from the name already stored.
     const [value, setValue] = useState(name);
     const renamed = value.trim() !== '' && value.trim() !== name;
 
-    // Closing on `ok` is what dismisses the dialog once the name is stored —
-    // every other way out of it is a cancel.
     useEffect(() => {
         if (state.ok) onClose();
     }, [state.ok, onClose]);

@@ -35,7 +35,6 @@ export function SetRow({
     const shown = label ?? String(setIndex + 1);
     const number = name ?? shown;
 
-    // No syncing effect: the draft wins, and without one we show what is stored.
     const [draft, setDraft] = useState<{ weight: string; reps: string } | null>(
         null
     );

@@ -3,11 +3,6 @@
 import { iconButtonClass } from '@/lib/ui';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
-/**
- * Click-to-open menu. Closes on outside click and on Escape, which is the part
- * a plain <details> does not give us. Children get the close callback so an
- * item can dismiss the menu after acting on it.
- */
 export function Dropdown({
     label,
     icon,
@@ -17,11 +12,7 @@ export function Dropdown({
 }: {
     label: string;
     icon: ReactNode;
-    /** The trigger's own styling, for a menu that has to sit in a row of small
-        text buttons rather than in the bar. Defaults to the icon button. */
     className?: string;
-    /** Which edge the panel hangs from. A trigger over on the left needs the
-        left one, or the panel opens off the side of whatever holds it. */
     align?: 'left' | 'right';
     children: (close: () => void) => ReactNode;
 }) {

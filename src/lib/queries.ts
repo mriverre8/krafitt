@@ -1,5 +1,6 @@
 import { prisma } from './db';
 import { positionFromCursor, type Logs, type PreviousLogs } from './progress';
+import { dayKey } from './training-year';
 
 function toLogs(
     logs: {
@@ -174,7 +175,7 @@ export async function trainingDays(userId: string, from: Date) {
     const days: Record<string, number> = {};
     for (const session of sessions) {
         if (session._count.logs === 0) continue;
-        const key = session.startedAt.toISOString().slice(0, 10);
+        const key = dayKey(session.startedAt);
         days[key] = (days[key] ?? 0) + session._count.logs;
     }
     return days;

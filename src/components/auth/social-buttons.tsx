@@ -1,14 +1,5 @@
 'use client';
 
-/**
- * Google and GitHub sign-in. One button does both sign-up and sign-in: the
- * provider owns the account, so there is nothing for the login/signup tabs
- * above to switch between.
- *
- * Marks are the official brand SVGs in /public; GitHub ships a black and a
- * white invertocat swapped via the .dark variant to stay visible on both themes.
- */
-
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
 import { ghostClass } from '@/lib/ui';
@@ -54,8 +45,6 @@ export function SocialButtons({
                         onClick={async () => {
                             setPending(id);
                             onError(undefined);
-                            // On success the browser leaves for the provider,
-                            // so only the failure path ever gets here.
                             const { error } = await authClient.signIn.social({
                                 provider: id,
                                 callbackURL: '/',

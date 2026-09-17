@@ -1,7 +1,6 @@
 import { Bar, Skeleton } from '@/components/ui/skeleton';
 import { cardClass } from '@/lib/ui';
 
-/** The shape of TodayWorkout: the lit header plate, then the exercises. */
 export default function Loading() {
     return (
         <Skeleton>

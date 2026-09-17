@@ -6,8 +6,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-/** A step is a link until there is nowhere to step to, and then it is the same
-    shape greyed out: a row that keeps its height either way. */
 function Step({
     href,
     disabled,
@@ -37,15 +35,6 @@ function Step({
     );
 }
 
-/**
- * Previous/next over a list that only grows. Links rather than state: the page
- * lives in the URL, so a reload, a back button or a shared link all land where
- * the user was. `scroll={false}` because the pager is usually the last thing on
- * screen — jumping to the top would throw it out from under the thumb.
- *
- * ponytail: one step at a time, no numbered pages. Add them when a list is deep
- * enough that stepping to it stops being reasonable.
- */
 export function Pagination({
     page,
     totalPages,
@@ -53,8 +42,6 @@ export function Pagination({
 }: {
     page: number;
     totalPages: number;
-    /** Which query param carries the page, for a screen that pages more than
-        one list. The href is query-only, so it keeps the path it is on. */
     param?: string;
 }) {
     const t = useT();

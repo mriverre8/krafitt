@@ -13,8 +13,8 @@ const rows = () =>
 const menu = (props: Partial<Parameters<typeof SetMenu>[0]> = {}) =>
     render(
         <SetMenu
-            e={1}
-            n="1"
+            exerciseNumber={1}
+            setLabel="1"
             kind={null}
             full={false}
             canRemove
@@ -94,7 +94,7 @@ describe('SetMenu', () => {
     });
 
     it('names itself after the exercise and the set', () => {
-        menu({ e: 3, n: '2' });
+        menu({ exerciseNumber: 3, setLabel: '2' });
         expect(
             screen.getByRole('button', { name: 'Exercise 3, set 2 actions' })
         ).toBeInTheDocument();

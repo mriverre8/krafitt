@@ -6,9 +6,6 @@ import { SUB_KINDS, type SubKind } from '@/lib/sets';
 import { menuDangerClass, menuItemClass } from '@/lib/ui';
 import { Ellipsis, Plus, X } from 'lucide-react';
 
-/** A dead menu row still has to look dead: `menuItemClass` and `menuDangerClass`
-    both end in a hover colour, and a hover left live on a disabled row is the
-    one thing that makes it look alive. */
 const offClass = 'disabled:pointer-events-none disabled:opacity-40';
 
 /**
@@ -21,8 +18,8 @@ const offClass = 'disabled:pointer-events-none disabled:opacity-40';
  * one, `kind` says which, and the menu offers only more of that.
  */
 export function SetMenu({
-    e,
-    n,
+    exerciseNumber,
+    setLabel,
     kind,
     full,
     canRemove,
@@ -30,8 +27,8 @@ export function SetMenu({
     onRemove,
 }: {
     /** The exercise's number in the day, and the set's name inside it. */
-    e: number;
-    n: string;
+    exerciseNumber: number;
+    setLabel: string;
     /** The sub kind this set already carries, or null while it has none. */
     kind: SubKind | null;
     /** The exercise is at its cap: nothing more can be hung off this set. */
@@ -45,7 +42,10 @@ export function SetMenu({
     const t = useT();
     return (
         <Dropdown
-            label={t('exercise.setMenu', { e, n })}
+            label={t('exercise.setMenu', {
+                exercise: exerciseNumber,
+                set: setLabel,
+            })}
             icon={
                 <Ellipsis
                     size={18}
@@ -84,7 +84,10 @@ export function SetMenu({
                             onRemove();
                             close();
                         }}
-                        aria-label={t('exercise.removeSet', { e, n })}
+                        aria-label={t('exercise.removeSet', {
+                            exercise: exerciseNumber,
+                            set: setLabel,
+                        })}
                         className={`${menuDangerClass} ${offClass}`}
                     >
                         <X

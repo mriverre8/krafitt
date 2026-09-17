@@ -1,8 +1,5 @@
 import Image from 'next/image';
 
-/**
- * The account's picture, or — until it has one — its initials as a monogram.
- */
 export function Avatar({
     name,
     src,
@@ -12,7 +9,6 @@ export function Avatar({
     src?: string | null;
     className?: string;
 }) {
-    // Decorative: the name it stands for is always right beside it.
     const shared = `shrink-0 overflow-hidden rounded-md ${className}`;
 
     if (src)

@@ -10,14 +10,14 @@ import { X } from 'lucide-react';
  * as the working set's ⋯, one tap instead of two.
  */
 export function RemoveSubButton({
-    e,
-    n,
+    exerciseNumber,
+    setLabel,
     onRemove,
 }: {
     /** The exercise's number in the day, and the row's name inside it (`DS1`).
         A day holds several cards, so neither one alone names the button. */
-    e: number;
-    n: string;
+    exerciseNumber: number;
+    setLabel: string;
     onRemove: () => void;
 }) {
     const t = useT();
@@ -25,7 +25,10 @@ export function RemoveSubButton({
         <button
             type="button"
             onClick={onRemove}
-            aria-label={t('exercise.removeSet', { e, n })}
+            aria-label={t('exercise.removeSet', {
+                exercise: exerciseNumber,
+                set: setLabel,
+            })}
             title={t('exercise.removeSetShort')}
             className={removeButtonClass}
         >

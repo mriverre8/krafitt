@@ -23,8 +23,6 @@ type ModalProps = {
 
 type ModalKind = keyof ModalProps;
 
-/** Kind and props travel together, so a set of props can never end up on the
-    wrong modal. */
 export type OpenModal = {
     [K in ModalKind]: { kind: K; props: ModalProps[K] };
 }[ModalKind];

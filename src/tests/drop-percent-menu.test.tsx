@@ -17,8 +17,8 @@ const rows = () =>
 const drop = (props: Partial<Parameters<typeof DropPercentMenu>[0]> = {}) =>
     render(
         <DropPercentMenu
-            e={1}
-            n="DS1"
+            exerciseNumber={1}
+            setLabel="DS1"
             value=""
             onChange={() => {}}
             {...props}
@@ -83,7 +83,7 @@ describe('DropPercentMenu', () => {
     });
 
     it('names itself after the exercise and the row', () => {
-        drop({ e: 2, n: 'DS2' });
+        drop({ exerciseNumber: 2, setLabel: 'DS2' });
         expect(
             screen.getByRole('button', { name: 'Exercise 2, DS2 amount' })
         ).toBeInTheDocument();
@@ -92,8 +92,8 @@ describe('DropPercentMenu', () => {
     it('translates its label', () => {
         renderWithLocale(
             <DropPercentMenu
-                e={1}
-                n="DS1"
+                exerciseNumber={1}
+                setLabel="DS1"
                 value=""
                 onChange={() => {}}
             />,

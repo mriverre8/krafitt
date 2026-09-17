@@ -5,7 +5,6 @@ import { useLocale, useT } from '@/i18n/use-t';
 import { setPreferenceCookie } from '@/lib/cookies';
 import { useRouter } from 'next/navigation';
 
-/** Server components render the copy, so changing locale needs a refresh. */
 export function LocaleSwitcher() {
     const t = useT();
     const locale = useLocale();

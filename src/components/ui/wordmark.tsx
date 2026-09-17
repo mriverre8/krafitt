@@ -1,8 +1,3 @@
-/**
- * The app's one piece of branding: half the name set in a slanted volt slab.
- * Sized by the caller through font-size, so the slab scales with the text.
- * The inner span cancels the skew — the block leans, the letters stay upright.
- */
 export function Wordmark({ className = '' }: { className?: string }) {
     return (
         <span className={`display inline-flex items-center ${className}`}>

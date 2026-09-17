@@ -1,7 +1,5 @@
 import { Bar, Skeleton } from '@/components/ui/skeleton';
 
-/** A title and prose: a couple of sections of a policy, held to the same 68ch
-    measure the text lands at. */
 export default function Loading() {
     return (
         <Skeleton>

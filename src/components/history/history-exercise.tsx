@@ -16,31 +16,9 @@ import type { ExerciseView } from '@/components/workout/workout-exercise';
 export type HistoryRow = {
     week: number;
     state: WeekState;
-    /** What this exercise was given that week, by set index. */
     sets: Record<number, SetValue | undefined>;
 };
 
-/**
- * One exercise's whole history as a grid: a week per row, a set per column.
- *
- * That way round on purpose. A routine grows in weeks and never in sets, so
- * putting weeks down the page means the table gets taller rather than wider —
- * three or four sets fit a phone with no sideways scrolling, and a twelve-week
- * block would not. It also makes each row exactly one session, which is how the
- * numbers were entered and how they are remembered.
- *
- * A real <table>: the week and set headers are what tell a screen reader which
- * cell is which, and no amount of divs buys that back.
- *
- * A blank is never just blank. The em dash is a week that went by unlogged, the
- * middle dot one still ahead — two different glyphs, not two shades of grey, and
- * the wording rides along for anyone not reading the shape.
- *
- * One exercise of the day is on screen, and the arrows in its own header walk to
- * the next. Deliberately not a second rack of numbered plates: the day rack sits
- * a few lines above, and two racks of numbers on one screen would be read as one
- * control that had gone wrong. Arrows and a count cannot be mistaken for it.
- */
 export function HistoryExercise({
     exercise,
     rows,
@@ -50,7 +28,6 @@ export function HistoryExercise({
 }: {
     exercise: ExerciseView;
     rows: HistoryRow[];
-    /** Which of the day's exercises this is, counting from zero. */
     position: number;
     total: number;
     onSelect: (position: number) => void;
@@ -65,9 +42,6 @@ export function HistoryExercise({
         total,
     };
 
-    // Each set's own history, walked once from the top: a value is judged
-    // against the last week that set was actually logged, however many skipped
-    // weeks lie between. The first time a set appears there is nothing to judge.
     const carried: Record<number, SetValue | undefined> = {};
     const trends = rows.map((row) => {
         const forRow: Record<number, SetTrend | undefined> = {};

@@ -17,8 +17,8 @@ const rows = () =>
 const technique = (props: Partial<Parameters<typeof TechniqueField>[0]> = {}) =>
     render(
         <TechniqueField
-            e={1}
-            n="1"
+            exerciseNumber={1}
+            setLabel="1"
             technique={null}
             wrong={false}
             onChange={() => {}}
@@ -122,7 +122,7 @@ describe('TechniqueField', () => {
     });
 
     it('names itself after the exercise and the set', () => {
-        technique({ e: 2, n: '3' });
+        technique({ exerciseNumber: 2, setLabel: '3' });
         expect(
             screen.getByRole('button', { name: 'Exercise 2, set 3 technique' })
         ).toBeInTheDocument();

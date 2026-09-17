@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * One segment per workout in the routine, in order: the week × day sequence the
- * cursor walks. Done segments are filled, the next one is outlined.
- * ponytail: falls back to a single bar past 24 segments, where the segments stop
- * being readable. Group by week if long routines ever need more detail.
- */
 export function ProgressLadder({
     done,
     total,

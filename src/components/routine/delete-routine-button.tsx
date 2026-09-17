@@ -4,14 +4,6 @@ import { useT } from '@/i18n/use-t';
 import { Trash } from 'lucide-react';
 import { ActionButton } from '@/components/ui/action-button';
 
-/**
- * Deletes the whole routine, name and all. The routine page is the only place
- * that offers it, and it always asks first: a routine carries every session
- * logged against it, and none of that comes back.
- *
- * The action arrives already bound to its routine, so this stays a client
- * component the tests can render on its own.
- */
 export function DeleteRoutineButton({
     name,
     onDelete,
@@ -19,7 +11,6 @@ export function DeleteRoutineButton({
 }: {
     name: string;
     onDelete: () => Promise<unknown>;
-    /** Its styling where it sits as a row of a menu rather than on its own. */
     className?: string;
 }) {
     const t = useT();

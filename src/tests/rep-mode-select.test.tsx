@@ -8,8 +8,8 @@ const label = 'Exercise 1, reps type set 1';
 const select = (props: Partial<Parameters<typeof RepModeSelect>[0]> = {}) =>
     render(
         <RepModeSelect
-            e={1}
-            n="1"
+            exerciseNumber={1}
+            setLabel="1"
             mode="range"
             onChange={() => {}}
             {...props}
@@ -48,7 +48,7 @@ describe('RepModeSelect', () => {
     // A day holds several cards and a card several sets, so the label has to
     // carry both numbers or it names more than one control.
     it('names itself after the exercise and the set', () => {
-        select({ e: 3, n: 'DS1' });
+        select({ exerciseNumber: 3, setLabel: 'DS1' });
         expect(
             screen.getByLabelText('Exercise 3, reps type set DS1')
         ).toBeInTheDocument();
@@ -57,8 +57,8 @@ describe('RepModeSelect', () => {
     it('translates its label and its options', () => {
         renderWithLocale(
             <RepModeSelect
-                e={1}
-                n="1"
+                exerciseNumber={1}
+                setLabel="1"
                 mode="range"
                 onChange={() => {}}
             />,
