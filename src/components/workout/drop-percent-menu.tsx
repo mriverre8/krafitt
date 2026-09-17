@@ -11,8 +11,6 @@ import {
 } from '@/lib/ui';
 import { Plus } from 'lucide-react';
 
-/** The per cents the menu offers. Round, and well inside DROP_PERCENT: a drop
-    is sized by feel, and the odd numbers are not worth a keyboard. */
 const DROP_VALUES = [10, 20, 30, 40, 50];
 
 /**

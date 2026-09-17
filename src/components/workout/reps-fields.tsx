@@ -5,14 +5,6 @@ import { REPS } from '@/lib/constants';
 import { hasNoReps, type RepMode } from '@/lib/reps';
 import { numberClass, rowFieldClass } from '@/lib/ui';
 
-/** The reps take one slot whatever the mode puts in it — two boxes for a range,
-    one for a fixed count, a readout for AMRAP — so the row keeps its shape when
-    the mode changes under it, and the columns line up down the card.
-
-    `min-w-0` is what makes that work. A flex item's automatic minimum is its
-    content, and for a box holding `<input>`s that is their intrinsic ~170px
-    each — so a range would blow the row open and push the drop's per cent onto
-    a line of its own however little the reps were given. */
 const repsSlotClass =
     'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2';
 

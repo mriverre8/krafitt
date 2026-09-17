@@ -158,9 +158,6 @@ export function ExerciseFields({
                 const set = exercise.sets[setIndex];
                 const n = setName(places[setIndex]);
                 const wrong = fault?.sets[setIndex] ?? noFault;
-                // The whole run this set opens: dropping the set drops it all,
-                // and whichever kind it already holds is the only one it can
-                // be given more of.
                 const run = groupAt(exercise.sets, setIndex);
                 const count = run.insertAt - setIndex;
 

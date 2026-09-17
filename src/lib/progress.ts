@@ -1,4 +1,4 @@
-/** Pure progression logic. No Prisma, no React: the only part with unit tests. */
+/** Pure progression logic. No Prisma, no React */
 
 export type ExercisePlan = { id: string; sets: readonly unknown[] };
 export type SetValue = { weight: number; reps: number };

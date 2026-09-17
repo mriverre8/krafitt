@@ -12,12 +12,6 @@ export const EMAIL_PATTERN = '[^\\s@]+@[^\\s@]+\\.[a-zA-Z]{2,}';
 export const WEEKS = { min: 1, max: 52 };
 export const EXERCISES = { max: 30 };
 export const SETS = { min: 1, max: 20 };
-/**
- * `digits` is how long a typed value may get. It is a separate number because
- * `maxLength` is ignored on `<input type="number">` — the forms cut the value
- * down as it is typed instead, so it has to be stated rather than read off the
- * attribute.
- */
 export const REPS = { min: 1, max: 1000, digits: 3 };
 /** How much weight a drop set takes off the working set. */
 export const DROP_PERCENT = { min: 1, max: 99, digits: 2 };

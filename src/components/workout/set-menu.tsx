@@ -6,9 +6,6 @@ import { SUB_KINDS, type SubKind } from '@/lib/sets';
 import { menuDangerClass, menuItemClass } from '@/lib/ui';
 import { Ellipsis, Plus, X } from 'lucide-react';
 
-/** A dead menu row still has to look dead: `menuItemClass` and `menuDangerClass`
-    both end in a hover colour, and a hover left live on a disabled row is the
-    one thing that makes it look alive. */
 const offClass = 'disabled:pointer-events-none disabled:opacity-40';
 
 /**
