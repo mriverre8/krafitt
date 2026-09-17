@@ -8,7 +8,7 @@ import { RoutineOptions } from '@/components/routine/routine-options';
 import type { FormAction } from '@/lib/forms';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale, withModals } from './setup-helpers';
+import { renderWithLocale, withModals } from '@/tests/setup-helpers';
 
 /** The header of the routine page, which is the only thing that renders the
     menu — and only out of edit mode. */

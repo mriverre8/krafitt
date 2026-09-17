@@ -1,7 +1,7 @@
 import { RemoveSubButton } from '@/components/workout/remove-sub-button';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 describe('RemoveSubButton', () => {
     // One option is not a menu: the row wears its one action, so taking a drop

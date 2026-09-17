@@ -1,7 +1,7 @@
 import { Section } from '@/components/landing/section';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 describe('Section', () => {
     it('renders the eyebrow, title, lead and children', () => {

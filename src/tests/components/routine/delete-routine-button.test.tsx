@@ -6,7 +6,7 @@ import {
     declineConfirm,
     openConfirm,
     withModals,
-} from './setup-helpers';
+} from '@/tests/setup-helpers';
 
 const button = () => screen.getByRole('button', { name: /Delete routine/ });
 

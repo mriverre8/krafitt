@@ -2,7 +2,7 @@ import { EditorSpecs } from '@/components/landing/editor-specs';
 import { EXERCISES, SETS, WEEKS } from '@/lib/constants';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 describe('EditorSpecs', () => {
     // The limits quoted here are the ones the server actually enforces. This is

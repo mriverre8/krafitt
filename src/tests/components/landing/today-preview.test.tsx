@@ -1,7 +1,7 @@
 import { TodayPreview } from '@/components/landing/today-preview';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 describe('TodayPreview', () => {
     // A still of the app mid-session: half the sets banked, and nothing on it

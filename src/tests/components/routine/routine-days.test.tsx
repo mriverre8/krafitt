@@ -10,7 +10,7 @@ import { ModalHost } from '@/components/modal/modal-host';
 import { closeModal } from '@/store/modal';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { noopAction } from './setup-helpers';
+import { noopAction } from '@/tests/setup-helpers';
 
 const sets = [{ repMode: 'range', repMin: 4, repMax: 6, technique: 'Top set' }];
 

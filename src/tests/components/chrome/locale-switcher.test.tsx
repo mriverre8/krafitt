@@ -2,7 +2,7 @@ import { LocaleSwitcher } from '@/components/chrome/locale-switcher';
 import { LOCALE_COOKIE } from '@/i18n/config';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({

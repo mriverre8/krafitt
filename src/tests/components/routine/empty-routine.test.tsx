@@ -7,7 +7,7 @@ import { ModalHost } from '@/components/modal/modal-host';
 import { closeModal } from '@/store/modal';
 import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { renderWithLocale } from './setup-helpers';
+import { renderWithLocale } from '@/tests/setup-helpers';
 
 /** As the routine page renders it: inside the provider, with the real toggle
     standing in for the routine's own Edit — the card no longer carries a way
