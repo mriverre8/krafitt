@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, type Locale, type TKey  } from '@/i18n/config';
+import { DEFAULT_LOCALE, type Locale, type TKey } from '@/i18n/config';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 

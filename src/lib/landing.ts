@@ -16,7 +16,6 @@ export const CHIPS = [
     'landing.chip3',
 ] as const;
 
-
 export type Spec = {
     stat?: number;
     Icon?: Icon;

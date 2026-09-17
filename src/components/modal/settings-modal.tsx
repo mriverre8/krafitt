@@ -24,19 +24,11 @@ import { Trash, Upload } from 'lucide-react';
 
 export type SettingsModalProps = {
     theme: Theme;
-    /** null when signed out: the username/delete section only makes sense
-        for a signed-in user. */
     userName?: string | null;
     userImage?: string | null;
-    /** Supplied by the ModalHost. */
     onClose: () => void;
 };
 
-/**
- * Language and theme, out of the menu and into a dialog of their own. Nothing
- * here is confirmed or discarded — both switches take effect as they are
- * flipped — so there is no button row at all, only the shell's close.
- */
 export function SettingsModal({
     theme,
     userName,
@@ -66,7 +58,6 @@ export function SettingsModal({
         }
     }
 
-    /** `null` clears the picture; a data URL sets it. */
     async function saveImage(value: string | null) {
         setUploading(true);
         setImageError(undefined);

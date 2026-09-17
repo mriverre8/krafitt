@@ -7,22 +7,11 @@ import { Modal } from '@/components/modal/modal';
 export type ConfirmModalProps = {
     title: string;
     message: string;
-    /** Defaults to Delete: that is what most of these guard. */
     confirmLabel?: string;
     onConfirm: () => void;
-    /** Supplied by the ModalHost. */
     onClose: () => void;
 };
 
-/**
- * The first thing built as children of <Modal>, and the one that replaced
- * window.confirm everywhere.
- *
- * Every confirm this app asks for guards something that does not come back — a
- * deleted routine, a deleted day, a discarded draft, a skipped day — so the
- * committing button is always the danger fill and always names the move, never
- * "OK". Cancel is the ghost next to it and the one the dialog opens on.
- */
 export function ConfirmModal({
     title,
     message,
