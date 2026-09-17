@@ -12,29 +12,9 @@ export type DayTab = {
     id: string;
     name: string;
     ready: boolean;
-    /** Edited and not saved yet, so `ready` describes a day that no longer
-        exists anywhere but the draft. */
     unsaved: boolean;
 };
 
-/**
- * The days of a routine as a rack of numbered plates: one is on screen at a
- * time and this is what moves between them.
- *
- * Two channels, deliberately kept apart so neither has to fight the other:
- * volt fills the plate you are on, and the rule underneath — drawn outside the
- * fill, always against the page — says whether that day is trainable yet, or
- * yellow while it is edited and unsaved. Colour is never the only carrier: the
- * state is in the tab's label too. Both appear only while editing; the rule is
- * a verdict on a draft, and reading a routine there is no draft to judge.
- *
- * Numbers only. The day's name is the heading right below, so printing it here
- * as well would say the same thing twice and make the rack too wide to scan.
- *
- * The plates are the fastest way between days, while the caption and chevrons
- * make the control discoverable and give pointer users a direct previous/next
- * action. A new day belongs at the end of the rack it will appear in.
- */
 export function DaySwitcher({
     days,
     index,
@@ -44,10 +24,7 @@ export function DaySwitcher({
 }: {
     days: DayTab[];
     index: number;
-    /** Prefix for the tab/panel id pair, so both sides agree on the wiring. */
     baseId: string;
-    /** Already bound to its routine, so the dialog it opens sends nothing but a
-        name. Left out on a routine that can no longer take days. */
     addDay?: FormAction;
     onSelect: (index: number) => void;
 }) {
@@ -65,13 +42,9 @@ export function DaySwitcher({
     function select(next: number) {
         if (next < 0 || next > last) return;
         onSelect(next);
-        // A long routine scrolls its rack; the plate you just landed on has to
-        // be one of the ones you can see.
         tabAt(next)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
 
-    /** Keyboard moves the selection and takes focus with it: the tabs carry a
-        roving tabindex, so the one left behind is no longer a tab stop. */
     function move(next: number) {
         if (next < 0 || next > last) return;
         select(next);

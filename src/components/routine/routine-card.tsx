@@ -13,30 +13,16 @@ export type RoutineCardProps = {
     workoutCount: number;
     cursor: number;
     isActive: boolean;
-    /** Every week of it is behind the cursor: there is nothing left to train. */
     finished: boolean;
-    /** A routine with holes in it cannot be trained, so it cannot go active. */
     canActivate: boolean;
 };
 
-/**
- * A routine as a list shows it: what it is, how far it got, and what state it is
- * in. Both places that list routines — /routines and the profile — render this
- * one, and neither changes anything: the whole card is one link, and activating,
- * renaming and deleting all live on the routine's own page.
- *
- * Renders no <li> of its own, so a caller is free to put it in a list or, as the
- * profile does with the active routine, on its own.
- */
 export function RoutineCard(props: RoutineCardProps) {
     const t = useT();
     const total = props.workoutCount * props.durationWeeks;
     const done = Math.min(props.cursor, total);
     const progress = t('routines.progress', { done, total });
 
-    // The routine being trained is the only card with a volt edge: one lit card
-    // in the list, so the eye lands on it before reading a word. A finished one
-    // is not being trained any more, whatever its flag still says.
     const training = props.isActive && !props.finished;
 
     return (

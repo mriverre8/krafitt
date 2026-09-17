@@ -3,7 +3,6 @@
 import { showModal } from '@/store/modal';
 import { useTransition } from 'react';
 
-/** Button that fires a server action already bound to its arguments. */
 export function ActionButton({
     action,
     children,
@@ -14,10 +13,7 @@ export function ActionButton({
     action: () => Promise<unknown>;
     children: React.ReactNode;
     className?: string;
-    /** Asks in a modal first. Both of these guard a delete, so the modal's
-        committing button is left at its default. */
     confirm?: { title: string; message: string };
-    /** Accessible name for buttons whose content is only an icon. */
     label?: string;
 }) {
     const [pending, startTransition] = useTransition();
