@@ -7,6 +7,7 @@ import { currentUser } from '@/lib/auth';
 import { paginate } from '@/lib/pagination';
 import { isRoutineFinished } from '@/lib/progress';
 import { myRoutines, trainingDays } from '@/lib/queries';
+import { dayKey, utc } from '@/lib/training-year';
 import { cardClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
@@ -21,14 +22,13 @@ export default async function ProfilePage({
     if (!user) redirect('/');
 
     const today = new Date();
+    const end = dayKey(today);
+    const yearStart = new Date(utc(today.getUTCFullYear(), 0, 1));
     const [{ finished: askedPage }, routines, days, t, locale] =
         await Promise.all([
             searchParams,
             myRoutines(user.id),
-            trainingDays(
-                user.id,
-                new Date(Date.UTC(today.getUTCFullYear(), 0, 1))
-            ),
+            trainingDays(user.id, yearStart),
             getT(),
             getLocale(),
         ]);
@@ -91,7 +91,7 @@ export default async function ProfilePage({
 
             <TrainingYear
                 days={days}
-                end={today.toISOString().slice(0, 10)}
+                end={end}
             />
 
             <section className="space-y-3">
