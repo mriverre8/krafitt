@@ -1,5 +1,6 @@
 import { Wordmark } from '@/components/ui/wordmark';
 import { getT } from '@/i18n/server';
+import { DOCS } from '@/lib/legal';
 import { iconButtonClass } from '@/lib/ui';
 import { AtSign, Code, Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -76,24 +77,15 @@ export async function Footer() {
                         aria-label={t('footer.legal')}
                         className="flex flex-wrap items-center justify-center gap-x-5 md:justify-start"
                     >
-                        <Link
-                            href="/legal/privacy"
-                            className={legalClass}
-                        >
-                            {t('legal.privacy')}
-                        </Link>
-                        <Link
-                            href="/legal/terms"
-                            className={legalClass}
-                        >
-                            {t('legal.terms')}
-                        </Link>
-                        <Link
-                            href="/legal/cookies"
-                            className={legalClass}
-                        >
-                            {t('legal.cookies')}
-                        </Link>
+                        {Object.entries(DOCS).map(([slug, key]) => (
+                            <Link
+                                key={slug}
+                                href={`/legal/${slug}`}
+                                className={legalClass}
+                            >
+                                {t(key)}
+                            </Link>
+                        ))}
                     </nav>
                     <p className="text-muted text-center text-xs md:text-left">
                         {t('footer.rights', { year: new Date().getFullYear() })}
