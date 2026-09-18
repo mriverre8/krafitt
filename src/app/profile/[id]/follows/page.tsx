@@ -43,10 +43,7 @@ export default async function FollowsPage({
     return (
         <div className="space-y-6">
             <header>
-                <BackButton
-                    fallback={`/profile/${id}`}
-                    skipHistory
-                />
+                <BackButton fallback={`/profile/${id}`} />
                 <h1 className="display text-5xl">{user.name}</h1>
             </header>
 
