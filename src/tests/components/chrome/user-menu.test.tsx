@@ -33,7 +33,7 @@ describe('UserMenu', () => {
         render(
             <UserMenu
                 id="u1"
-            name="Ada"
+                name="Ada"
                 image={null}
                 theme="dark"
             />
@@ -102,7 +102,7 @@ describe('UserMenu', () => {
         const { rerender } = render(
             <UserMenu
                 id="u1"
-            name="Ada"
+                name="Ada"
                 image={null}
                 theme="dark"
             />
@@ -114,7 +114,7 @@ describe('UserMenu', () => {
         rerender(
             <UserMenu
                 id="u1"
-            name="Ada"
+                name="Ada"
                 image="https://example.test/ada.png"
                 theme="dark"
             />
