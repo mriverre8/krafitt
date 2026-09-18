@@ -1,22 +1,7 @@
 import { ShareRoutineButton } from '@/components/routine/share-routine-button';
-import { renderWithLocale } from '@/tests/setup-helpers';
+import { renderWithLocale, withNavigator } from '@/tests/setup-helpers';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-/** jsdom has neither, so each test says which of the two the device offers. */
-function withNavigator(api: {
-    share?: (data: ShareData) => Promise<void>;
-    writeText?: (text: string) => Promise<void>;
-}) {
-    Object.defineProperty(navigator, 'share', {
-        value: api.share,
-        configurable: true,
-    });
-    Object.defineProperty(navigator, 'clipboard', {
-        value: api.writeText ? { writeText: api.writeText } : undefined,
-        configurable: true,
-    });
-}
 
 const button = () => screen.getByRole('button', { name: 'Share' });
 

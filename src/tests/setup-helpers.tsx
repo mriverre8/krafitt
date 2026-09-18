@@ -45,3 +45,19 @@ export async function declineConfirm() {
 
 /** A no-op form action, for forms whose submission is not under test. */
 export const noopAction = async () => ({});
+
+/** jsdom offers neither share sheet nor clipboard, so a share test says which
+    of the two the device it is standing in for has. */
+export function withNavigator(api: {
+    share?: (data: ShareData) => Promise<void>;
+    writeText?: (text: string) => Promise<void>;
+}) {
+    Object.defineProperty(navigator, 'share', {
+        value: api.share,
+        configurable: true,
+    });
+    Object.defineProperty(navigator, 'clipboard', {
+        value: api.writeText ? { writeText: api.writeText } : undefined,
+        configurable: true,
+    });
+}

@@ -11,6 +11,8 @@ export const es: Dict = {
     'common.delete': 'Borrar',
     'common.save': 'Guardar',
     'common.add': 'Añadir',
+    'common.share': 'Compartir',
+    'common.copied': 'Enlace copiado',
 
     'pagination.label': 'Paginación',
     'pagination.previous': 'Anterior',
@@ -216,8 +218,6 @@ export const es: Dict = {
     'routine.options': 'Opciones',
     'routine.rename': 'Cambiar nombre',
     'routine.by': 'Rutina de {name}',
-    'routine.share': 'Compartir',
-    'routine.copied': 'Enlace copiado',
     'routine.makePublic': 'Hacer pública',
     'routine.makePrivate': 'Hacer privada',
     'routine.emptyTitle': 'Esta rutina está vacía',

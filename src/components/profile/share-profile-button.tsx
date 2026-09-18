@@ -1,11 +1,11 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { badgeClass } from '@/lib/ui';
+import { ghostClass } from '@/lib/ui';
 import { useShare } from '@/hooks/use-share';
 import { Check, Share2 } from 'lucide-react';
 
-export function ShareRoutineButton({ name }: { name: string }) {
+export function ShareProfileButton({ name }: { name: string }) {
     const t = useT();
     const { copied, share } = useShare(name);
 
@@ -13,20 +13,18 @@ export function ShareRoutineButton({ name }: { name: string }) {
         <button
             type="button"
             onClick={share}
-            className={`${badgeClass} lift border-2 transition-colors ${
-                copied
-                    ? 'border-surge text-surge'
-                    : 'border-line text-muted hover:border-pulse hover:text-pulse'
+            className={`${ghostClass} flex w-full items-center justify-center gap-2 py-1.5! transition-colors md:py-2.5! ${
+                copied ? 'border-surge! text-surge!' : ''
             }`}
         >
             {copied ? (
                 <Check
-                    size={13}
+                    size={14}
                     aria-hidden
                 />
             ) : (
                 <Share2
-                    size={13}
+                    size={14}
                     aria-hidden
                 />
             )}

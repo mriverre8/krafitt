@@ -11,6 +11,8 @@ export const ca: Dict = {
     'common.loading': 'Carregant',
     'common.save': 'Desar',
     'common.add': 'Afegir',
+    'common.share': 'Compartir',
+    'common.copied': 'Enllaç copiat',
 
     'pagination.label': 'Paginació',
     'pagination.previous': 'Anterior',
@@ -216,8 +218,6 @@ export const ca: Dict = {
     'routine.options': 'Opcions',
     'routine.rename': 'Canviar el nom',
     'routine.by': 'Rutina de {name}',
-    'routine.share': 'Compartir',
-    'routine.copied': 'Enllaç copiat',
     'routine.makePublic': 'Fer pública',
     'routine.makePrivate': 'Fer privada',
     'routine.emptyTitle': 'Aquesta rutina està buida',

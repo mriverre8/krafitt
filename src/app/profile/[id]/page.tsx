@@ -1,5 +1,6 @@
 import { Avatar } from '@/components/ui/avatar';
 import { FollowButton } from '@/components/profile/follow-button';
+import { ShareProfileButton } from '@/components/profile/share-profile-button';
 import { TrainingYear } from '@/components/profile/training-year';
 import { RoutineCard } from '@/components/routine/routine-card';
 import { Pagination } from '@/components/ui/pagination';
@@ -111,7 +112,9 @@ export default async function ProfilePage({
                     </div>
                 </header>
 
-                {!me && (
+                {me ? (
+                    <ShareProfileButton name={user.name} />
+                ) : (
                     <FollowButton
                         userId={id}
                         following={following}

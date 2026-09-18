@@ -9,6 +9,8 @@ export const en = {
     'common.delete': 'Delete',
     'common.save': 'Save',
     'common.add': 'Add',
+    'common.share': 'Share',
+    'common.copied': 'Link copied',
 
     'pagination.label': 'Pagination',
     'pagination.previous': 'Previous',
@@ -214,8 +216,6 @@ export const en = {
     'routine.options': 'Options',
     'routine.rename': 'Rename routine',
     'routine.by': 'Routine by {name}',
-    'routine.share': 'Share',
-    'routine.copied': 'Link copied',
     'routine.makePublic': 'Make public',
     'routine.makePrivate': 'Make private',
     'routine.emptyTitle': 'This routine is empty',
