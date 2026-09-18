@@ -27,8 +27,9 @@ export const LOAD_SIZE = 50;
 /**
  * The app's other way through a list: everything from the top, growing by
  * `LOAD_SIZE` each time the button is pressed rather than swapping one page for
- * the next. The count still lives in the URL, so a reload keeps what was loaded
- * and the back button walks it down again.
+ * the next. The count still lives in the URL, so a reload keeps what was
+ * loaded, and the button replaces the history entry rather than stacking one
+ * per press: back leaves the list in one go.
  *
  * `next` is what the button asks for, or null once the list is all on screen.
  */
