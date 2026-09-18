@@ -478,3 +478,29 @@ export async function skipDay(routineId: string) {
     });
     revalidatePath('/');
 }
+
+// ---------- follows ----------
+
+/**
+ * Follow or unfollow someone. Both halves are written so they do not care what
+ * was there before: a second click on a stale button is a no-op rather than an
+ * error, and the composite key means the row can never be stored twice.
+ */
+export async function toggleFollow(userId: string, follow: boolean) {
+    const user = await requireUser();
+    if (userId === user.id) throw new Error((await getT())('error.followSelf'));
+
+    const pair = { followerId: user.id, followingId: userId };
+    if (follow)
+        await prisma.follow.upsert({
+            where: { followerId_followingId: pair },
+            create: pair,
+            update: {},
+        });
+    else await prisma.follow.deleteMany({ where: pair });
+
+    // Both profiles move — theirs gains a follower, yours gains a following —
+    // and so does any follows list either of them shows up in. The pattern
+    // covers the lot; naming the two ids would miss a third user's list.
+    revalidatePath('/profile/[id]', 'layout');
+}

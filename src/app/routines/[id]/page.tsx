@@ -34,6 +34,7 @@ import {
     workoutProblems,
 } from '@/lib/validate';
 import { CircleCheck, Flame } from 'lucide-react';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutinePage({
@@ -112,8 +113,9 @@ export default async function RoutinePage({
                 <div className="flex flex-wrap items-center gap-4">
                     {!owner ? (
                         <>
-                            <p
-                                className={`${badgeClass} border-line text-muted max-w-full border-2`}
+                            <Link
+                                href={`/profile/${routine.creatorId}`}
+                                className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse max-w-full border-2`}
                             >
                                 <Avatar
                                     name={routine.creator.name}
@@ -123,7 +125,7 @@ export default async function RoutinePage({
                                 {t('routine.by', {
                                     name: routine.creator.name,
                                 })}
-                            </p>
+                            </Link>
                             {!complete && (
                                 <p
                                     className={`${badgeClass} border-line text-muted border-2 border-dashed`}

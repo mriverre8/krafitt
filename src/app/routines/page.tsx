@@ -6,7 +6,7 @@ import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { paginate } from '@/lib/pagination';
 import { isRoutineFinished } from '@/lib/progress';
-import { countRoutines, myRoutines } from '@/lib/queries';
+import { countRoutines, routinesOf } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
@@ -22,7 +22,7 @@ export default async function RoutinesPage({
         getT(),
     ]);
     const { page, totalPages, skip, take } = paginate(asked, total);
-    const routines = await myRoutines(user.id, { skip, take });
+    const routines = await routinesOf(user.id, { skip, take });
 
     return (
         <div className="space-y-6">

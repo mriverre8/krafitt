@@ -20,3 +20,24 @@ export function paginate(value: string | string[] | undefined, total: number) {
 
     return { page, totalPages, skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE };
 }
+
+/** Rows a follows list starts with, and grows by. */
+export const LOAD_SIZE = 50;
+
+/**
+ * The app's other way through a list: everything from the top, growing by
+ * `LOAD_SIZE` each time the button is pressed rather than swapping one page for
+ * the next. The count still lives in the URL, so a reload keeps what was loaded
+ * and the back button walks it down again.
+ *
+ * `next` is what the button asks for, or null once the list is all on screen.
+ */
+export function loadMore(value: string | string[] | undefined, total: number) {
+    const asked = Number(Array.isArray(value) ? value[0] : value);
+    const shown = Math.min(
+        Number.isInteger(asked) ? Math.max(asked, LOAD_SIZE) : LOAD_SIZE,
+        total
+    );
+
+    return { shown, next: shown < total ? shown + LOAD_SIZE : null };
+}

@@ -17,6 +17,7 @@ beforeEach(() => {
 function openMenu(props: Partial<Parameters<typeof UserMenu>[0]> = {}) {
     render(
         <UserMenu
+            id="u1"
             name="Ada"
             image={null}
             theme="dark"
@@ -31,6 +32,7 @@ describe('UserMenu', () => {
     it('stays shut until the trigger is clicked', () => {
         render(
             <UserMenu
+                id="u1"
                 name="Ada"
                 image={null}
                 theme="dark"
@@ -99,6 +101,7 @@ describe('UserMenu', () => {
     it('wears the picture in the trigger once there is one', () => {
         const { rerender } = render(
             <UserMenu
+                id="u1"
                 name="Ada"
                 image={null}
                 theme="dark"
@@ -110,6 +113,7 @@ describe('UserMenu', () => {
 
         rerender(
             <UserMenu
+                id="u1"
                 name="Ada"
                 image="https://example.test/ada.png"
                 theme="dark"
@@ -122,6 +126,7 @@ describe('UserMenu', () => {
     it('truncates rather than lets a long name push the bar around', () => {
         render(
             <UserMenu
+                id="u1"
                 name={'Ada '.repeat(20)}
                 image={null}
                 theme="dark"

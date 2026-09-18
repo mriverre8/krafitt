@@ -111,6 +111,75 @@ export async function todayWorkout(userId: string) {
 }
 
 /**
+ * Who a profile is about: the header's name, picture, join date and the two
+ * follow counts. The counts come along rather than being counted separately
+ * because the follows page needs the same three numbers to draw its tabs and
+ * page its list.
+ */
+export function profileUser(userId: string) {
+    return prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            name: true,
+            image: true,
+            createdAt: true,
+            _count: { select: { followers: true, following: true } },
+        },
+    });
+}
+
+export type FollowTab = 'followers' | 'following';
+
+/** Which end of the row is the profile's owner: followers point at them. */
+const followSide = (userId: string, tab: FollowTab) =>
+    tab === 'followers' ? { followingId: userId } : { followerId: userId };
+
+export async function isFollowing(followerId: string, followingId: string) {
+    const follow = await prisma.follow.findUnique({
+        where: { followerId_followingId: { followerId, followingId } },
+        select: { followerId: true },
+    });
+    return follow !== null;
+}
+
+/**
+ * Which of these people the viewer already follows: one query for a whole page
+ * of rows rather than one per row.
+ */
+export async function followingAmong(followerId: string, ids: string[]) {
+    if (ids.length === 0) return new Set<string>();
+    const rows = await prisma.follow.findMany({
+        where: { followerId, followingId: { in: ids } },
+        select: { followingId: true },
+    });
+    return new Set(rows.map((r) => r.followingId));
+}
+
+/**
+ * One side of someone's follows, newest first.
+ *
+ * ponytail: both ends of the row are joined and one is thrown away, rather than
+ * branching the select on `tab`. One join's worth of waste for a query that
+ * always comes back the same shape; split it if a page of follows ever shows up
+ * slow.
+ */
+export async function followList(
+    userId: string,
+    tab: FollowTab,
+    page: { skip: number; take: number }
+) {
+    const person = { select: { id: true, name: true, image: true } };
+    const follows = await prisma.follow.findMany({
+        where: followSide(userId, tab),
+        orderBy: { createdAt: 'desc' },
+        ...page,
+        select: { follower: person, following: person },
+    });
+
+    return follows.map((f) => (tab === 'followers' ? f.follower : f.following));
+}
+
+/**
  * The list also carries the plan itself, so each card knows if it can go active.
  *
  * `page` cuts it down at the database rather than in the screen, because every
@@ -118,7 +187,7 @@ export async function todayWorkout(userId: string) {
  * the query is the whole list: the profile needs all of them to count what the
  * user has done.
  */
-export async function myRoutines(
+export async function routinesOf(
     userId: string,
     page?: { skip: number; take: number }
 ) {
