@@ -48,3 +48,19 @@ export function RoutineCardSkeleton({ accent = false }: { accent?: boolean }) {
         </div>
     );
 }
+
+export function FollowRowsSkeleton() {
+    return (
+        <ul className="space-y-3">
+            {[0, 1, 2].map((i) => (
+                <li
+                    key={i}
+                    className={`${cardClass} flex items-center gap-3 p-2! md:p-3!`}
+                >
+                    <Bar className="size-8 shrink-0 rounded-md! md:size-10" />
+                    <Bar className="h-7 w-40" />
+                </li>
+            ))}
+        </ul>
+    );
+}
