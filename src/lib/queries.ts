@@ -110,6 +110,14 @@ export async function todayWorkout(userId: string) {
     };
 }
 
+/** Name, picture and join date of any user: what a profile header shows. */
+export function profileUser(userId: string) {
+    return prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, image: true, createdAt: true },
+    });
+}
+
 /**
  * The list also carries the plan itself, so each card knows if it can go active.
  *
@@ -118,7 +126,7 @@ export async function todayWorkout(userId: string) {
  * the query is the whole list: the profile needs all of them to count what the
  * user has done.
  */
-export async function myRoutines(
+export async function routinesOf(
     userId: string,
     page?: { skip: number; take: number }
 ) {

@@ -20,6 +20,7 @@ describe('NavBar', () => {
     it('hides the app links when signed out', () => {
         render(
             <NavBar
+                userId={null}
                 userName={null}
                 userImage={null}
                 theme="dark"
@@ -39,6 +40,7 @@ describe('NavBar', () => {
     it('shows the app links when signed in', () => {
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"
@@ -58,6 +60,7 @@ describe('NavBar', () => {
     it('opens settings as a modal when signed out', () => {
         render(
             <NavBar
+                userId={null}
                 userName={null}
                 userImage={null}
                 theme="dark"
@@ -75,6 +78,7 @@ describe('NavBar', () => {
     it('puts every signed-in option in the user menu', () => {
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"
@@ -98,6 +102,7 @@ describe('NavBar', () => {
     it('lists the menu in navigation order', () => {
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"
@@ -114,6 +119,7 @@ describe('NavBar', () => {
     it('opens the settings modal from the user menu, and closes the menu', () => {
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"
@@ -134,6 +140,7 @@ describe('NavBar', () => {
         const { authClient } = await import('@/lib/auth-client');
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"
@@ -155,6 +162,7 @@ describe('NavBar', () => {
     it('wears the picture in the menu trigger when there is one', () => {
         const { rerender } = render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"
@@ -166,6 +174,7 @@ describe('NavBar', () => {
 
         rerender(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage="https://avatars.githubusercontent.com/u/1"
                 theme="dark"
@@ -178,6 +187,7 @@ describe('NavBar', () => {
     it('hands the modal the account it was opened for', () => {
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage="https://avatars.githubusercontent.com/u/1"
                 theme="dark"
@@ -196,6 +206,7 @@ describe('NavBar', () => {
     it('offers a single settings control, never one per breakpoint', () => {
         render(
             <NavBar
+                userId="u1"
                 userName="Ada"
                 userImage={null}
                 theme="dark"

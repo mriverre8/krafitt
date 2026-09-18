@@ -60,6 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                 >
                     <header className="border-line bg-bg/80 sticky top-0 z-20 border-b backdrop-blur-md">
                         <NavBar
+                            userId={user?.id ?? null}
                             userName={user?.name ?? null}
                             userImage={user?.image ?? null}
                             theme={theme}

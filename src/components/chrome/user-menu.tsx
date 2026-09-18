@@ -12,10 +12,12 @@ import { menuItemClass as itemClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 
 export function UserMenu({
+    id,
     name,
     image,
     theme,
 }: {
+    id: string;
     name: string;
     image: string | null;
     theme: Theme;
@@ -71,7 +73,7 @@ export function UserMenu({
                         {t('nav.routines')}
                     </Link>
                     <Link
-                        href="/profile"
+                        href={`/profile/${id}`}
                         onClick={close}
                         className={itemClass}
                     >

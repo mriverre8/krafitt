@@ -4,6 +4,7 @@ import {
     isSessionComplete,
     isSetEnabled,
     positionFromCursor,
+    profileRoutines,
     setTrend,
     weekState,
     type Logs,
@@ -117,6 +118,41 @@ describe('isRoutineLocked', () => {
     // the cursor never moved, but those sets point at these exercises.
     it('locks one that was left behind with sets logged against it', () => {
         expect(isRoutineLocked({ ...shelved, sessionCount: 1 })).toBe(true);
+    });
+});
+
+describe('profileRoutines', () => {
+    const routine = (id: string, extra: Record<string, boolean> = {}) => ({
+        id,
+        isActive: false,
+        isPublic: false,
+        finished: false,
+        ...extra,
+    });
+
+    const active = routine('active', { isActive: true });
+    const publicActive = routine('active', { isActive: true, isPublic: true });
+    const done = routine('done', { isPublic: true, finished: true });
+    const quiet = routine('quiet', { finished: true });
+    const shared = routine('shared', { isPublic: true });
+
+    it('shows me my own active routine even when it is private', () => {
+        expect(profileRoutines([active, done], true).active).toBe(active);
+    });
+
+    it('hides a private active routine from a visitor', () => {
+        expect(profileRoutines([active, done], false).active).toBeUndefined();
+        expect(profileRoutines([publicActive], false).active).toBe(
+            publicActive
+        );
+    });
+
+    it('lists the finished routines that were shared, and nothing else', () => {
+        const { published } = profileRoutines(
+            [done, quiet, shared, publicActive],
+            true
+        );
+        expect(published.map((r) => r.id)).toEqual(['done']);
     });
 });
 

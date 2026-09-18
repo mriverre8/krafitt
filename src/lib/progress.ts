@@ -98,6 +98,25 @@ export function isRoutineLocked(routine: {
     return routine.isActive || routine.cursor > 0 || routine.sessionCount > 0;
 }
 
+/**
+ * What a profile shows of someone's routines: the one being trained, and the
+ * list underneath it.
+ *
+ * A visitor only sees the active routine if its owner shared it; on your own
+ * profile it is always there. The list is the plans that were shared and seen
+ * through to the end — which is why it never repeats the active one.
+ */
+export function profileRoutines<
+    T extends { isActive: boolean; isPublic: boolean; finished: boolean },
+>(routines: T[], me: boolean) {
+    const active = routines.find((r) => r.isActive && !r.finished);
+
+    return {
+        active: active && (me || active.isPublic) ? active : undefined,
+        published: routines.filter((r) => r.isPublic && r.finished),
+    };
+}
+
 /** Every set of the workout, in the order they must be filled in. */
 export function flatSets(exercises: ExercisePlan[]): FlatSet[] {
     return exercises.flatMap((e, exerciseIndex) =>

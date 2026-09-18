@@ -5,33 +5,40 @@ import { Pagination } from '@/components/ui/pagination';
 import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { paginate } from '@/lib/pagination';
-import { isRoutineFinished } from '@/lib/progress';
-import { myRoutines, trainingDays } from '@/lib/queries';
+import { isRoutineFinished, profileRoutines } from '@/lib/progress';
+import { profileUser, routinesOf, trainingDays } from '@/lib/queries';
 import { dayKey, utc } from '@/lib/training-year';
 import { cardClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 const emptyClass =
     'border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm';
 
 export default async function ProfilePage({
+    params,
     searchParams,
-}: PageProps<'/profile'>) {
-    const user = await currentUser();
-    if (!user) redirect('/');
+}: PageProps<'/profile/[id]'>) {
+    const viewer = await currentUser();
+    if (!viewer) redirect('/');
 
     const today = new Date();
     const end = dayKey(today);
     const yearStart = new Date(utc(today.getUTCFullYear(), 0, 1));
-    const [{ finished: askedPage }, routines, days, t, locale] =
-        await Promise.all([
-            searchParams,
-            myRoutines(user.id),
-            trainingDays(user.id, yearStart),
-            getT(),
-            getLocale(),
-        ]);
+    const [{ id }, { page: askedPage }, t, locale] = await Promise.all([
+        params,
+        searchParams,
+        getT(),
+        getLocale(),
+    ]);
+    const [user, routines, days] = await Promise.all([
+        profileUser(id),
+        routinesOf(id),
+        trainingDays(id, yearStart),
+    ]);
+    if (!user) notFound();
+
+    const me = id === viewer.id;
 
     const summaries = routines.map((routine) => ({
         id: routine.id,
@@ -40,6 +47,7 @@ export default async function ProfilePage({
         workoutCount: routine._count.workouts,
         cursor: routine.cursor,
         isActive: routine.isActive,
+        isPublic: routine.isPublic,
         finished: isRoutineFinished(
             routine.cursor,
             routine._count.workouts,
@@ -48,13 +56,12 @@ export default async function ProfilePage({
         canActivate: isRoutineComplete(routine, t),
     }));
 
-    const active = summaries.find((r) => r.isActive && !r.finished);
-
-    const finished = summaries.filter((r) => r.finished);
+    const { active, published } = profileRoutines(summaries, me);
     const { page, totalPages, skip, take } = paginate(
         askedPage,
-        finished.length
+        published.length
     );
+
     const workoutsDone = summaries.reduce(
         (sum, r) => sum + Math.min(r.cursor, r.workoutCount * r.durationWeeks),
         0
@@ -94,25 +101,27 @@ export default async function ProfilePage({
                 end={end}
             />
 
-            <section className="space-y-3">
-                <h2 className="eyebrow text-muted">
-                    {t('profile.activeTitle')}
-                </h2>
-                {active ? (
-                    <RoutineCard {...active} />
-                ) : (
-                    <p className={emptyClass}>{t('home.noRoutineTitle')}</p>
-                )}
-            </section>
+            {(me || active) && (
+                <section className="space-y-3">
+                    <h2 className="eyebrow text-muted">
+                        {t('profile.activeTitle')}
+                    </h2>
+                    {active ? (
+                        <RoutineCard {...active} />
+                    ) : (
+                        <p className={emptyClass}>{t('profile.noActive')}</p>
+                    )}
+                </section>
+            )}
 
             <section className="space-y-3">
                 <h2 className="eyebrow text-muted">
-                    {t('profile.finishedTitle')}
+                    {t('profile.publicTitle')}
                 </h2>
-                {finished.length > 0 ? (
+                {published.length > 0 ? (
                     <>
                         <ul className="space-y-3">
-                            {finished
+                            {published
                                 .slice(skip, skip + take)
                                 .map((routine) => (
                                     <li key={routine.id}>
@@ -123,11 +132,10 @@ export default async function ProfilePage({
                         <Pagination
                             page={page}
                             totalPages={totalPages}
-                            param="finished"
                         />
                     </>
                 ) : (
-                    <p className={emptyClass}>{t('profile.noFinished')}</p>
+                    <p className={emptyClass}>{t('profile.noPublic')}</p>
                 )}
             </section>
         </div>

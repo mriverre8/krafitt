@@ -14,16 +14,18 @@ const linkClass =
     'text-muted transition-colors hover:text-pulse';
 
 export function NavBar({
+    userId,
     userName,
     userImage,
     theme,
 }: {
+    userId: string | null;
     userName: string | null;
     userImage: string | null;
     theme: Theme;
 }) {
     const t = useT();
-    const signedIn = userName !== null;
+    const signedIn = userId !== null && userName !== null;
 
     return (
         <nav className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
@@ -61,8 +63,9 @@ export function NavBar({
                     </div>
                 )}
 
-                {userName !== null ? (
+                {signedIn ? (
                     <UserMenu
+                        id={userId}
                         name={userName}
                         image={userImage}
                         theme={theme}
