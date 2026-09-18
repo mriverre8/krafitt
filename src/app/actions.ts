@@ -112,6 +112,25 @@ export async function deactivateRoutine(routineId: string) {
     revalidatePath('/routines');
 }
 
+/**
+ * Sharing is a read grant and nothing more: public only ever opens the plan to
+ * whoever holds the id. Editing, activating and the logs stay with the owner,
+ * which is why nothing else in here had to change.
+ */
+export async function setRoutineVisibility(
+    routineId: string,
+    isPublic: boolean
+) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+
+    await prisma.routine.update({
+        where: { id: routineId },
+        data: { isPublic },
+    });
+    revalidatePath(`/routines/${routineId}`);
+}
+
 export async function renameRoutine(
     routineId: string,
     _previous: FormState,

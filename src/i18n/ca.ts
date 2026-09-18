@@ -207,6 +207,11 @@ export const ca: Dict = {
     'routine.addDayTitle': 'Afegir dia',
     'routine.options': 'Opcions',
     'routine.rename': 'Canviar el nom',
+    'routine.by': 'Rutina de {name}',
+    'routine.share': 'Compartir',
+    'routine.copied': 'Enllaç copiat',
+    'routine.makePublic': 'Fer pública',
+    'routine.makePrivate': 'Fer privada',
     'routine.emptyTitle': 'Aquesta rutina està buida',
     'routine.emptyBody':
         'Un dia per cada sessió de la setmana, i dins de cadascun els seus exercicis amb les sèries que toca. Quan no falti res podràs activar-la i entrenar.',

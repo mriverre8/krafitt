@@ -222,8 +222,7 @@ export async function routineDetail(routineId: string) {
     return prisma.routine.findUnique({
         where: { id: routineId },
         include: {
-            // What tells a routine that was activated and left alone from one
-            // whose first day is half logged: both sit on cursor 0.
+            creator: { select: { name: true, image: true } },
             _count: { select: { sessions: true } },
             workouts: {
                 orderBy: { order: 'asc' },

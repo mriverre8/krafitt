@@ -205,6 +205,11 @@ export const en = {
     'routine.addDayTitle': 'Add day',
     'routine.options': 'Options',
     'routine.rename': 'Rename routine',
+    'routine.by': 'Routine by {name}',
+    'routine.share': 'Share',
+    'routine.copied': 'Link copied',
+    'routine.makePublic': 'Make public',
+    'routine.makePrivate': 'Make private',
     'routine.emptyTitle': 'This routine is empty',
     'routine.emptyBody':
         'One day for each session of the week, and inside each one the exercises with the sets they ask for. Once nothing is missing you can make it active and train it.',

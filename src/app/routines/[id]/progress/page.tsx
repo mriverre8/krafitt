@@ -1,7 +1,6 @@
 import { BackButton } from '@/components/ui/back-button';
 import { RoutineHistory } from '@/components/history/routine-history';
 import { getT } from '@/i18n/server';
-import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { routineHistory } from '@/lib/queries';
 import { notFound, redirect } from 'next/navigation';
@@ -13,12 +12,13 @@ export default async function RoutineProgressPage({
     const user = await currentUser();
     if (!user) redirect('/');
 
-    await requireRoutine(id, user.id);
     const [history, t] = await Promise.all([
         routineHistory(id, user.id),
         getT(),
     ]);
-    if (!history) notFound();
+    // Sharing a routine shares the plan, never the log: this page stays the
+    // owner's, and to anyone else the address simply does not exist.
+    if (!history || history.routine.creatorId !== user.id) notFound();
 
     const { routine, byDay } = history;
 
