@@ -4,7 +4,9 @@ import { isRoutineLocked } from './progress';
 
 /**
  * The single place permissions are checked: every server action goes through it.
- * A routine belongs to whoever created it, so access is all or nothing.
+ * A routine belongs to whoever created it, so writing is all or nothing —
+ * sharing it public grants reading and nothing more, which is why nothing here
+ * knows about `isPublic`. The pages that only read do that check themselves.
  */
 export async function requireRoutine(routineId: string, userId: string) {
     const t = await getT();

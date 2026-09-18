@@ -11,13 +11,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderWithLocale, withModals } from '@/tests/setup-helpers';
 
 /** The header of the routine page, which is the only thing that renders the
-    menu — and only out of edit mode. */
+    menu — and only out of edit mode, and only for the owner. */
 function setup({
     rename = vi.fn<FormAction>(async () => ({ ok: true })),
     onDelete = vi.fn(async () => {}),
+    setVisibility = vi.fn(async () => {}),
     /** As the page passes them: no rename once finished, no edit once locked. */
     finished = false,
     editable = true,
+    isPublic = false,
 } = {}) {
     renderWithLocale(
         withModals(
@@ -28,6 +30,8 @@ function setup({
                         rename={finished ? undefined : rename}
                         onDelete={onDelete}
                         editable={editable}
+                        isPublic={isPublic}
+                        setVisibility={setVisibility}
                     />
                 </WhenNotEditing>
                 <WhenEditing>
@@ -36,7 +40,7 @@ function setup({
             </EditModeProvider>
         )
     );
-    return { rename, onDelete };
+    return { rename, onDelete, setVisibility };
 }
 
 const options = () => screen.getByRole('button', { name: 'Options' });
@@ -60,14 +64,33 @@ describe('RoutineOptions', () => {
         expect(screen.queryByText('Edit')).not.toBeInTheDocument();
     });
 
-    it('drops the menu entirely once only delete is left', () => {
+    it('still offers to share a routine that is finished and locked', () => {
         setup({ finished: true, editable: false });
+        fireEvent.click(options());
 
-        // Finished: nothing to rename and nothing to edit, so no trigger to
-        // open — the one move that is left stands on its own.
-        expect(screen.queryByRole('button', { name: 'Options' })).toBeNull();
+        // A finished block is the one most worth passing on, so sharing
+        // outlives both renaming and editing.
         expect(screen.queryByText('Rename routine')).not.toBeInTheDocument();
+        expect(screen.queryByText('Edit')).not.toBeInTheDocument();
+        expect(screen.getByText('Make public')).toBeInTheDocument();
         expect(screen.getByText('Delete routine')).toBeInTheDocument();
+    });
+
+    it('shares a private routine from the menu', async () => {
+        const { setVisibility } = setup();
+        fireEvent.click(options());
+        fireEvent.click(screen.getByText('Make public'));
+
+        await waitFor(() => expect(setVisibility).toHaveBeenCalledWith(true));
+    });
+
+    it('offers the way back once it is public', async () => {
+        const { setVisibility } = setup({ isPublic: true });
+        fireEvent.click(options());
+        expect(screen.queryByText('Make public')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText('Make private'));
+
+        await waitFor(() => expect(setVisibility).toHaveBeenCalledWith(false));
     });
 
     it('gives way to a bare Done once editing', () => {

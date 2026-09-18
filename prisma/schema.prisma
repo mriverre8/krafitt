@@ -73,6 +73,7 @@ model Routine {
   creator       User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
   isActive      Boolean  @default(false)
+  isPublic      Boolean  @default(false)
   cursor        Int      @default(0)
 
   workouts Workout[]

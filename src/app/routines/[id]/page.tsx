@@ -7,6 +7,7 @@ import {
     renameWorkout,
     saveExercises,
     setActiveRoutine,
+    setRoutineVisibility,
 } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
 import {
@@ -20,8 +21,9 @@ import { EmptyRoutine } from '@/components/routine/empty-routine';
 import { HistoryLink } from '@/components/ui/history-link';
 import { RoutineDays } from '@/components/routine/routine-days';
 import { RoutineOptions } from '@/components/routine/routine-options';
+import { ShareRoutineButton } from '@/components/routine/share-routine-button';
+import { Avatar } from '@/components/ui/avatar';
 import { getT } from '@/i18n/server';
-import { requireRoutine } from '@/lib/access';
 import { currentUser } from '@/lib/auth';
 import { isRoutineFinished, isRoutineLocked } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
@@ -41,9 +43,11 @@ export default async function RoutinePage({
     const user = await currentUser();
     if (!user) redirect('/');
 
-    await requireRoutine(id, user.id);
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
     if (!routine) notFound();
+
+    const owner = routine.creatorId === user.id;
+    if (!owner && !routine.isPublic) notFound();
 
     const complete = isRoutineComplete(routine, t);
     const finished = isRoutineFinished(
@@ -56,7 +60,8 @@ export default async function RoutinePage({
         sessionCount: routine._count.sessions,
     });
 
-    const addDay = locked ? undefined : addWorkoutTo.bind(null, routine.id);
+    const addDay =
+        locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
 
     return (
         <EditModeProvider>
@@ -71,34 +76,63 @@ export default async function RoutinePage({
                                 days: routine.workouts.length,
                             })}
                         </p>
-                        <div className="flex shrink-0 items-center gap-4">
-                            <WhenNotEditing>
-                                <RoutineOptions
-                                    name={routine.name}
-                                    rename={
-                                        finished
-                                            ? undefined
-                                            : renameRoutine.bind(
-                                                  null,
-                                                  routine.id
-                                              )
-                                    }
-                                    onDelete={deleteRoutine.bind(
-                                        null,
-                                        routine.id
-                                    )}
-                                    editable={!locked}
-                                />
-                            </WhenNotEditing>
-                            <WhenEditing>
-                                <EditModeToggle />
-                            </WhenEditing>
-                        </div>
+                        {owner && (
+                            <div className="flex shrink-0 items-center gap-4">
+                                <WhenNotEditing>
+                                    <RoutineOptions
+                                        name={routine.name}
+                                        rename={
+                                            finished
+                                                ? undefined
+                                                : renameRoutine.bind(
+                                                      null,
+                                                      routine.id
+                                                  )
+                                        }
+                                        onDelete={deleteRoutine.bind(
+                                            null,
+                                            routine.id
+                                        )}
+                                        editable={!locked}
+                                        isPublic={routine.isPublic}
+                                        setVisibility={setRoutineVisibility.bind(
+                                            null,
+                                            routine.id
+                                        )}
+                                    />
+                                </WhenNotEditing>
+                                <WhenEditing>
+                                    <EditModeToggle />
+                                </WhenEditing>
+                            </div>
+                        )}
                     </div>
                 </header>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    {finished ? (
+                    {!owner ? (
+                        <>
+                            <p
+                                className={`${badgeClass} border-line text-muted max-w-full border-2`}
+                            >
+                                <Avatar
+                                    name={routine.creator.name}
+                                    src={routine.creator.image}
+                                    className="size-[13.2px] text-[8px] md:size-[15.6px] md:text-[9px]"
+                                />
+                                {t('routine.by', {
+                                    name: routine.creator.name,
+                                })}
+                            </p>
+                            {!complete && (
+                                <p
+                                    className={`${badgeClass} border-line text-muted border-2 border-dashed`}
+                                >
+                                    {t('routines.incomplete')}
+                                </p>
+                            )}
+                        </>
+                    ) : finished ? (
                         <p
                             className={`${badgeClass} border-surge text-surge border-2`}
                         >
@@ -159,7 +193,12 @@ export default async function RoutinePage({
                             </WhenNotEditing>
                         </>
                     )}
-                    {locked && <HistoryLink routineId={routine.id} />}
+                    {owner && routine.isPublic && (
+                        <WhenNotEditing>
+                            <ShareRoutineButton name={routine.name} />
+                        </WhenNotEditing>
+                    )}
+                    {owner && locked && <HistoryLink routineId={routine.id} />}
                 </div>
                 {routine.workouts.length === 0 && (
                     <EmptyRoutine addDay={addDay} />

@@ -4,31 +4,28 @@ import { useT } from '@/i18n/use-t';
 import type { FormAction } from '@/lib/forms';
 import { labelClass, menuDangerClass, menuItemClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
+import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { EditModeToggle } from '@/components/routine/edit-mode';
-import { Ellipsis, Type } from 'lucide-react';
+import { Ellipsis, Globe, Lock, Type } from 'lucide-react';
 
 export function RoutineOptions({
     name,
     rename,
     onDelete,
     editable,
+    isPublic,
+    setVisibility,
 }: {
     name: string;
     rename?: FormAction;
     onDelete: () => Promise<unknown>;
     editable: boolean;
+    isPublic: boolean;
+    setVisibility: (isPublic: boolean) => Promise<unknown>;
 }) {
     const t = useT();
-
-    if (!rename && !editable)
-        return (
-            <DeleteRoutineButton
-                name={name}
-                onDelete={onDelete}
-            />
-        );
 
     return (
         <Dropdown
@@ -73,6 +70,30 @@ export function RoutineOptions({
                             onClick={close}
                         />
                     )}
+                    <ActionButton
+                        action={async () => {
+                            close();
+                            await setVisibility(!isPublic);
+                        }}
+                        className={menuItemClass}
+                    >
+                        {isPublic ? (
+                            <Lock
+                                size={14}
+                                aria-hidden
+                            />
+                        ) : (
+                            <Globe
+                                size={14}
+                                aria-hidden
+                            />
+                        )}
+                        {t(
+                            isPublic
+                                ? 'routine.makePrivate'
+                                : 'routine.makePublic'
+                        )}
+                    </ActionButton>
                     <DeleteRoutineButton
                         name={name}
                         onDelete={onDelete}
