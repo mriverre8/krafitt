@@ -1,3 +1,5 @@
+import { toggleFollow } from '@/app/actions';
+import { ActionButton } from '@/components/ui/action-button';
 import { Avatar } from '@/components/ui/avatar';
 import { TrainingYear } from '@/components/profile/training-year';
 import { RoutineCard } from '@/components/routine/routine-card';
@@ -6,10 +8,16 @@ import { getLocale, getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { paginate } from '@/lib/pagination';
 import { isRoutineFinished, profileRoutines } from '@/lib/progress';
-import { profileUser, routinesOf, trainingDays } from '@/lib/queries';
+import {
+    isFollowing,
+    profileUser,
+    routinesOf,
+    trainingDays,
+} from '@/lib/queries';
 import { dayKey, utc } from '@/lib/training-year';
-import { cardClass } from '@/lib/ui';
+import { cardClass, ghostClass, primaryClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 const emptyClass =
@@ -31,14 +39,14 @@ export default async function ProfilePage({
         getT(),
         getLocale(),
     ]);
-    const [user, routines, days] = await Promise.all([
+    const me = id === viewer.id;
+    const [user, routines, days, following] = await Promise.all([
         profileUser(id),
         routinesOf(id),
         trainingDays(id, yearStart),
+        me ? false : isFollowing(viewer.id, id),
     ]);
     if (!user) notFound();
-
-    const me = id === viewer.id;
 
     const summaries = routines.map((routine) => ({
         id: routine.id,
@@ -62,11 +70,6 @@ export default async function ProfilePage({
         published.length
     );
 
-    const workoutsDone = summaries.reduce(
-        (sum, r) => sum + Math.min(r.cursor, r.workoutCount * r.durationWeeks),
-        0
-    );
-
     const memberSince = new Intl.DateTimeFormat(locale, {
         month: 'long',
         year: 'numeric',
@@ -74,27 +77,66 @@ export default async function ProfilePage({
 
     return (
         <div className="space-y-6">
-            <header className={`${cardClass} flex items-center gap-4`}>
-                <Avatar
-                    name={user.name}
-                    src={user.image}
-                    className="size-16 text-2xl md:size-20 md:text-3xl"
-                />
-                <div className="min-w-0">
-                    <h1 className="display truncate text-4xl md:text-5xl">
-                        {user.name}
-                    </h1>
-                    <p className="eyebrow text-muted mt-1.5">
-                        {t('profile.memberSince', { date: memberSince })}
-                    </p>
-                    <p className="figure text-muted mt-2 text-sm">
-                        {t('profile.stats', {
-                            routines: summaries.length,
-                            workouts: workoutsDone,
-                        })}
-                    </p>
-                </div>
-            </header>
+            <div className="space-y-4">
+                <header className={`${cardClass} flex items-center gap-4`}>
+                    <Avatar
+                        name={user.name}
+                        src={user.image}
+                        className="size-16 text-2xl md:size-20 md:text-3xl"
+                    />
+                    <div className="min-w-0">
+                        <h1 className="display truncate text-4xl md:text-5xl">
+                            {user.name}
+                        </h1>
+                        <p className="eyebrow text-muted mt-1.5">
+                            {t('profile.memberSince', { date: memberSince })}
+                        </p>
+                        <p className="figure text-muted mt-2 flex flex-wrap gap-x-4 text-sm">
+                            <Link
+                                href={`/profile/${id}/follows`}
+                                className="hover:text-pulse transition-colors"
+                            >
+                                {t('profile.followers', {
+                                    count: user._count.followers,
+                                })}
+                            </Link>
+                            <Link
+                                href={`/profile/${id}/follows?tab=following`}
+                                className="hover:text-pulse transition-colors"
+                            >
+                                {t('profile.following', {
+                                    count: user._count.following,
+                                })}
+                            </Link>
+                        </p>
+                    </div>
+                </header>
+
+                {!me && (
+                    <ActionButton
+                        action={toggleFollow.bind(null, id, !following)}
+                        className={`${
+                            following
+                                ?
+                                  `${ghostClass} `
+                                : `${primaryClass} text-base!`
+                        } group block w-full py-1.5! md:py-2.5!`}
+                    >
+                        {following ? (
+                            <>
+                                <span className="group-hover:hidden group-focus-visible:hidden">
+                                    {t('profile.followed')}
+                                </span>
+                                <span className="hidden group-hover:inline group-focus-visible:inline">
+                                    {t('profile.unfollow')}
+                                </span>
+                            </>
+                        ) : (
+                            t('profile.follow')
+                        )}
+                    </ActionButton>
+                )}
+            </div>
 
             <TrainingYear
                 days={days}

@@ -22,6 +22,8 @@ model User {
   accounts        Account[]
   routines        Routine[]
   workoutSessions WorkoutSession[]
+  followers       Follow[]         @relation("followers")
+  following       Follow[]         @relation("following")
 }
 
 model Session {
@@ -63,6 +65,17 @@ model Verification {
 }
 
 // ---------- Krafitt ----------
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
 
 /// A routine belongs to a single user: isActive and cursor are that user's progress.
 model Routine {

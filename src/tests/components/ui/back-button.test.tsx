@@ -48,6 +48,21 @@ describe('BackButton', () => {
         expect(back).not.toHaveBeenCalled();
     });
 
+    // The follows tabs each leave a step behind, so back() would walk through
+    // the tabs instead of leaving the page.
+    it('goes straight to the fallback when told to skip history', () => {
+        setHistoryLength(3);
+        renderWithLocale(
+            <BackButton
+                fallback="/profile/ada"
+                skipHistory
+            />
+        );
+        fireEvent.click(screen.getByRole('button'));
+        expect(push).toHaveBeenCalledWith('/profile/ada');
+        expect(back).not.toHaveBeenCalled();
+    });
+
     it('labels itself in the active locale', () => {
         renderWithLocale(<BackButton fallback="/routines" />, 'es');
         expect(screen.getByRole('button')).toHaveTextContent('Volver');

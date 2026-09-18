@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 
 export function BackButton({
     fallback,
+    skipHistory = false,
     onBack,
 }: {
     fallback: string;
+    skipHistory?: boolean;
     onBack?: () => void;
 }) {
     const t = useT();
@@ -21,7 +23,7 @@ export function BackButton({
             onClick={() =>
                 onBack
                     ? onBack()
-                    : window.history.length > 1
+                    : !skipHistory && window.history.length > 1
                       ? router.back()
                       : router.push(fallback)
             }
