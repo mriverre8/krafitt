@@ -1,6 +1,5 @@
-import { toggleFollow } from '@/app/actions';
-import { ActionButton } from '@/components/ui/action-button';
 import { Avatar } from '@/components/ui/avatar';
+import { FollowButton } from '@/components/profile/follow-button';
 import { TrainingYear } from '@/components/profile/training-year';
 import { RoutineCard } from '@/components/routine/routine-card';
 import { Pagination } from '@/components/ui/pagination';
@@ -15,7 +14,7 @@ import {
     trainingDays,
 } from '@/lib/queries';
 import { dayKey, utc } from '@/lib/training-year';
-import { cardClass, ghostClass, primaryClass } from '@/lib/ui';
+import { cardClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
@@ -113,28 +112,11 @@ export default async function ProfilePage({
                 </header>
 
                 {!me && (
-                    <ActionButton
-                        action={toggleFollow.bind(null, id, !following)}
-                        className={`${
-                            following
-                                ?
-                                  `${ghostClass} `
-                                : `${primaryClass} text-base!`
-                        } group block w-full py-1.5! md:py-2.5!`}
-                    >
-                        {following ? (
-                            <>
-                                <span className="group-hover:hidden group-focus-visible:hidden">
-                                    {t('profile.followed')}
-                                </span>
-                                <span className="hidden group-hover:inline group-focus-visible:inline">
-                                    {t('profile.unfollow')}
-                                </span>
-                            </>
-                        ) : (
-                            t('profile.follow')
-                        )}
-                    </ActionButton>
+                    <FollowButton
+                        userId={id}
+                        following={following}
+                        className="block w-full md:py-2.5!"
+                    />
                 )}
             </div>
 

@@ -143,6 +143,19 @@ export async function isFollowing(followerId: string, followingId: string) {
 }
 
 /**
+ * Which of these people the viewer already follows: one query for a whole page
+ * of rows rather than one per row.
+ */
+export async function followingAmong(followerId: string, ids: string[]) {
+    if (ids.length === 0) return new Set<string>();
+    const rows = await prisma.follow.findMany({
+        where: { followerId, followingId: { in: ids } },
+        select: { followingId: true },
+    });
+    return new Set(rows.map((r) => r.followingId));
+}
+
+/**
  * One side of someone's follows, newest first.
  *
  * ponytail: both ends of the row are joined and one is thrown away, rather than

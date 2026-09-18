@@ -172,6 +172,7 @@ export const ca: Dict = {
     'profile.unfollow': 'Deixar de seguir',
     'follows.noFollowers': 'Sense seguidors encara.',
     'follows.noFollowing': 'Sense seguits encara.',
+    'follows.loadMore': 'Carregar-ne més',
     'profile.activeTitle': 'Rutina activa',
     'profile.noActive': 'Sense rutina activa',
     'profile.publicTitle': 'Rutines públiques',

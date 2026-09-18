@@ -1,11 +1,16 @@
 import { BackButton } from '@/components/ui/back-button';
+import { FollowButton } from '@/components/profile/follow-button';
 import { Avatar } from '@/components/ui/avatar';
-import { Pagination } from '@/components/ui/pagination';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { paginate } from '@/lib/pagination';
-import { followList, profileUser, type FollowTab } from '@/lib/queries';
-import { cardLinkClass } from '@/lib/ui';
+import { loadMore } from '@/lib/pagination';
+import {
+    followList,
+    followingAmong,
+    profileUser,
+    type FollowTab,
+} from '@/lib/queries';
+import { cardClass, ghostClass } from '@/lib/ui';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
@@ -28,11 +33,12 @@ export default async function FollowsPage({
     const user = await profileUser(id);
     if (!user) notFound();
 
-    const { page, totalPages, skip, take } = paginate(
-        query.page,
-        user._count[tab]
+    const { shown, next } = loadMore(query.shown, user._count[tab]);
+    const people = await followList(id, tab, { skip: 0, take: shown });
+    const followed = await followingAmong(
+        viewer.id,
+        people.map((person) => person.id)
     );
-    const people = await followList(id, tab, { skip, take });
 
     return (
         <div className="space-y-6">
@@ -51,6 +57,7 @@ export default async function FollowsPage({
                         <Link
                             key={name}
                             href={`/profile/${id}/follows?tab=${name}`}
+                            replace
                             scroll={false}
                             aria-current={selected ? 'page' : undefined}
                             className={`font-display -mb-0.5 border-b-2 pb-2 text-sm font-bold tracking-wide uppercase transition-colors ${
@@ -69,27 +76,44 @@ export default async function FollowsPage({
                 <>
                     <ul className="space-y-3">
                         {people.map((person) => (
-                            <li key={person.id}>
+                            <li
+                                key={person.id}
+                                className={`${cardClass} flex items-center gap-3 p-2! md:p-3!`}
+                            >
                                 <Link
                                     href={`/profile/${person.id}`}
-                                    className={`${cardLinkClass} flex items-center gap-3`}
+                                    className="hover:text-pulse flex min-w-0 flex-1 items-center gap-3 transition-colors"
                                 >
                                     <Avatar
                                         name={person.name}
                                         src={person.image}
-                                        className="size-10 text-base"
+                                        className="size-8 text-sm md:size-10 md:text-base"
                                     />
-                                    <span className="display truncate text-2xl">
+                                    <span className="display truncate text-xl md:text-2xl">
                                         {person.name}
                                     </span>
                                 </Link>
+                                {person.id !== viewer.id && (
+                                    <FollowButton
+                                        userId={person.id}
+                                        following={followed.has(person.id)}
+                                        compact
+                                        className="shrink-0"
+                                    />
+                                )}
                             </li>
                         ))}
                     </ul>
-                    <Pagination
-                        page={page}
-                        totalPages={totalPages}
-                    />
+                    {next && (
+                        <Link
+                            href={`/profile/${id}/follows?tab=${tab}&shown=${next}`}
+                            replace
+                            scroll={false}
+                            className={`${ghostClass} block w-full text-center`}
+                        >
+                            {t('follows.loadMore')}
+                        </Link>
+                    )}
                 </>
             ) : (
                 <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">

@@ -499,6 +499,8 @@ export async function toggleFollow(userId: string, follow: boolean) {
         });
     else await prisma.follow.deleteMany({ where: pair });
 
-    revalidatePath(`/profile/${userId}`, 'layout');
-    revalidatePath(`/profile/${user.id}`, 'layout');
+    // Both profiles move — theirs gains a follower, yours gains a following —
+    // and so does any follows list either of them shows up in. The pattern
+    // covers the lot; naming the two ids would miss a third user's list.
+    revalidatePath('/profile/[id]', 'layout');
 }

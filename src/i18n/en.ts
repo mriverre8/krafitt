@@ -170,6 +170,7 @@ export const en = {
     'profile.unfollow': 'Unfollow',
     'follows.noFollowers': 'No followers yet.',
     'follows.noFollowing': 'Not following anyone yet.',
+    'follows.loadMore': 'Load more',
     'profile.activeTitle': 'Active routine',
     'profile.noActive': 'No active routine',
     'profile.publicTitle': 'Public routines',
