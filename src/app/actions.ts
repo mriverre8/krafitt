@@ -22,6 +22,7 @@ import { isRepMode } from '@/lib/reps';
 import { isSetKind, readSetValue } from '@/lib/sets';
 import type { DayState, FormState } from '@/lib/forms';
 import {
+    currentWeek,
     isRoutineFinished,
     isSessionComplete,
     isSetEnabled,
@@ -36,6 +37,9 @@ const str = (data: FormData, key: string) => String(data.get(key) ?? '').trim();
 const int = (data: FormData, key: string) =>
     Number.parseInt(String(data.get(key) ?? ''), 10);
 
+const inWeekRange = (weeks: number, min: number) =>
+    Number.isInteger(weeks) && weeks >= min && weeks <= WEEKS.max;
+
 // ---------- routines ----------
 
 export async function createRoutine(
@@ -45,15 +49,14 @@ export async function createRoutine(
     const user = await requireUser();
     const t = await getT();
     const name = str(data, 'name');
-    const durationWeeks = int(data, 'durationWeeks');
+    // Open-ended is stated by the form, not inferred from a missing number:
+    // the weeks field is disabled while it is off, so it sends nothing either way.
+    const durationWeeks =
+        str(data, 'indefinite') === 'on' ? null : int(data, 'durationWeeks');
 
     if (!name) return { error: t('error.routineName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    if (
-        !Number.isInteger(durationWeeks) ||
-        durationWeeks < WEEKS.min ||
-        durationWeeks > WEEKS.max
-    ) {
+    if (durationWeeks !== null && !inWeekRange(durationWeeks, WEEKS.min)) {
         return { error: t('error.duration') };
     }
 
@@ -145,6 +148,45 @@ export async function renameRoutine(
     await requireRoutine(routineId, user.id);
 
     await prisma.routine.update({ where: { id: routineId }, data: { name } });
+    revalidatePath(`/routines/${routineId}`);
+    revalidatePath('/routines');
+    revalidatePath('/');
+    return { ok: true };
+}
+
+/**
+ * The one part of a plan that stays editable once training has started: a block
+ * can be cut short or run on.
+ *
+ * The floor is the week after the one being trained — the week in progress was
+ * logged as part of this routine, so it cannot be legislated away — and the
+ * ceiling is the same 52 the form offers. An open-ended routine has no duration
+ * to move; it is the one shape this refuses.
+ */
+export async function setRoutineDuration(
+    routineId: string,
+    _previous: FormState,
+    data: FormData
+): Promise<FormState> {
+    const user = await requireUser();
+    const t = await getT();
+    const durationWeeks = int(data, 'durationWeeks');
+    const routine = await requireRoutine(routineId, user.id);
+
+    if (routine.durationWeeks === null) {
+        return { error: t('error.durationOpenEnded') };
+    }
+
+    const workoutCount = await prisma.workout.count({ where: { routineId } });
+    const min = currentWeek(routine.cursor, workoutCount) + 1;
+    if (!inWeekRange(durationWeeks, min)) {
+        return { error: t('error.durationRange', { min, max: WEEKS.max }) };
+    }
+
+    await prisma.routine.update({
+        where: { id: routineId },
+        data: { durationWeeks },
+    });
     revalidatePath(`/routines/${routineId}`);
     revalidatePath('/routines');
     revalidatePath('/');

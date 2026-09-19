@@ -1,6 +1,6 @@
 'use client';
 
-import { weekState } from '@/lib/progress';
+import { historyWeeks, weekState, type Duration } from '@/lib/progress';
 import { useId, useState } from 'react';
 import { DayPanel, type HistoryDay } from '@/components/history/day-panel';
 import { DaySwitcher } from '@/components/routine/day-switcher';
@@ -13,7 +13,7 @@ export function RoutineHistory({
     cursor,
 }: {
     days: HistoryDay[];
-    durationWeeks: number;
+    durationWeeks: Duration;
     cursor: number;
 }) {
     const baseId = useId();
@@ -22,7 +22,7 @@ export function RoutineHistory({
 
     if (days.length === 0) return null;
 
-    const weeks = Array.from({ length: durationWeeks }, (_, i) => i + 1);
+    const weeks = historyWeeks(durationWeeks, cursor, days.length);
 
     return (
         <div className="space-y-8">
@@ -42,7 +42,6 @@ export function RoutineHistory({
                 <DayPanel
                     key={day.id}
                     day={day}
-                    durationWeeks={durationWeeks}
                     rows={weeks.map((week) => ({
                         week,
                         state: weekState(cursor, week, position, days.length),

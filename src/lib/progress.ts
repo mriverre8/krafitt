@@ -22,6 +22,19 @@ export type FlatSet = {
 };
 
 /**
+ * How long a routine runs. `null` is open-ended: it has no last week, so it is
+ * never finished and its history is a moving window rather than the whole plan.
+ */
+export type Duration = number | null;
+
+/** The week the cursor is sitting in, counted from 1 and with no upper bound —
+    an open-ended routine keeps counting. */
+export function currentWeek(cursor: number, workoutCount: number): number {
+    if (workoutCount <= 0) return 1;
+    return Math.floor(Math.max(cursor, 0) / workoutCount) + 1;
+}
+
+/**
  * Current position inside the routine.
  * The sequence is week 1 (day 1..W), week 2 (day 1..W)... up to durationWeeks.
  * ponytail: index-based cursor; adding or deleting workouts mid-routine shifts the
@@ -30,14 +43,45 @@ export type FlatSet = {
 export function positionFromCursor(
     cursor: number,
     workoutCount: number,
-    durationWeeks: number
+    durationWeeks: Duration
 ): { week: number; workoutIndex: number } | null {
-    if (workoutCount <= 0 || durationWeeks <= 0) return null;
-    if (cursor < 0 || cursor >= workoutCount * durationWeeks) return null;
+    if (workoutCount <= 0 || (durationWeeks !== null && durationWeeks <= 0))
+        return null;
+    if (cursor < 0) return null;
+    if (durationWeeks !== null && cursor >= workoutCount * durationWeeks)
+        return null;
     return {
-        week: Math.floor(cursor / workoutCount) + 1,
+        week: currentWeek(cursor, workoutCount),
         workoutIndex: cursor % workoutCount,
     };
+}
+
+/** How many weeks of an open-ended routine the history holds at once. */
+export const HISTORY_WINDOW = 10;
+
+/**
+ * The weeks the history draws. A routine with a duration shows all of them.
+ *
+ * An open-ended one has no end to lay out, so it shows the last ten weeks and
+ * starts over: filling the tenth row opens a fresh window whose first row is
+ * that same week, which is the one the next week is compared against. Windows
+ * therefore overlap by a week and advance nine at a time.
+ */
+export function historyWeeks(
+    durationWeeks: Duration,
+    cursor: number,
+    workoutCount: number
+): number[] {
+    if (durationWeeks !== null)
+        return Array.from({ length: durationWeeks }, (_, i) => i + 1);
+
+    const step = HISTORY_WINDOW - 1;
+    const window = Math.max(
+        0,
+        Math.ceil((currentWeek(cursor, workoutCount) - HISTORY_WINDOW) / step)
+    );
+    const first = window * step + 1;
+    return Array.from({ length: HISTORY_WINDOW }, (_, i) => first + i);
 }
 
 /**
@@ -74,12 +118,14 @@ export function weekState(
 }
 
 /** Every workout of every week is behind the cursor. An empty routine is never
-    finished, however far the cursor has been pushed. */
+    finished, however far the cursor has been pushed — nor is an open-ended one,
+    which has no last week to reach. */
 export function isRoutineFinished(
     cursor: number,
     workoutCount: number,
-    durationWeeks: number
+    durationWeeks: Duration
 ): boolean {
+    if (durationWeeks === null) return false;
     const total = workoutCount * durationWeeks;
     return total > 0 && cursor >= total;
 }

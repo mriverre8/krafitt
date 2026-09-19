@@ -14,8 +14,11 @@ import { renderWithLocale, withModals } from '@/tests/setup-helpers';
     menu — and only out of edit mode, and only for the owner. */
 function setup({
     rename = vi.fn<FormAction>(async () => ({ ok: true })),
+    setDuration = vi.fn<FormAction>(async () => ({ ok: true })),
     onDelete = vi.fn(async () => {}),
     setVisibility = vi.fn(async () => {}),
+    /** As the page passes it: absent for an open-ended routine, or one over. */
+    duration = { weeks: 8, min: 3 } as { weeks: number; min: number } | null,
     /** As the page passes them: no rename once finished, no edit once locked. */
     finished = false,
     editable = true,
@@ -28,6 +31,11 @@ function setup({
                     <RoutineOptions
                         name="Push Pull Legs"
                         rename={finished ? undefined : rename}
+                        duration={
+                            duration
+                                ? { ...duration, save: setDuration }
+                                : undefined
+                        }
                         onDelete={onDelete}
                         editable={editable}
                         isPublic={isPublic}
@@ -40,7 +48,7 @@ function setup({
             </EditModeProvider>
         )
     );
-    return { rename, onDelete, setVisibility };
+    return { rename, setDuration, onDelete, setVisibility };
 }
 
 const options = () => screen.getByRole('button', { name: 'Options' });
@@ -111,6 +119,41 @@ describe('RoutineOptions', () => {
         const dialog = await screen.findByRole('dialog');
         fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
         await waitFor(() => expect(onDelete).toHaveBeenCalled());
+    });
+
+    it('leaves the duration out when there is none to move', () => {
+        setup({ duration: null });
+        fireEvent.click(options());
+        expect(screen.queryByText('Change duration')).not.toBeInTheDocument();
+    });
+
+    // Cutting a block short or running it on is the one edit a locked routine
+    // still takes, so it holds the floor the page worked out.
+    it('changes the duration through the dialog, no lower than its floor', async () => {
+        const { setDuration } = setup({ editable: false });
+        fireEvent.click(options());
+        fireEvent.click(screen.getByText('Change duration'));
+
+        const dialog = await screen.findByRole('dialog');
+        const field = within(dialog).getByRole('spinbutton');
+        const save = within(dialog).getByRole('button', { name: 'Save' });
+        expect(field).toHaveValue(8);
+        expect(field).toHaveAttribute('min', '3');
+        expect(field).toHaveAttribute('max', '52');
+        expect(save).toBeDisabled();
+
+        fireEvent.change(field, { target: { value: '2' } });
+        expect(save).toBeDisabled();
+
+        fireEvent.change(field, { target: { value: '12' } });
+        expect(save).toBeEnabled();
+        fireEvent.click(save);
+
+        await waitFor(() => expect(setDuration).toHaveBeenCalled());
+        expect(setDuration.mock.calls[0][1].get('durationWeeks')).toBe('12');
+        await waitFor(() =>
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        );
     });
 
     it('renames through the dialog, opening on the current name', async () => {

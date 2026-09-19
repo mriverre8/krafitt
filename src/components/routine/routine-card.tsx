@@ -1,6 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import type { Duration } from '@/lib/progress';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
@@ -9,7 +10,7 @@ import { ProgressLadder } from '@/components/ui/progress-ladder';
 export type RoutineCardProps = {
     id: string;
     name: string;
-    durationWeeks: number;
+    durationWeeks: Duration;
     workoutCount: number;
     cursor: number;
     isActive: boolean;
@@ -19,9 +20,17 @@ export type RoutineCardProps = {
 
 export function RoutineCard(props: RoutineCardProps) {
     const t = useT();
-    const total = props.workoutCount * props.durationWeeks;
-    const done = Math.min(props.cursor, total);
-    const progress = t('routines.progress', { done, total });
+    // An open-ended routine has no total to count towards, so it reports what
+    // has been done and leaves the ladder out: a bar needs both ends.
+    const total =
+        props.durationWeeks === null
+            ? null
+            : props.workoutCount * props.durationWeeks;
+    const done = total === null ? props.cursor : Math.min(props.cursor, total);
+    const progress =
+        total === null
+            ? t('routines.progressOpen', { done })
+            : t('routines.progress', { done, total });
 
     const training = props.isActive && !props.finished;
 
@@ -36,10 +45,14 @@ export function RoutineCard(props: RoutineCardProps) {
                 <div className="min-w-0">
                     <p className="display truncate text-3xl">{props.name}</p>
                     <p className="eyebrow text-muted mt-1.5">
-                        {t('routines.meta', {
-                            weeks: props.durationWeeks,
-                            days: props.workoutCount,
-                        })}
+                        {props.durationWeeks === null
+                            ? t('routines.metaOpen', {
+                                  days: props.workoutCount,
+                              })
+                            : t('routines.meta', {
+                                  weeks: props.durationWeeks,
+                                  days: props.workoutCount,
+                              })}
                     </p>
                 </div>
 
@@ -79,11 +92,13 @@ export function RoutineCard(props: RoutineCardProps) {
             </div>
 
             <div className="mt-5 space-y-2">
-                <ProgressLadder
-                    done={done}
-                    total={total}
-                    label={progress}
-                />
+                {total !== null && (
+                    <ProgressLadder
+                        done={done}
+                        total={total}
+                        label={progress}
+                    />
+                )}
                 <p className="figure text-muted text-sm">{progress}</p>
             </div>
         </Link>

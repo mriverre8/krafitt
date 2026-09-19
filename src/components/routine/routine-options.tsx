@@ -8,11 +8,12 @@ import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { EditModeToggle } from '@/components/routine/edit-mode';
-import { Ellipsis, Globe, Lock, Type } from 'lucide-react';
+import { CalendarRange, Ellipsis, Globe, Lock, Type } from 'lucide-react';
 
 export function RoutineOptions({
     name,
     rename,
+    duration,
     onDelete,
     editable,
     isPublic,
@@ -20,6 +21,9 @@ export function RoutineOptions({
 }: {
     name: string;
     rename?: FormAction;
+    /** Left out when there is no duration to move: an open-ended routine, or
+        one already past the last week it could be cut back to. */
+    duration?: { weeks: number; min: number; save: FormAction };
     onDelete: () => Promise<unknown>;
     editable: boolean;
     isPublic: boolean;
@@ -62,6 +66,26 @@ export function RoutineOptions({
                                 aria-hidden
                             />
                             {t('routine.rename')}
+                        </button>
+                    )}
+                    {duration && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                close();
+                                showModal('duration', {
+                                    durationWeeks: duration.weeks,
+                                    min: duration.min,
+                                    save: duration.save,
+                                });
+                            }}
+                            className={menuItemClass}
+                        >
+                            <CalendarRange
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('routine.duration')}
                         </button>
                     )}
                     {editable && (

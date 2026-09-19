@@ -17,14 +17,12 @@ export type WeekRow = { week: number; state: WeekState; logs: Logs };
 
 export function DayPanel({
     day,
-    durationWeeks,
     rows,
     id,
     labelledBy,
     hidden,
 }: {
     day: HistoryDay;
-    durationWeeks: number;
     rows: WeekRow[];
     id: string;
     labelledBy: string;
@@ -52,7 +50,7 @@ export function DayPanel({
                 <p className="figure text-muted shrink-0 text-sm">
                     {t('progress.weeksTrained', {
                         done: trained,
-                        total: durationWeeks,
+                        total: rows.length,
                     })}
                 </p>
             </div>

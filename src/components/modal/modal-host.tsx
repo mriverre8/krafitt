@@ -8,6 +8,9 @@ const modals = {
     confirm: dynamic(() =>
         import('./confirm-modal').then((m) => m.ConfirmModal)
     ),
+    duration: dynamic(() =>
+        import('./duration-modal').then((m) => m.DurationModal)
+    ),
     rename: dynamic(() =>
         import('./rename-routine-modal').then((m) => m.RenameRoutineModal)
     ),

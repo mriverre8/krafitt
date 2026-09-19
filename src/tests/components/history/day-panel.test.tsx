@@ -36,7 +36,6 @@ const rows: WeekRow[] = [
 
 const base = {
     day,
-    durationWeeks: 3,
     rows,
     id: 'panel-0',
     labelledBy: 'tab-0',
@@ -59,7 +58,6 @@ describe('DayPanel', () => {
             <DayPanel
                 {...base}
                 rows={[rows[0]]}
-                durationWeeks={1}
             />
         );
         expect(screen.getByText('Not logged')).toBeInTheDocument();
