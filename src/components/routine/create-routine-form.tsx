@@ -15,10 +15,6 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
     const [name, setName] = useState('');
     const [weeks, setWeeks] = useState('');
 
-    // Whether the button is live, read off the two fields rather than off the
-    // form's own validity: `checkValidity` answers for the DOM as it stands,
-    // which is one render behind a clipped value or a side just switched. The
-    // browser still holds the same rules through the attributes below.
     const typedWeeks = Number(weeks);
     const valid =
         name.trim() !== '' &&
@@ -48,8 +44,6 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
                     {t('routines.durationTitle')}
                 </legend>
                 <div className="flex flex-wrap items-center gap-2">
-                    {/* Two halves of one choice, so each says whether it is
-                        the one picked rather than leaving it to the colour. */}
                     <button
                         type="button"
                         aria-pressed={openEnded}
@@ -95,8 +89,6 @@ export function CreateRoutineForm({ action }: { action: FormAction }) {
                     />
                 </div>
             </fieldset>
-            {/* A disabled field sends nothing, so open-ended is said outright
-                rather than read off an absent value. */}
             <input
                 type="hidden"
                 name="indefinite"

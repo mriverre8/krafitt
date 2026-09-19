@@ -81,7 +81,6 @@ model Follow {
 model Routine {
   id            String   @id @default(cuid())
   name          String
-  /// Null is an open-ended routine: it runs until the user stops it.
   durationWeeks Int?
   creatorId     String
   creator       User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)

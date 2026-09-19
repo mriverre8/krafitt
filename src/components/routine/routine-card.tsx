@@ -20,8 +20,6 @@ export type RoutineCardProps = {
 
 export function RoutineCard(props: RoutineCardProps) {
     const t = useT();
-    // An open-ended routine has no total to count towards, so it reports what
-    // has been done and leaves the ladder out: a bar needs both ends.
     const total =
         props.durationWeeks === null
             ? null

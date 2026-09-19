@@ -70,9 +70,6 @@ export default async function RoutinePage({
     const addDay =
         locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
 
-    // A block can be cut short or run on while it is being trained, down to the
-    // week after the one in progress and up to the same ceiling the form offers.
-    // Nothing to offer once it is over, or when there was never an end to move.
     const durationFloor =
         currentWeek(routine.cursor, routine.workouts.length) + 1;
     const duration =

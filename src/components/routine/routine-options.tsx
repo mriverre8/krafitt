@@ -21,8 +21,6 @@ export function RoutineOptions({
 }: {
     name: string;
     rename?: FormAction;
-    /** Left out when there is no duration to move: an open-ended routine, or
-        one already past the last week it could be cut back to. */
     duration?: { weeks: number; min: number; save: FormAction };
     onDelete: () => Promise<unknown>;
     editable: boolean;

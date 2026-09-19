@@ -10,8 +10,6 @@ import { useActionState, useEffect, useState } from 'react';
 
 export type DurationModalProps = {
     durationWeeks: number;
-    /** The earliest week the block may now end on: the one after the week being
-        trained. The server holds the same floor. */
     min: number;
     save: FormAction;
     onClose: () => void;
