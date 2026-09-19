@@ -7,6 +7,7 @@ import {
     renameWorkout,
     saveExercises,
     setActiveRoutine,
+    setRoutineDuration,
     setRoutineVisibility,
 } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
@@ -25,7 +26,12 @@ import { ShareRoutineButton } from '@/components/routine/share-routine-button';
 import { Avatar } from '@/components/ui/avatar';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { isRoutineFinished, isRoutineLocked } from '@/lib/progress';
+import { WEEKS } from '@/lib/constants';
+import {
+    currentWeek,
+    isRoutineFinished,
+    isRoutineLocked,
+} from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
 import {
@@ -64,6 +70,18 @@ export default async function RoutinePage({
     const addDay =
         locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
 
+    const durationFloor = currentWeek(routine.cursor, routine.workouts.length);
+    const duration =
+        routine.durationWeeks !== null &&
+        !finished &&
+        durationFloor <= WEEKS.max
+            ? {
+                  weeks: routine.durationWeeks,
+                  min: durationFloor,
+                  save: setRoutineDuration.bind(null, routine.id),
+              }
+            : undefined;
+
     return (
         <EditModeProvider>
             <div className="space-y-6">
@@ -72,10 +90,14 @@ export default async function RoutinePage({
                     <h1 className="display mt-5 text-6xl">{routine.name}</h1>
                     <div className="mt-2 flex items-center justify-between gap-3">
                         <p className="eyebrow text-muted min-w-0">
-                            {t('routine.meta', {
-                                weeks: routine.durationWeeks,
-                                days: routine.workouts.length,
-                            })}
+                            {routine.durationWeeks === null
+                                ? t('routine.metaOpen', {
+                                      days: routine.workouts.length,
+                                  })
+                                : t('routine.meta', {
+                                      weeks: routine.durationWeeks,
+                                      days: routine.workouts.length,
+                                  })}
                         </p>
                         {owner && (
                             <div className="flex shrink-0 items-center gap-4">
@@ -94,6 +116,7 @@ export default async function RoutinePage({
                                             null,
                                             routine.id
                                         )}
+                                        duration={duration}
                                         editable={!locked}
                                         isPublic={routine.isPublic}
                                         setVisibility={setRoutineVisibility.bind(

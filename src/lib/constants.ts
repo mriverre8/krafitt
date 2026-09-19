@@ -9,7 +9,7 @@ export const USER_NAME_MAX = 30;
 
 export const EMAIL_PATTERN = '[^\\s@]+@[^\\s@]+\\.[a-zA-Z]{2,}';
 
-export const WEEKS = { min: 1, max: 52 };
+export const WEEKS = { min: 1, max: 52, digits: 2 };
 export const EXERCISES = { max: 30 };
 export const SETS = { min: 1, max: 20 };
 export const REPS = { min: 1, max: 1000, digits: 3 };

@@ -6,6 +6,7 @@ import {
     flatSets,
     isSetEnabled,
     isSetFilled,
+    type Duration,
     type Logs,
     type PreviousLogs,
 } from '@/lib/progress';
@@ -27,7 +28,7 @@ export type TodayWorkoutProps = {
     routineId: string;
     routineName: string;
     week: number;
-    totalWeeks: number;
+    totalWeeks: Duration;
     workout: { id: string; name: string; exercises: ExerciseView[] };
     logs: Logs;
     previous: PreviousLogs;
@@ -102,7 +103,9 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     </div>
                     <p className="bg-volt text-on-volt figure grid shrink-0 place-items-center rounded-md px-3 py-2 leading-none">
                         <span className="sr-only">
-                            {t('today.week', { week, total: totalWeeks })}
+                            {totalWeeks === null
+                                ? t('today.weekOpen', { week })
+                                : t('today.week', { week, total: totalWeeks })}
                         </span>
                         <span
                             aria-hidden
@@ -114,7 +117,9 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                             aria-hidden
                             className="eyebrow mt-1 opacity-70"
                         >
-                            / {totalWeeks}
+                            {totalWeeks === null
+                                ? t('progress.weekColumn')
+                                : `/ ${totalWeeks}`}
                         </span>
                     </p>
                 </div>

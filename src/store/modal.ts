@@ -1,6 +1,7 @@
 'use client';
 
 import type { ConfirmModalProps } from '@/components/modal/confirm-modal';
+import type { DurationModalProps } from '@/components/modal/duration-modal';
 import type { RenameRoutineModalProps } from '@/components/modal/rename-routine-modal';
 import type { SettingsModalProps } from '@/components/modal/settings-modal';
 import { create } from 'zustand';
@@ -17,6 +18,7 @@ import { create } from 'zustand';
  */
 type ModalProps = {
     confirm: Omit<ConfirmModalProps, 'onClose'>;
+    duration: Omit<DurationModalProps, 'onClose'>;
     rename: Omit<RenameRoutineModalProps, 'onClose'>;
     settings: Omit<SettingsModalProps, 'onClose'>;
 };

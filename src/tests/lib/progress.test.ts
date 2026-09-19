@@ -1,4 +1,6 @@
 import {
+    HISTORY_WINDOW,
+    historyWeeks,
     isRoutineFinished,
     isRoutineLocked,
     isSessionComplete,
@@ -87,6 +89,41 @@ describe('positionFromCursor', () => {
         expect(positionFromCursor(6, 2, 3)).toBeNull();
         expect(positionFromCursor(0, 0, 3)).toBeNull();
     });
+
+    it('keeps walking an open-ended routine past any week', () => {
+        expect(positionFromCursor(6, 2, null)).toEqual({
+            week: 4,
+            workoutIndex: 0,
+        });
+        expect(positionFromCursor(999, 2, null)).not.toBeNull();
+        expect(positionFromCursor(0, 0, null)).toBeNull();
+    });
+});
+
+describe('historyWeeks', () => {
+    it('lays out every week of a routine that has an end', () => {
+        expect(historyWeeks(3, 4, 2)).toEqual([1, 2, 3]);
+    });
+
+    // Ten rows, and the tenth week of one window is the first row of the next:
+    // the week just finished stays on screen as the one to beat.
+    it('holds an open-ended routine to a rolling ten weeks', () => {
+        const window = (cursor: number) => historyWeeks(null, cursor, 2);
+        const first = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        expect(window(0)).toEqual(first);
+        // Week 10, still being trained: the window it belongs to is intact.
+        expect(window(18)).toEqual(first);
+        // Week 11: the ten weeks start again on the week just finished.
+        expect(window(20)).toEqual([10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+        expect(window(36)).toEqual([10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+        expect(window(38)).toEqual([19, 20, 21, 22, 23, 24, 25, 26, 27, 28]);
+    });
+
+    it('always draws the same number of rows, days or no days', () => {
+        expect(historyWeeks(null, 0, 0)).toHaveLength(HISTORY_WINDOW);
+        expect(historyWeeks(null, 500, 3)).toHaveLength(HISTORY_WINDOW);
+    });
 });
 
 describe('isRoutineFinished', () => {
@@ -99,6 +136,10 @@ describe('isRoutineFinished', () => {
     it('never calls an empty routine finished', () => {
         expect(isRoutineFinished(0, 0, 3)).toBe(false);
         expect(isRoutineFinished(10, 0, 3)).toBe(false);
+    });
+
+    it('never calls an open-ended routine finished', () => {
+        expect(isRoutineFinished(999, 2, null)).toBe(false);
     });
 });
 
