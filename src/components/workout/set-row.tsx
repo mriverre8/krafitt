@@ -67,22 +67,13 @@ export function SetRow({
                 <span className="sr-only">{t('today.set', { n: number })}</span>
                 <span aria-hidden>{shown}</span>
             </span>
-            <span className="text-muted w-16 shrink-0 text-xs tabular-nums md:text-sm">
-                {previous
-                    ? t('today.previous', {
-                          week: previous.week,
-                          weight: previous.weight,
-                          reps: previous.reps,
-                      })
-                    : t('today.noPrevious')}
-            </span>
             <input
                 type="number"
                 inputMode="decimal"
                 step={WEIGHT.step}
                 min={WEIGHT.min}
                 max={WEIGHT.max}
-                placeholder={t('today.kg')}
+                placeholder={`${previous?.weight ?? ''} ${t('today.kg')}`.trim()}
                 aria-label={t('today.weightLabel', { n: number })}
                 disabled={!enabled}
                 value={weight}
@@ -96,7 +87,7 @@ export function SetRow({
                 inputMode="numeric"
                 min={REPS.min}
                 max={REPS.max}
-                placeholder={t('today.reps')}
+                placeholder={`${previous?.reps ?? ''} ${t('today.reps')}`.trim()}
                 aria-label={t('today.repsLabel', { n: number })}
                 disabled={!enabled}
                 value={reps}

@@ -141,8 +141,6 @@ export const en = {
     'today.reps': 'reps',
     'today.setPlan': '{min}-{max} reps',
     'today.setPlanFixed': '{reps} reps',
-    'today.previous': 'W{week}: {weight}×{reps}',
-    'today.noPrevious': '—',
     'today.genericError': 'Something went wrong',
 
     'progress.link': 'History',

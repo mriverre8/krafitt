@@ -143,8 +143,6 @@ export const ca: Dict = {
     'today.reps': 'reps',
     'today.setPlan': '{min}-{max} reps',
     'today.setPlanFixed': '{reps} reps',
-    'today.previous': 'S{week}: {weight}×{reps}',
-    'today.noPrevious': '—',
     'today.genericError': 'Alguna cosa ha fallat',
 
     'progress.link': 'Històric',
