@@ -70,8 +70,7 @@ export default async function RoutinePage({
     const addDay =
         locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
 
-    const durationFloor =
-        currentWeek(routine.cursor, routine.workouts.length) + 1;
+    const durationFloor = currentWeek(routine.cursor, routine.workouts.length);
     const duration =
         routine.durationWeeks !== null &&
         !finished &&

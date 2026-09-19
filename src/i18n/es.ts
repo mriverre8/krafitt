@@ -227,7 +227,7 @@ export const es: Dict = {
     'routine.rename': 'Cambiar nombre',
     'routine.duration': 'Cambiar duración',
     'routine.durationHint':
-        'Entre {min} y {max} semanas. La semana que estás entrenando no se puede recortar.',
+        'Entre {min} y {max} semanas. La semana que estás entrenando puede ser la última.',
     'routine.by': 'Rutina de {name}',
     'routine.makePublic': 'Hacer pública',
     'routine.makePrivate': 'Hacer privada',

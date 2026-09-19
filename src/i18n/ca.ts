@@ -227,7 +227,7 @@ export const ca: Dict = {
     'routine.rename': 'Canviar el nom',
     'routine.duration': 'Canviar la durada',
     'routine.durationHint':
-        'Entre {min} i {max} setmanes. La setmana que estàs entrenant no es pot retallar.',
+        "Entre {min} i {max} setmanes. La setmana que estàs entrenant pot ser l'última.",
     'routine.by': 'Rutina de {name}',
     'routine.makePublic': 'Fer pública',
     'routine.makePrivate': 'Fer privada',

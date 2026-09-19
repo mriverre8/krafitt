@@ -158,8 +158,8 @@ export async function renameRoutine(
  * The one part of a plan that stays editable once training has started: a block
  * can be cut short or run on.
  *
- * The floor is the week after the one being trained — the week in progress was
- * logged as part of this routine, so it cannot be legislated away — and the
+ * The floor is the week being trained, which ends the routine the moment it is
+ * finished — behind that lie weeks already logged, and those are history. The
  * ceiling is the same 52 the form offers. An open-ended routine has no duration
  * to move; it is the one shape this refuses.
  */
@@ -178,7 +178,7 @@ export async function setRoutineDuration(
     }
 
     const workoutCount = await prisma.workout.count({ where: { routineId } });
-    const min = currentWeek(routine.cursor, workoutCount) + 1;
+    const min = currentWeek(routine.cursor, workoutCount);
     if (!inWeekRange(durationWeeks, min)) {
         return { error: t('error.durationRange', { min, max: WEEKS.max }) };
     }

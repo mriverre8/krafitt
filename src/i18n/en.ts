@@ -225,7 +225,7 @@ export const en = {
     'routine.rename': 'Rename routine',
     'routine.duration': 'Change duration',
     'routine.durationHint':
-        'Anywhere from {min} to {max} weeks. The week you are training cannot be cut away.',
+        'Anywhere from {min} to {max} weeks. The week you are training can be the last one.',
     'routine.by': 'Routine by {name}',
     'routine.makePublic': 'Make public',
     'routine.makePrivate': 'Make private',
