@@ -153,7 +153,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
 
             {workout.exercises.map((exercise) => (
                 <WorkoutExercise
-                    key={exercise.id}
+                    key={`${week}:${exercise.id}`}
                     exercise={exercise}
                     logs={logs[exercise.id] ?? {}}
                     previous={previous[exercise.id] ?? {}}
@@ -166,7 +166,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                             setIndex
                         )
                     }
-                    onSaveSet={(setIndex, weight, reps) =>
+                    onSaveSet={(setIndex, weight, reps, effort) =>
                         run(async () => {
                             await logSet(
                                 workout.id,
@@ -174,11 +174,16 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                 exercise.id,
                                 setIndex,
                                 weight,
-                                reps
+                                reps,
+                                effort
                             );
                             useSessionStore
                                 .getState()
-                                .save(exercise.id, setIndex, { weight, reps });
+                                .save(exercise.id, setIndex, {
+                                    weight,
+                                    reps,
+                                    effort,
+                                });
                         })
                     }
                 />

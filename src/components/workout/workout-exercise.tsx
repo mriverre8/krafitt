@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { SavedExercise } from '@/lib/forms';
-import type { PreviousValue, SetValue } from '@/lib/progress';
+import type { Effort, PreviousValue, SetValue } from '@/lib/progress';
 import { formatReps } from '@/lib/reps';
 import { setFullLabel, setName, setPlaces, setShortLabel } from '@/lib/sets';
 import { cardClass } from '@/lib/ui';
@@ -21,7 +21,12 @@ export function WorkoutExercise({
     logs: Record<number, SetValue | undefined>;
     previous: Record<number, PreviousValue | undefined>;
     isSetEnabled: (setIndex: number) => boolean;
-    onSaveSet: (setIndex: number, weight: number, reps: number) => void;
+    onSaveSet: (
+        setIndex: number,
+        weight: number,
+        reps: number,
+        effort: Effort
+    ) => void;
 }) {
     const t = useT();
     const places = setPlaces(exercise.sets);
@@ -60,8 +65,8 @@ export function WorkoutExercise({
                                 enabled={isSetEnabled(setIndex)}
                                 saved={logs[setIndex]}
                                 previous={previous[setIndex]}
-                                onSave={(weight, reps) =>
-                                    onSaveSet(setIndex, weight, reps)
+                                onSave={(weight, reps, effort) =>
+                                    onSaveSet(setIndex, weight, reps, effort)
                                 }
                             />
                         </div>

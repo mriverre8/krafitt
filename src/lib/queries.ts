@@ -1,5 +1,10 @@
 import { prisma } from './db';
-import { positionFromCursor, type Logs, type PreviousLogs } from './progress';
+import {
+    positionFromCursor,
+    toEffort,
+    type Logs,
+    type PreviousLogs,
+} from './progress';
 import { dayKey } from './training-year';
 
 function toLogs(
@@ -8,6 +13,7 @@ function toLogs(
         setIndex: number;
         weight: number;
         reps: number;
+        effort: string;
     }[]
 ): Logs {
     const out: Logs = {};
@@ -15,6 +21,7 @@ function toLogs(
         (out[l.exerciseId] ??= {})[l.setIndex] = {
             weight: l.weight,
             reps: l.reps,
+            effort: toEffort(l.effort),
         };
     return out;
 }
@@ -33,6 +40,7 @@ function toPrevious(
             setIndex: number;
             weight: number;
             reps: number;
+            effort: string;
         }[];
     }[]
 ): PreviousLogs {
@@ -42,6 +50,7 @@ function toPrevious(
             (out[l.exerciseId] ??= {})[l.setIndex] = {
                 weight: l.weight,
                 reps: l.reps,
+                effort: toEffort(l.effort),
                 week: session.week,
             };
     return out;

@@ -168,6 +168,7 @@ model SetLog {
   setIndex   Int
   weight     Float
   reps       Int
+  effort     String   @default("normal")
 
   @@unique([sessionId, exerciseId, setIndex])
 }

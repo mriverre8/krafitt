@@ -12,7 +12,8 @@
    sits opposite volt on the wheel, so the two never blur together.
    Surge (green) is reserved for a set you already own, and nothing else.
    Draft (yellow) is the one "not finished with this yet" colour: a day you
-   have edited and not saved. It is never text — only a rule or a fill. */
+   have edited and not saved, and the set that was a grind. It is never text
+   on the page's own background — only a rule, or a fill with --on-draft. */
 :root {
   --bg: #f7f5f2;
   --surface: #ffffff;
@@ -39,6 +40,13 @@
      Kept clear of volt's red-orange so the rule never blurs into the filled
      plate above it. */
   --draft: #dca000;
+  --on-draft: #1a1200;
+  /* Draft and surge again, dark enough to be read as small type on a
+     light surface: the fills clear 1.9:1 and 4.5:1 there, which is a
+     label nobody can read and one that only just passes. The dark theme
+     has no such trouble and keeps the fill values. */
+  --draft-ink: #8a6200;
+  --surge-ink: #0d7046;
 
   --glow: color-mix(in oklab, var(--volt) 18%, transparent);
 }
@@ -67,6 +75,10 @@
   --on-danger: #1a0508;
 
   --draft: #ffd24d;
+  --on-draft: #1a1200;
+  /* No such trouble on this background: the fills read as type as they are. */
+  --draft-ink: #ffd24d;
+  --surge-ink: #2ee08c;
 
   --glow: color-mix(in oklab, var(--volt) 14%, transparent);
 }
@@ -89,6 +101,9 @@
   --color-danger: var(--danger);
   --color-on-danger: var(--on-danger);
   --color-draft: var(--draft);
+  --color-on-draft: var(--on-draft);
+  --color-draft-ink: var(--draft-ink);
+  --color-surge-ink: var(--surge-ink);
 
   --font-display: var(--font-barlow-condensed), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
@@ -256,6 +271,19 @@ h3 {
   .charged:not(:disabled):hover {
     box-shadow: 0 10px 28px -10px var(--volt);
   }
+}
+
+/* The two numbers hand their place over when a set is asked how it went. The
+   choice arrives from the button that asked for it rather than blinking in, in
+   the same 140ms the modal takes to land. */
+@keyframes slot-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+.slot-in {
+  animation: slot-in 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* A modal arrives rather than blinks into place: 140ms is short enough that it

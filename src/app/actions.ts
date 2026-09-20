@@ -26,6 +26,8 @@ import {
     isRoutineFinished,
     isSessionComplete,
     isSetEnabled,
+    toEffort,
+    type Effort,
     type Logs,
 } from '@/lib/progress';
 import { routineDetail } from '@/lib/queries';
@@ -433,9 +435,11 @@ export async function logSet(
     exerciseId: string,
     setIndex: number,
     weight: number,
-    reps: number
+    reps: number,
+    rawEffort?: string
 ) {
     const user = await requireUser();
+    const effort: Effort = toEffort(rawEffort);
     const t = await getT();
 
     if (!Number.isFinite(weight) || weight < WEIGHT.min || weight > WEIGHT.max)
@@ -497,11 +501,18 @@ export async function logSet(
                 setIndex,
             },
         },
-        create: { sessionId: session.id, exerciseId, setIndex, weight, reps },
-        update: { weight, reps },
+        create: {
+            sessionId: session.id,
+            exerciseId,
+            setIndex,
+            weight,
+            reps,
+            effort,
+        },
+        update: { weight, reps, effort },
     });
 
-    (logs[exerciseId] ??= {})[setIndex] = { weight, reps };
+    (logs[exerciseId] ??= {})[setIndex] = { weight, reps, effort };
 
     if (isSessionComplete(session.workout.exercises, logs)) {
         await prisma.workoutSession.update({

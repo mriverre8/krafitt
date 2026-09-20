@@ -13,7 +13,7 @@
 const fieldBase =
     'rounded-md border-2 bg-surface2 px-3 py-2.5 text-sm md:text-base font-medium text-ink ' +
     'transition-colors placeholder:text-muted placeholder:font-normal ' +
-    'focus:border-pulse focus:outline-none disabled:opacity-30';
+    'focus:border-pulse focus:outline-none disabled:pointer-events-none disabled:opacity-30';
 
 export const fieldClass = `${fieldBase} border-line hover:border-muted`;
 
