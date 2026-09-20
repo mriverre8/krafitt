@@ -93,7 +93,7 @@ export const es: Dict = {
     'landing.progressEyebrow': 'Progreso',
     'landing.progressTitle': 'Cada serie, semana a semana',
     'landing.progressLead':
-        'Una tabla por ejercicio: las semanas hacia abajo, las series a lo ancho. Una flecha en cuanto una serie mejora la última vez que la hiciste, una raya para la semana que te saltaste y un punto para la que aún no ha llegado.',
+        'Una tabla por ejercicio: las series hacia abajo, las semanas a lo ancho. Los números se ponen en verde en cuanto una serie mejora la última vez que la hiciste y en rojo cuando baja, una raya para la semana que te saltaste y un punto para la que aún no ha llegado.',
 
     'landing.joinEyebrow': 'Empezar',
     'landing.joinTitle': 'Monta tu primera rutina',
@@ -162,8 +162,8 @@ export const es: Dict = {
     'progress.week': 'S{n}',
     'progress.weekLabel': 'Semana {n}',
     'progress.weekColumn': 'Semana',
+    'progress.setColumn': 'Serie',
     'progress.setLabel': 'Serie {n}',
-    'progress.value': '{weight}×{reps}',
     'progress.logged': '{weight} kg, {reps} repeticiones',
     'progress.counter': '{n}/{total}',
     'progress.exerciseCount': '{name}, ejercicio {n} de {total}',

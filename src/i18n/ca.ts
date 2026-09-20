@@ -93,7 +93,7 @@ export const ca: Dict = {
     'landing.progressEyebrow': 'Progrés',
     'landing.progressTitle': 'Cada sèrie, setmana a setmana',
     'landing.progressLead':
-        "Una taula per exercici: les setmanes cap avall, les sèries a l'ample. Una fletxa així que una sèrie millora l'última vegada que la vas fer, un guió per a la setmana que et vas saltar i un punt per a la que encara no ha arribat.",
+        "Una taula per exercici: les sèries cap avall, les setmanes a l'ample. Els números es posen verds així que una sèrie millora l'última vegada que la vas fer i vermells quan baixa, un guió per a la setmana que et vas saltar i un punt per a la que encara no ha arribat.",
 
     'landing.joinEyebrow': 'Començar',
     'landing.joinTitle': 'Munta la teva primera rutina',
@@ -162,8 +162,8 @@ export const ca: Dict = {
     'progress.week': 'S{n}',
     'progress.weekLabel': 'Setmana {n}',
     'progress.weekColumn': 'Setmana',
+    'progress.setColumn': 'Sèrie',
     'progress.setLabel': 'Sèrie {n}',
-    'progress.value': '{weight}×{reps}',
     'progress.logged': '{weight} kg, {reps} repeticions',
     'progress.counter': '{n}/{total}',
     'progress.exerciseCount': '{name}, exercici {n} de {total}',

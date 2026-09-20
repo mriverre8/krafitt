@@ -3,6 +3,7 @@ import {
     type HistoryRow,
 } from '@/components/history/history-exercise';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
+import type { Effort } from '@/lib/progress';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithLocale } from '@/tests/setup-helpers';
@@ -48,27 +49,101 @@ const show = (props: Partial<Parameters<typeof HistoryExercise>[0]> = {}) =>
     );
 
 describe('HistoryExercise', () => {
-    it('heads each column with the set and what it asks for', () => {
+    it('heads each row with the set and what it asks for', () => {
         show();
         expect(
-            screen.getByRole('columnheader', { name: 'Set 1, 4-6 reps' })
+            screen.getByRole('rowheader', { name: 'Set 1, 4-6 reps' })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('columnheader', { name: 'Set 2, AMRAP' })
+            screen.getByRole('rowheader', { name: 'Set 2, AMRAP' })
         ).toBeInTheDocument();
     });
 
-    it('gives every row its week', () => {
+    it('gives every column its week', () => {
         show();
         expect(
-            screen.getAllByRole('rowheader').map((row) => row.textContent)
-        ).toEqual(['Week 1W1', 'Week 2W2', 'Week 3W3', 'Week 4W4']);
+            screen
+                .getAllByRole('columnheader')
+                .map((column) => column.textContent)
+            // The first one is the corner the set column hangs under, which
+            // names itself for a screen reader and shows nothing.
+        ).toEqual(['Set', 'Week 1W1', 'Week 2W2', 'Week 3W3', 'Week 4W4']);
     });
 
     it('shows what was logged', () => {
         show();
-        expect(screen.getByText('80×5')).toBeInTheDocument();
-        expect(screen.getByText('82.5×5')).toBeInTheDocument();
+        const shown = screen
+            .getAllByRole('cell')
+            .map(
+                (cell) => cell.querySelector('span[aria-hidden]')?.textContent
+            );
+        expect(shown).toContain('80×5');
+        expect(shown).toContain('82.5×5');
+    });
+
+    // Weight, then reps, then how it felt: a set answers on the first of those
+    // that moved, and everything under it is carried by that answer.
+    it('colours from the part that moved downwards', () => {
+        const single: ExerciseView = {
+            id: 'e1',
+            name: 'Bench press',
+            sets: [
+                { repMode: 'fixed', repMin: 5, repMax: null, technique: null },
+            ],
+        };
+        const log = (weight: number, reps: number, effort: Effort) => ({
+            0: { weight, reps, effort },
+        });
+
+        render(
+            <HistoryExercise
+                exercise={single}
+                rows={[
+                    { week: 1, state: 'past', sets: log(80, 5, 'hard') },
+                    // Same bar, same reps, a notch easier: the mark alone.
+                    { week: 2, state: 'past', sets: log(80, 5, 'easy') },
+                    // Same bar, a rep more: the reps and the mark beside them.
+                    { week: 3, state: 'past', sets: log(80, 6, 'hard') },
+                    // A heavier bar: all of it, whatever the reps did.
+                    { week: 4, state: 'current', sets: log(82.5, 5, 'fail') },
+                ]}
+                position={0}
+                total={1}
+                onSelect={vi.fn()}
+            />
+        );
+
+        const cells = screen.getAllByRole('cell');
+        const parts = (cell: HTMLElement) => {
+            const [weight, reps] = cell.querySelectorAll(
+                'span[aria-hidden] > span'
+            );
+            return {
+                weight: weight.className,
+                reps: reps.className,
+                mark: cell.querySelector('svg')!.getAttribute('class'),
+            };
+        };
+        const green = expect.stringContaining('text-surge-ink');
+        const ink = expect.stringContaining('text-ink');
+
+        // Nothing to beat the first time the set appears.
+        expect(parts(cells[0])).toEqual({ weight: ink, reps: ink, mark: ink });
+        expect(parts(cells[1])).toEqual({
+            weight: ink,
+            reps: ink,
+            mark: green,
+        });
+        expect(parts(cells[2])).toEqual({
+            weight: ink,
+            reps: green,
+            mark: green,
+        });
+        expect(parts(cells[3])).toEqual({
+            weight: green,
+            reps: green,
+            mark: green,
+        });
     });
 
     // The comparison is against the last week that set was logged in, not the

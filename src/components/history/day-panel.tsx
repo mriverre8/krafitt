@@ -62,6 +62,12 @@ export function DayPanel({
             ) : (
                 <>
                     <p className="text-muted flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                        <span className="text-surge-ink font-semibold">
+                            {t('progress.up')}
+                        </span>
+                        <span className="text-danger font-semibold">
+                            {t('progress.down')}
+                        </span>
                         <span className="flex items-center gap-1.5">
                             <span
                                 aria-hidden
