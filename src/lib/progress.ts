@@ -98,21 +98,44 @@ export function historyWeeks(
     return Array.from({ length: HISTORY_WINDOW }, (_, i) => first + i);
 }
 
-/**
- * How a logged set stands against the last time that same set was logged.
- *
- * Either number rising is progress: adding weight at the cost of a rep is how a
- * set moves forward, and so is squeezing an extra rep out of the same bar. Only
- * a set that gave ground on one number and gained on neither has gone back.
- */
-export type SetTrend = 'up' | 'down' | 'same';
+/** What a set is made of, in the order it is argued over: the bar first, then
+    the reps on it, then how the whole thing felt. Everything from the deciding
+    part downwards is carried by its verdict, which is why the order matters
+    and why it lives here rather than in the table that reads it. */
+export const SET_PARTS = ['weight', 'reps', 'effort'] as const;
+export type SetPart = (typeof SET_PARTS)[number];
 
-export function setTrend(value: SetValue, previous: SetValue): SetTrend {
-    if (value.weight > previous.weight || value.reps > previous.reps)
-        return 'up';
-    if (value.weight === previous.weight && value.reps === previous.reps)
-        return 'same';
-    return 'down';
+/**
+ * How a logged set stands against the last time that same set was logged:
+ * which way it went, and the part that decided it. `null` is a set that
+ * repeated its last performance down to how it felt.
+ *
+ * The bar leads, and it leads absolutely. More reps at a lighter weight is not
+ * that set moving forward — it is a different set — so the weight answers
+ * first, the reps only speak when the bar did not change, and effort is the
+ * tie-break under both: same weight, same reps, one notch easier is the only
+ * progress there was to find.
+ */
+export type SetMove = { dir: 'up' | 'down'; part: SetPart } | null;
+
+export function setMove(value: SetValue, previous: SetValue): SetMove {
+    if (value.weight !== previous.weight)
+        return {
+            dir: value.weight > previous.weight ? 'up' : 'down',
+            part: 'weight',
+        };
+    if (value.reps !== previous.reps)
+        return {
+            dir: value.reps > previous.reps ? 'up' : 'down',
+            part: 'reps',
+        };
+    // EFFORTS runs hardest first, so the higher index is the set that had more
+    // left in the tank.
+    const now = EFFORTS.indexOf(toEffort(value.effort));
+    const before = EFFORTS.indexOf(toEffort(previous.effort));
+    if (now !== before)
+        return { dir: now > before ? 'up' : 'down', part: 'effort' };
+    return null;
 }
 
 /** Where one day of one week sits relative to the cursor: the question the

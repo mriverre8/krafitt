@@ -1,6 +1,11 @@
 import type { Translate } from '@/i18n/config';
 import { EXERCISES, SETS, WEEKS as WEEK_LIMIT } from '@/lib/constants';
-import type { PreviousValue, SetValue, WeekState } from '@/lib/progress';
+import type {
+    Effort,
+    PreviousValue,
+    SetValue,
+    WeekState,
+} from '@/lib/progress';
 import { ChevronsDown, Repeat, Tag } from 'lucide-react';
 import type { ComponentType } from 'react';
 import type { HistoryRow } from '@/components/history/history-exercise';
@@ -135,15 +140,17 @@ export const LOGGED: Record<number, SetValue | undefined> = {
 
 // ---------- progress ----------
 
-type Week = readonly (readonly [number, number])[] | null;
+/** Weight, reps, and how it felt — the third one left off wherever the set
+    went as planned, which is most of them. */
+type Week = readonly (readonly [number, number, Effort?])[] | null;
 
 const CURRENT = 6;
 
 export function historyRows(weeks: readonly Week[]): HistoryRow[] {
     return weeks.map((logged, i) => {
         const sets: Record<number, SetValue | undefined> = {};
-        logged?.forEach(([weight, reps], setIndex) => {
-            sets[setIndex] = { weight, reps };
+        logged?.forEach(([weight, reps, effort], setIndex) => {
+            sets[setIndex] = { weight, reps, effort };
         });
         const week = i + 1;
         const state: WeekState =
@@ -193,12 +200,14 @@ export function historyExercises(t: Translate) {
                     },
                 ],
             } satisfies ExerciseView,
+            // A block that starts with room to spare and ends on the bar
+            // winning: the marks go gold and then red as the weight climbs.
             rows: historyRows([
                 [
-                    [70, 8],
+                    [70, 8, 'easy'],
                     [65, 9],
                     [55, 11],
-                    [44, 9],
+                    [44, 9, 'easy'],
                 ],
                 [
                     [72.5, 8],
@@ -209,21 +218,21 @@ export function historyExercises(t: Translate) {
                 [
                     [75, 8],
                     [70, 9],
-                    [57.5, 10],
-                    [46, 8],
+                    [57.5, 10, 'hard'],
+                    [46, 8, 'hard'],
                 ],
                 null,
                 [
-                    [77.5, 7],
+                    [77.5, 7, 'hard'],
                     [72.5, 8],
                     [60, 11],
-                    [48, 9],
+                    [48, 9, 'hard'],
                 ],
                 [
-                    [80, 6],
-                    [75, 8],
+                    [80, 6, 'fail'],
+                    [75, 8, 'hard'],
                     [62.5, 10],
-                    [50, 8],
+                    [50, 8, 'fail'],
                 ],
                 null,
                 null,

@@ -7,7 +7,7 @@ import {
     isSetEnabled,
     positionFromCursor,
     profileRoutines,
-    setTrend,
+    setMove,
     weekState,
     type Logs,
 } from '@/lib/progress';
@@ -21,28 +21,69 @@ const plan = (id: string, count: number) => ({
 
 const exercises = [plan('a', 2), plan('b', 1)];
 
-describe('setTrend', () => {
+describe('setMove', () => {
     const before = { weight: 80, reps: 8 };
 
-    it('counts either number rising as progress', () => {
-        expect(setTrend({ weight: 82.5, reps: 8 }, before)).toBe('up');
-        expect(setTrend({ weight: 80, reps: 9 }, before)).toBe('up');
-    });
-
     // The usual shape of a working set moving forward: more bar, fewer reps.
-    it('still counts more weight as progress when the reps give way', () => {
-        expect(setTrend({ weight: 85, reps: 6 }, before)).toBe('up');
-        expect(setTrend({ weight: 75, reps: 12 }, before)).toBe('up');
+    it('answers on the weight whatever the reps did', () => {
+        expect(setMove({ weight: 82.5, reps: 8 }, before)).toEqual({
+            dir: 'up',
+            part: 'weight',
+        });
+        expect(setMove({ weight: 85, reps: 6 }, before)).toEqual({
+            dir: 'up',
+            part: 'weight',
+        });
     });
 
-    it('calls it a drop only when nothing gained', () => {
-        expect(setTrend({ weight: 75, reps: 8 }, before)).toBe('down');
-        expect(setTrend({ weight: 80, reps: 6 }, before)).toBe('down');
-        expect(setTrend({ weight: 75, reps: 6 }, before)).toBe('down');
+    // The bar leads absolutely: extra reps do not buy back a lighter bar.
+    it('calls a lighter bar a drop however many reps came with it', () => {
+        expect(setMove({ weight: 75, reps: 12 }, before)).toEqual({
+            dir: 'down',
+            part: 'weight',
+        });
     });
 
-    it('says nothing about a set that repeated itself', () => {
-        expect(setTrend({ weight: 80, reps: 8 }, before)).toBe('same');
+    it('lets the reps answer once the bar has not moved', () => {
+        expect(setMove({ weight: 80, reps: 9 }, before)).toEqual({
+            dir: 'up',
+            part: 'reps',
+        });
+        expect(setMove({ weight: 80, reps: 6 }, before)).toEqual({
+            dir: 'down',
+            part: 'reps',
+        });
+    });
+
+    // Same bar, same reps, one notch easier: the only progress there was.
+    it('falls through to how it felt when both numbers repeated', () => {
+        expect(
+            setMove({ weight: 80, reps: 8, effort: 'easy' }, before)
+        ).toEqual({ dir: 'up', part: 'effort' });
+        expect(
+            setMove({ weight: 80, reps: 8, effort: 'fail' }, before)
+        ).toEqual({ dir: 'down', part: 'effort' });
+        expect(
+            setMove(
+                { weight: 80, reps: 8, effort: 'normal' },
+                { ...before, effort: 'hard' }
+            )
+        ).toEqual({ dir: 'up', part: 'effort' });
+    });
+
+    // An unmarked set is a normal one, so it neither gains nor loses against
+    // another unmarked set.
+    it('says nothing about a set that repeated itself down to the feel', () => {
+        expect(setMove({ weight: 80, reps: 8 }, before)).toBeNull();
+        expect(
+            setMove(
+                { weight: 80, reps: 8, effort: 'normal' },
+                { ...before, effort: 'normal' }
+            )
+        ).toBeNull();
+        expect(
+            setMove({ weight: 80, reps: 8, effort: 'normal' }, before)
+        ).toBeNull();
     });
 });
 

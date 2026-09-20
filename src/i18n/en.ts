@@ -91,7 +91,7 @@ export const en = {
     'landing.progressEyebrow': 'Progress',
     'landing.progressTitle': 'Every set, week by week',
     'landing.progressLead':
-        'One grid per exercise: weeks down the page, sets across. An arrow the moment a set beats the last time you did it, a dash for a week you missed, a dot for one still ahead.',
+        'One grid per exercise: sets down the page, weeks across. The numbers go green the moment a set beats the last time you did it and red when it gives ground, a dash for a week you missed, a dot for one still ahead.',
 
     'landing.joinEyebrow': 'Get started',
     'landing.joinTitle': 'Write your first routine',
@@ -160,8 +160,8 @@ export const en = {
     'progress.week': 'W{n}',
     'progress.weekLabel': 'Week {n}',
     'progress.weekColumn': 'Week',
+    'progress.setColumn': 'Set',
     'progress.setLabel': 'Set {n}',
-    'progress.value': '{weight}×{reps}',
     'progress.logged': '{weight} kg, {reps} reps',
     'progress.counter': '{n}/{total}',
     'progress.exerciseCount': '{name}, exercise {n} of {total}',

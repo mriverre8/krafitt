@@ -3,6 +3,14 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderWithLocale } from '@/tests/setup-helpers';
 
+/** A value is drawn in pieces — the weight, the reps, and the slot the effort
+    mark sits in — each of which is coloured on its own, so it is read off the
+    cell whole rather than matched as one run of text. */
+const shown = () =>
+    screen
+        .getAllByRole('cell')
+        .map((cell) => cell.querySelector('span[aria-hidden]')?.textContent);
+
 describe('ProgressPreview', () => {
     it('opens on the first exercise, with its logged weeks', () => {
         render(<ProgressPreview />);
@@ -10,7 +18,7 @@ describe('ProgressPreview', () => {
         expect(
             screen.getByRole('heading', { name: 'Bench press' })
         ).toBeInTheDocument();
-        expect(screen.getByText('80×6')).toBeInTheDocument();
+        expect(shown()).toContain('80×6');
     });
 
     // Week 4 was never trained and week 6 is the one we are on, so the blanks
