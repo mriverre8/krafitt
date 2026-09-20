@@ -1,7 +1,21 @@
 /** Pure progression logic. No Prisma, no React */
 
 export type ExercisePlan = { id: string; sets: readonly unknown[] };
-export type SetValue = { weight: number; reps: number };
+/** How a set felt: one more in the tank, as planned, a grind, or the rep that
+    did not go up. Every set has one — a set nobody marked is a normal one. */
+export type Effort = 'easy' | 'normal' | 'hard' | 'fail';
+/** Hardest first: the order the picker draws them in, read as a scale from
+    "the bar won" to "had more left". */
+export const EFFORTS: readonly Effort[] = ['fail', 'hard', 'normal', 'easy'];
+/** Kept as the literal rather than widened to `Effort`, so that comparing
+    against it tells the type checker which answers are left. */
+export const DEFAULT_EFFORT = 'normal' satisfies Effort;
+export function toEffort(value: string | undefined): Effort {
+    return EFFORTS.includes(value as Effort)
+        ? (value as Effort)
+        : DEFAULT_EFFORT;
+}
+export type SetValue = { weight: number; reps: number; effort?: Effort };
 /** exerciseId -> setIndex -> logged value */
 export type Logs = Record<
     string,

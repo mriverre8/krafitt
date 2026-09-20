@@ -61,6 +61,37 @@ describe('TodayWorkout', () => {
         vi.clearAllMocks();
     });
 
+    // A routine with one day in it comes round again under the same workout
+    // and exercise ids, so nothing in the tree changes identity when the day
+    // does — and a row would sit there still holding what was typed into it
+    // last time round.
+    it('starts the next day with empty fields', async () => {
+        const { rerender } = render(<TodayWorkout {...props} />);
+        fireEvent.change(screen.getByLabelText('Weight set 1'), {
+            target: { value: '80' },
+        });
+        fireEvent.change(screen.getByLabelText('Reps set 1'), {
+            target: { value: '8' },
+        });
+        fireEvent.click(screen.getByLabelText('Save set 1'));
+        fireEvent.click(screen.getByLabelText('Bank set 1'));
+        await waitFor(() =>
+            expect(screen.getByLabelText('Weight set 1')).toHaveValue(80)
+        );
+
+        rerender(
+            <TodayWorkout
+                {...props}
+                week={3}
+                logs={{}}
+            />
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText('Weight set 1')).toHaveValue(null)
+        );
+        expect(screen.getByLabelText('Reps set 1')).toHaveValue(null);
+    });
+
     it('shows the routine, day and week', () => {
         render(<TodayWorkout {...props} />);
         expect(screen.getByText('Push A')).toBeInTheDocument();

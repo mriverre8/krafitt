@@ -72,6 +72,29 @@ describe('WorkoutExercise', () => {
             target: { value: '8' },
         });
         fireEvent.click(screen.getByLabelText('Save set 2'));
-        expect(onSaveSet).toHaveBeenCalledWith(1, 80, 8);
+        fireEvent.click(screen.getByLabelText('Bank set 2'));
+        expect(onSaveSet).toHaveBeenCalledWith(1, 80, 8, 'normal');
+    });
+
+    it('sends the effort the user marked, normal being what nobody marks', () => {
+        const onSaveSet = vi.fn();
+        render(
+            <WorkoutExercise
+                {...base}
+                logs={{ 0: { weight: 100, reps: 5 } }}
+                isSetEnabled={() => true}
+                onSaveSet={onSaveSet}
+            />
+        );
+        fireEvent.change(screen.getByLabelText('Weight set 2'), {
+            target: { value: '80' },
+        });
+        fireEvent.change(screen.getByLabelText('Reps set 2'), {
+            target: { value: '8' },
+        });
+        fireEvent.click(screen.getByLabelText('Save set 2'));
+        fireEvent.click(screen.getByLabelText('Really tough'));
+        fireEvent.click(screen.getByLabelText('Bank set 2'));
+        expect(onSaveSet).toHaveBeenCalledWith(1, 80, 8, 'hard');
     });
 });
