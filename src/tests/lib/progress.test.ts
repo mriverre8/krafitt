@@ -2,6 +2,7 @@ import {
     HISTORY_WINDOW,
     historyWeeks,
     isRoutineFinished,
+    routineRank,
     isRoutineLocked,
     isSessionComplete,
     isSetEnabled,
@@ -181,6 +182,27 @@ describe('isRoutineFinished', () => {
 
     it('never calls an open-ended routine finished', () => {
         expect(isRoutineFinished(999, 2, null)).toBe(false);
+    });
+});
+
+describe('routineRank', () => {
+    const rank = (o: Partial<Parameters<typeof routineRank>[0]>) =>
+        routineRank({
+            isActive: false,
+            finished: false,
+            canActivate: true,
+            cursor: 0,
+            ...o,
+        });
+
+    it('orders active, started, pending, incomplete, ended', () => {
+        expect([
+            rank({ isActive: true }),
+            rank({ cursor: 3 }),
+            rank({}),
+            rank({ canActivate: false }),
+            rank({ finished: true, isActive: true }),
+        ]).toEqual([0, 1, 2, 3, 4]);
     });
 });
 

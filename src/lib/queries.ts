@@ -230,10 +230,6 @@ export async function routinesOf(
     });
 }
 
-export function countRoutines(userId: string) {
-    return prisma.routine.count({ where: { creatorId: userId } });
-}
-
 /**
  * Every day the user logged something since `from`, as ISO date → sets logged.
  * Sessions across every routine, active or not: the graph is about the person,

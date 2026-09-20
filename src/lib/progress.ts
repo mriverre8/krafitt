@@ -168,6 +168,24 @@ export function isRoutineFinished(
 }
 
 /**
+ * Where a routine sits in the list: the one being trained first, then the ones
+ * ready to take over — part-trained before untouched — then the drafts that
+ * still need finishing, and the done ones last. A finished routine is done
+ * whatever its flags say, which is also the badge the card draws.
+ */
+export function routineRank(routine: {
+    isActive: boolean;
+    finished: boolean;
+    canActivate: boolean;
+    cursor: number;
+}): number {
+    if (routine.finished) return 4;
+    if (routine.isActive) return 0;
+    if (!routine.canActivate) return 3;
+    return routine.cursor > 0 ? 1 : 2;
+}
+
+/**
  * A routine that has been lived in is frozen: its plan is what the sessions
  * were logged against, and what the cursor is counting. Being active is enough
  * on its own — training starts the moment it goes live. Only a routine still on
