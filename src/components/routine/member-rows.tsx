@@ -13,7 +13,7 @@ export async function MemberRows({ routineId }: { routineId: string }) {
 
     if (members.length === 0)
         return (
-            <div className={`${cardClass} p-8!`}>
+            <div className={`${cardClass} p-4!`}>
                 <h2 className="display text-4xl">{t('members.emptyTitle')}</h2>
                 <p className="text-muted mt-3 max-w-sm text-base">
                     {t('members.empty')}
