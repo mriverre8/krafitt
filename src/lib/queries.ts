@@ -249,10 +249,14 @@ export async function routinesOf(
  * about whether it could be set active — that is not a move you have — so
  * there is nothing here to drag its days, exercises and sets along for.
  */
-export async function sharedRoutinesOf(userId: string) {
+export async function sharedRoutinesOf(
+    userId: string,
+    page?: { skip: number; take: number }
+) {
     const routines = await prisma.routine.findMany({
         where: { members: { some: { userId } } },
         orderBy: { createdAt: 'desc' },
+        ...page,
         include: {
             _count: { select: { workouts: true } },
             creator: { select: { name: true, image: true } },
@@ -301,6 +305,12 @@ export async function routineMembers(routineId: string) {
 
 export function countRoutines(userId: string) {
     return prisma.routine.count({ where: { creatorId: userId } });
+}
+
+export function countSharedRoutines(userId: string) {
+    return prisma.routine.count({
+        where: { members: { some: { userId } } },
+    });
 }
 
 /**

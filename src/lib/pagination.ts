@@ -6,6 +6,10 @@
 /** Rows per page. One number for every list: they all show the same card. */
 export const PAGE_SIZE = 10;
 
+/** Rows a block on the routines index shows before it hands over to its own
+    paged page. Short on purpose: the index is a landing pad, not the list. */
+export const PREVIEW_SIZE = 5;
+
 /**
  * The page the URL asks for, clamped to the pages that exist. Anything else —
  * no param, a word, a negative, a page past the end after a routine was
