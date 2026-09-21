@@ -1,6 +1,6 @@
 import { MemberRows } from '@/components/routine/member-rows';
 import { removeRoutineMember, setRoutineMember } from '@/app/actions';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { acceptConfirm, withModals } from '@/tests/setup-helpers';
 
@@ -61,28 +61,43 @@ describe('MemberRows', () => {
         expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
 
-    // Only the owner reaches this page, so every row is one they may move.
-    // The select is the one place a role is decided — the search says nothing
-    // about roles, so there are not two controls to keep in step.
-    it('gives every row a role control set to what that person holds', async () => {
+    // The role is read, not operated: a control stating a fact would make
+    // every row a thing to adjust rather than a person to look at.
+    it('reads the role under the name', async () => {
         render(await rows());
 
-        expect(
-            screen.getByRole('combobox', { name: 'Role of Ada' })
-        ).toHaveValue('coach');
-        expect(
-            screen.getByRole('combobox', { name: 'Role of Bob' })
-        ).toHaveValue('scout');
+        const ada = screen.getByRole('link', { name: 'Ada' })
+            .parentElement as HTMLElement;
+        expect(within(ada).getByText('Coach')).toBeInTheDocument();
+
+        const bob = screen.getByRole('link', { name: 'Bob' })
+            .parentElement as HTMLElement;
+        expect(within(bob).getByText('Scout')).toBeInTheDocument();
     });
 
-    // Taking somebody out is not undoable from here, so it asks first.
-    it('asks before taking somebody out', async () => {
+    // The link goes to a profile, so its name is the person and nothing else:
+    // with the role inside it, a screen reader would read "Ada Coach". The
+    // picture leads to the same place for a pointer that aims at it, but it is
+    // hidden from the accessibility tree — one row announces one link.
+    it('names one link per person, and it is only their name', async () => {
+        render(await rows());
+
+        expect(screen.getAllByRole('link')).toHaveLength(2);
+    });
+
+    // What the menu offers is its own suite's business. What this layer owns
+    // is that each one is wired to the person whose row it sits in — the bug
+    // this catches is every row removing the first member in the list.
+    it('binds each menu to its own person', async () => {
         render(withModals(await rows()));
 
-        screen.getByRole('button', { name: 'Remove Ada' }).click();
-        expect(removeRoutineMember).not.toHaveBeenCalled();
-
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Options for Bob' })
+        );
+        fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
         await acceptConfirm('Delete');
-        expect(removeRoutineMember).toHaveBeenCalledWith('r1', 'ada');
+
+        expect(removeRoutineMember).toHaveBeenCalledWith('r1', 'bob');
+        expect(removeRoutineMember).not.toHaveBeenCalledWith('r1', 'ada');
     });
 });
