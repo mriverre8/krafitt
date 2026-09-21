@@ -241,15 +241,21 @@ export async function routinesOf(
 }
 
 /**
- * The routines someone was let into. The role comes along: a list you cannot
- * tell coach from scout in is a list you have to open each row to understand.
+ * The routines someone was let into, with the role they hold and whose routine
+ * it is: a list you cannot tell coach from scout in, or tell apart by owner, is
+ * a list you have to open each row to understand.
+ *
+ * Deliberately not `withPlan`. A card of somebody else's routine says nothing
+ * about whether it could be set active — that is not a move you have — so
+ * there is nothing here to drag its days, exercises and sets along for.
  */
 export async function sharedRoutinesOf(userId: string) {
     const routines = await prisma.routine.findMany({
         where: { members: { some: { userId } } },
         orderBy: { createdAt: 'desc' },
         include: {
-            ...withPlan,
+            _count: { select: { workouts: true } },
+            creator: { select: { name: true, image: true } },
             members: { where: { userId }, select: { role: true } },
         },
     });

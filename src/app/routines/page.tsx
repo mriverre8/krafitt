@@ -1,6 +1,7 @@
 import { createRoutine } from '@/app/actions';
 import { CreateRoutineForm } from '@/components/routine/create-routine-form';
 import { RoutineCard } from '@/components/routine/routine-card';
+import { RoutineSharedCard } from '@/components/routine/routine-shared-card';
 import { Pagination } from '@/components/ui/pagination';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
@@ -68,19 +69,14 @@ export default async function RoutinesPage({
                     <ul className="space-y-3">
                         {shared.map((routine) => (
                             <li key={routine.id}>
-                                <RoutineCard
+                                <RoutineSharedCard
                                     id={routine.id}
                                     name={routine.name}
                                     durationWeeks={routine.durationWeeks}
                                     workoutCount={routine._count.workouts}
                                     cursor={routine.cursor}
-                                    isActive={routine.isActive}
-                                    finished={isRoutineFinished(
-                                        routine.cursor,
-                                        routine._count.workouts,
-                                        routine.durationWeeks
-                                    )}
-                                    canActivate={isRoutineComplete(routine, t)}
+                                    ownerName={routine.creator.name}
+                                    ownerImage={routine.creator.image}
                                     role={routine.role}
                                 />
                             </li>

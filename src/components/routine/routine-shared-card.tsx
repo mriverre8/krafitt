@@ -2,23 +2,24 @@
 
 import { useT } from '@/i18n/use-t';
 import type { Duration } from '@/lib/progress';
+import type { Grant } from '@/lib/roles';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
-import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
+import { Avatar } from '@/components/ui/avatar';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 
-export type RoutineCardProps = {
+export type RoutineSharedCardProps = {
     id: string;
     name: string;
     durationWeeks: Duration;
     workoutCount: number;
     cursor: number;
-    isActive: boolean;
-    finished: boolean;
-    canActivate: boolean;
+    ownerName: string;
+    ownerImage: string | null;
+    role: Grant;
 };
 
-export function RoutineCard(props: RoutineCardProps) {
+export function RoutineSharedCard(props: RoutineSharedCardProps) {
     const t = useT();
     const total =
         props.durationWeeks === null
@@ -30,14 +31,10 @@ export function RoutineCard(props: RoutineCardProps) {
             ? t('routines.progressOpen', { done })
             : t('routines.progress', { done, total });
 
-    const training = props.isActive && !props.finished;
-
     return (
         <Link
             href={`/routines/${props.id}`}
-            className={`${cardLinkClass} block ${
-                training ? 'border-l-volt border-l-[6px]' : ''
-            }`}
+            className={`${cardLinkClass} block`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -52,39 +49,23 @@ export function RoutineCard(props: RoutineCardProps) {
                                   days: props.workoutCount,
                               })}
                     </p>
+                    <p className="text-muted mt-2 flex items-center gap-1.5 text-sm">
+                        <Avatar
+                            name={props.ownerName}
+                            src={props.ownerImage}
+                            className="size-5 text-[9px]"
+                        />
+                        <span className="truncate">
+                            {t('routine.by', { name: props.ownerName })}
+                        </span>
+                    </p>
                 </div>
 
-                {props.finished ? (
+                {props.role && (
                     <span
-                        className={`${badgeClass} border-surge text-surge shrink-0 border-2`}
+                        className={`${badgeClass} border-pulse text-pulse shrink-0 border-2`}
                     >
-                        <CircleCheck
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.finished')}
-                    </span>
-                ) : props.isActive ? (
-                    <span
-                        className={`${badgeClass} bg-volt text-on-volt shrink-0`}
-                    >
-                        <Flame
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.active')}
-                    </span>
-                ) : props.canActivate ? (
-                    <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
-                    >
-                        {t('routines.pending')}
-                    </span>
-                ) : (
-                    <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2 border-dashed`}
-                    >
-                        {t('routines.incomplete')}
+                        {t(`role.${props.role}`)}
                     </span>
                 )}
             </div>
