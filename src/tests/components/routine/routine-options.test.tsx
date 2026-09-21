@@ -8,7 +8,11 @@ import { RoutineOptions } from '@/components/routine/routine-options';
 import type { FormAction } from '@/lib/forms';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithLocale, withModals } from '@/tests/setup-helpers';
+import {
+    acceptConfirm,
+    renderWithLocale,
+    withModals,
+} from '@/tests/setup-helpers';
 
 /** The header of the routine page, which is the only thing that renders the
     menu — and only out of edit mode, and only for the owner. */
@@ -23,6 +27,15 @@ function setup({
     finished = false,
     editable = true,
     isPublic = false,
+    /** As the page passes them: a coach is handed the menu without the rows
+        that belong to the owner alone. */
+    people = { href: '/routines/r1/people', count: 3 } as
+        { href: string; count: number } | undefined,
+    onLeave = vi.fn(async () => {}),
+    owner = true,
+    /** As the page passes them: a scout changes nothing, so every row but the
+        people of the routine falls away. */
+    editor = true,
 } = {}) {
     renderWithLocale(
         withModals(
@@ -30,16 +43,18 @@ function setup({
                 <WhenNotEditing>
                     <RoutineOptions
                         name="Push Pull Legs"
-                        rename={finished ? undefined : rename}
+                        rename={!editor || finished ? undefined : rename}
                         duration={
-                            duration
+                            editor && duration
                                 ? { ...duration, save: setDuration }
                                 : undefined
                         }
-                        onDelete={onDelete}
-                        editable={editable}
+                        people={owner ? people : undefined}
+                        onLeave={owner ? undefined : onLeave}
+                        onDelete={owner ? onDelete : undefined}
+                        editable={editor && editable}
                         isPublic={isPublic}
-                        setVisibility={setVisibility}
+                        setVisibility={owner ? setVisibility : undefined}
                     />
                 </WhenNotEditing>
                 <WhenEditing>
@@ -179,5 +194,118 @@ describe('RoutineOptions', () => {
         await waitFor(() =>
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
         );
+    });
+});
+
+describe('RoutineOptions for someone who was let in', () => {
+    // Who else is watching a person's numbers is theirs to know: the list is
+    // the owner's page, and nobody else is even told it is there.
+    it('never points anyone but the owner at the people of the routine', async () => {
+        setup({ owner: false });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        await screen.findByRole('button', { name: /Leave routine/ });
+        expect(
+            screen.queryByRole('link', { name: /People/ })
+        ).not.toBeInTheDocument();
+    });
+
+    it('points the owner at them, and offers them no way out', async () => {
+        setup();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('link', { name: 'People (3)' })
+        ).toHaveAttribute('href', '/routines/r1/people');
+        expect(
+            screen.queryByRole('button', { name: /Leave routine/ })
+        ).not.toBeInTheDocument();
+    });
+
+    // Nobody is put on a routine with their say-so, so walking out is what
+    // makes that acceptable. It names the routine before it happens.
+    it('asks, naming the routine, before letting somebody walk out', async () => {
+        const onLeave = vi.fn(async () => {});
+        setup({ owner: false, onLeave });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        fireEvent.click(
+            await screen.findByRole('button', { name: /Leave routine/ })
+        );
+        expect(onLeave).not.toHaveBeenCalled();
+
+        const dialog = await screen.findByRole('dialog');
+        expect(dialog).toHaveTextContent('Leave Push Pull Legs?');
+        await acceptConfirm('Leave routine');
+
+        await waitFor(() => expect(onLeave).toHaveBeenCalled());
+    });
+
+    // A coach renames, moves the duration and edits the plan. Deleting the
+    // routine and publishing it stay with whoever it belongs to.
+    it('keeps deleting and publishing out of a coach menu', async () => {
+        setup({ owner: false });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('button', { name: 'Rename routine' })
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Delete routine' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Make public' })
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('RoutineOptions for a scout', () => {
+    const scout = { owner: false, editor: false };
+
+    // Everything that would change the routine is gone; the way out is not.
+    it('offers a way out and nothing else', async () => {
+        setup(scout);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('button', { name: /Leave routine/ })
+        ).toBeInTheDocument();
+
+        for (const name of [
+            'Rename routine',
+            'Change duration',
+            'Edit',
+            'Make public',
+            'Delete routine',
+        ]) {
+            expect(
+                screen.queryByRole('button', { name })
+            ).not.toBeInTheDocument();
+        }
+        expect(
+            screen.queryByRole('link', { name: /People/ })
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('the people row of RoutineOptions', () => {
+    it('counts the people who are in', async () => {
+        setup();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('link', { name: 'People (3)' })
+        ).toHaveAttribute('href', '/routines/r1/people');
+    });
+
+    // A count is there to say how many. None is what the page says itself the
+    // moment it opens, so "(0)" would be a number nobody needed.
+    it('says no number when nobody is in', async () => {
+        setup({ people: { href: '/routines/r1/people', count: 0 } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('link', { name: 'People' })
+        ).toBeInTheDocument();
     });
 });

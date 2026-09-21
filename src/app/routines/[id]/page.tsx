@@ -3,6 +3,7 @@ import {
     deactivateRoutine,
     deleteRoutine,
     deleteWorkout,
+    removeRoutineMember,
     renameRoutine,
     renameWorkout,
     saveExercises,
@@ -32,7 +33,8 @@ import {
     isRoutineFinished,
     isRoutineLocked,
 } from '@/lib/progress';
-import { routineDetail } from '@/lib/queries';
+import { memberRole, routineDetail } from '@/lib/queries';
+import { canEditPlan, canManage, canView } from '@/lib/roles';
 import { badgeClass } from '@/lib/ui';
 import {
     isRoutineComplete,
@@ -53,8 +55,15 @@ export default async function RoutinePage({
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
     if (!routine) notFound();
 
-    const owner = routine.creatorId === user.id;
-    if (!owner && !routine.isPublic) notFound();
+    // One extra lookup, and only for someone who did not write the routine.
+    const role =
+        routine.creatorId === user.id ? 'owner' : await memberRole(id, user.id);
+    // Public opens the plan to whoever holds the address; a role opens it to
+    // one named person, and opens the log along with it.
+    if (!canView(role) && !routine.isPublic) notFound();
+
+    const owner = canManage(role);
+    const editor = canEditPlan(role);
 
     const complete = isRoutineComplete(routine, t);
     const finished = isRoutineFinished(
@@ -68,7 +77,7 @@ export default async function RoutinePage({
     });
 
     const addDay =
-        locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
+        locked || !editor ? undefined : addWorkoutTo.bind(null, routine.id);
 
     const durationFloor = currentWeek(routine.cursor, routine.workouts.length);
     const duration =
@@ -99,30 +108,56 @@ export default async function RoutinePage({
                                       days: routine.workouts.length,
                                   })}
                         </p>
-                        {owner && (
+                        {canView(role) && (
                             <div className="flex shrink-0 items-center gap-4">
                                 <WhenNotEditing>
                                     <RoutineOptions
                                         name={routine.name}
                                         rename={
-                                            finished
+                                            !editor || finished
                                                 ? undefined
                                                 : renameRoutine.bind(
                                                       null,
                                                       routine.id
                                                   )
                                         }
-                                        onDelete={deleteRoutine.bind(
-                                            null,
-                                            routine.id
-                                        )}
-                                        duration={duration}
-                                        editable={!locked}
+                                        onDelete={
+                                            owner
+                                                ? deleteRoutine.bind(
+                                                      null,
+                                                      routine.id
+                                                  )
+                                                : undefined
+                                        }
+                                        duration={editor ? duration : undefined}
+                                        people={
+                                            owner
+                                                ? {
+                                                      href: `/routines/${routine.id}/people`,
+                                                      count: routine._count
+                                                          .members,
+                                                  }
+                                                : undefined
+                                        }
+                                        onLeave={
+                                            owner
+                                                ? undefined
+                                                : removeRoutineMember.bind(
+                                                      null,
+                                                      routine.id,
+                                                      user.id
+                                                  )
+                                        }
+                                        editable={editor && !locked}
                                         isPublic={routine.isPublic}
-                                        setVisibility={setRoutineVisibility.bind(
-                                            null,
-                                            routine.id
-                                        )}
+                                        setVisibility={
+                                            owner
+                                                ? setRoutineVisibility.bind(
+                                                      null,
+                                                      routine.id
+                                                  )
+                                                : undefined
+                                        }
                                     />
                                 </WhenNotEditing>
                                 <WhenEditing>
@@ -149,6 +184,13 @@ export default async function RoutinePage({
                                     name: routine.creator.name,
                                 })}
                             </Link>
+                            {role && (
+                                <p
+                                    className={`${badgeClass} border-pulse text-pulse border-2`}
+                                >
+                                    {t(`role.${role}`)}
+                                </p>
+                            )}
                             {!complete && (
                                 <p
                                     className={`${badgeClass} border-line text-muted border-2 border-dashed`}
@@ -218,12 +260,14 @@ export default async function RoutinePage({
                             </WhenNotEditing>
                         </>
                     )}
-                    {owner && routine.isPublic && (
+                    {routine.isPublic && (
                         <WhenNotEditing>
                             <ShareRoutineButton name={routine.name} />
                         </WhenNotEditing>
                     )}
-                    {owner && locked && <HistoryLink routineId={routine.id} />}
+                    {canView(role) && locked && (
+                        <HistoryLink routineId={routine.id} />
+                    )}
                 </div>
                 {routine.workouts.length === 0 && (
                     <EmptyRoutine addDay={addDay} />
