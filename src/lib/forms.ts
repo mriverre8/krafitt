@@ -13,6 +13,21 @@ export type FormAction = (
     data: FormData
 ) => Promise<FormState>;
 
+/** Someone the member search turned up: always a person who can still be
+    added, because a search that finds the owner or someone already in answers
+    with a message instead. */
+export type FoundUser = { id: string; name: string; image: string | null };
+
+/**
+ * What searching for someone to add answers with. `notice` rather than `error`
+ * for "already in the routine": the search worked, there is simply nothing to
+ * do with the answer, and `FormError` paints in danger.
+ */
+export type MemberSearchState = FormState & {
+    found?: FoundUser;
+    notice?: string;
+};
+
 /** One exercise as the database holds it. The kind is optional only so that a
     plain working set can be written without it — the database always has one.
     A null technique is a set that was never given one. */

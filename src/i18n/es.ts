@@ -197,6 +197,7 @@ export const es: Dict = {
 
     'routines.title': 'Mis rutinas',
     'routines.empty': 'Aún no tienes rutinas.',
+    'routines.sharedTitle': 'Compartidas conmigo',
     'routines.active': 'Activa',
     'routines.markActive': 'Marcar activa',
     'routines.pending': 'Pendiente',
@@ -255,6 +256,29 @@ export const es: Dict = {
     'routine.delete': 'Borrar rutina',
     'routine.deleteConfirm':
         '¿Borrar la rutina {name}? Se pierde todo el progreso.',
+
+    'members.title': 'Personas',
+    'members.link': 'Personas',
+    'members.subtitle': 'Quién más puede ver esta rutina',
+    'members.emptyTitle': 'Todavía no hay nadie',
+    'members.empty':
+        'Añade un entrenador para trabajar el plan contigo, o un ojeador para que te siga.',
+    'members.search': 'Buscar',
+    'members.searchLabel': 'Buscar personas',
+    'members.emailPlaceholder': 'nombre@ejemplo.com',
+    'members.add': 'Añadir',
+    'members.already': '{name} ya está en esta rutina',
+    'members.roleLabel': 'Rol de {name}',
+    'members.remove': 'Quitar a {name}',
+    'members.removeTitle': 'Quitar persona',
+    'members.removeConfirm': '¿Quitar a {name} de esta rutina?',
+    'members.leave': 'Salir de la rutina',
+    'members.leaveTitle': 'Salir de la rutina',
+    'members.leaveConfirm':
+        '¿Salir de {name}? Perderás el acceso a la rutina y a su histórico.',
+    'role.owner': 'Propietario',
+    'role.coach': 'Entrenador',
+    'role.scout': 'Ojeador',
 
     'exercise.namePlaceholder': 'Ejercicio',
     'exercise.nameLabel': 'Nombre del ejercicio {exercise}',
@@ -320,6 +344,10 @@ export const es: Dict = {
     'error.routineNotFound': 'Rutina no encontrada',
     'error.noAccess': 'No tienes acceso a esta rutina',
     'error.followSelf': 'No puedes seguirte a ti mismo',
+    'error.memberEmail': 'Escribe un correo electrónico',
+    'error.memberNotFound': 'Ninguna cuenta usa ese correo',
+    'error.memberSelf': 'Esta rutina ya es tuya',
+    'error.memberRole': 'Ese rol no se le puede dar a nadie',
     'error.workoutNotFound': 'Entrenamiento no encontrado',
     'error.routineName': 'Ponle un nombre a la rutina',
     'error.nameTooLong': 'Ese nombre es demasiado largo (máx. 60 caracteres)',

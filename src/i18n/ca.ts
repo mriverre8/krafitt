@@ -197,6 +197,7 @@ export const ca: Dict = {
 
     'routines.title': 'Les meves rutines',
     'routines.empty': 'Encara no tens rutines.',
+    'routines.sharedTitle': 'Compartides amb mi',
     'routines.active': 'Activa',
     'routines.markActive': 'Marcar activa',
     'routines.pending': 'Pendent',
@@ -255,6 +256,29 @@ export const ca: Dict = {
     'routine.delete': 'Esborrar rutina',
     'routine.deleteConfirm':
         'Esborrar la rutina {name}? Es perd tot el progrés.',
+
+    'members.title': 'Persones',
+    'members.link': 'Persones',
+    'members.subtitle': 'Qui més pot veure aquesta rutina',
+    'members.emptyTitle': 'Encara no hi ha ningú',
+    'members.empty':
+        'Afegeix un entrenador per treballar el pla amb tu, o un ullador perquè et segueixi.',
+    'members.search': 'Cerca',
+    'members.searchLabel': 'Cercar persones',
+    'members.emailPlaceholder': 'nom@exemple.com',
+    'members.add': 'Afegeix',
+    'members.already': '{name} ja és en aquesta rutina',
+    'members.roleLabel': 'Rol de {name}',
+    'members.remove': 'Treu {name}',
+    'members.removeTitle': 'Treure persona',
+    'members.removeConfirm': 'Treure {name} d’aquesta rutina?',
+    'members.leave': 'Sortir de la rutina',
+    'members.leaveTitle': 'Sortir de la rutina',
+    'members.leaveConfirm':
+        'Sortir de {name}? Perdràs l’accés a la rutina i al seu històric.',
+    'role.owner': 'Propietari',
+    'role.coach': 'Entrenador',
+    'role.scout': 'Ullador',
 
     'exercise.namePlaceholder': 'Exercici',
     'exercise.nameLabel': "Nom de l'exercici {exercise}",
@@ -320,6 +344,10 @@ export const ca: Dict = {
     'error.routineNotFound': 'Rutina no trobada',
     'error.noAccess': 'No tens accés a aquesta rutina',
     'error.followSelf': 'No et pots seguir a tu mateix',
+    'error.memberEmail': 'Escriu un correu electrònic',
+    'error.memberNotFound': 'Cap compte no fa servir aquest correu',
+    'error.memberSelf': 'Aquesta rutina ja és teva',
+    'error.memberRole': 'Aquest rol no es pot donar a ningú',
     'error.workoutNotFound': 'Entrenament no trobat',
     'error.routineName': 'Posa-li un nom a la rutina',
     'error.nameTooLong': 'Aquest nom és massa llarg (màx. 60 caràcters)',

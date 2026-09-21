@@ -1,5 +1,6 @@
 'use client';
 
+import type { ConfirmModalProps } from '@/components/modal/confirm-modal';
 import { showModal } from '@/store/modal';
 import { useTransition } from 'react';
 
@@ -13,7 +14,7 @@ export function ActionButton({
     action: () => Promise<unknown>;
     children: React.ReactNode;
     className?: string;
-    confirm?: { title: string; message: string };
+    confirm?: Omit<ConfirmModalProps, 'onConfirm' | 'onClose'>;
     label?: string;
 }) {
     const [pending, startTransition] = useTransition();

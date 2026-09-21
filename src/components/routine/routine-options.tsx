@@ -8,12 +8,28 @@ import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { EditModeToggle } from '@/components/routine/edit-mode';
-import { CalendarRange, Ellipsis, Globe, Lock, Type } from 'lucide-react';
+import {
+    CalendarRange,
+    Ellipsis,
+    Globe,
+    Lock,
+    LogOut,
+    Type,
+    Users,
+} from 'lucide-react';
+import Link from 'next/link';
 
+/**
+ * Everything a routine can be done to from its own header. Which rows appear is
+ * the page's call, not this one's: a coach is handed the same menu with the
+ * owner's rows left out, so there is one menu rather than two to keep in step.
+ */
 export function RoutineOptions({
     name,
     rename,
     duration,
+    people,
+    onLeave,
     onDelete,
     editable,
     isPublic,
@@ -22,10 +38,17 @@ export function RoutineOptions({
     name: string;
     rename?: FormAction;
     duration?: { weeks: number; min: number; save: FormAction };
-    onDelete: () => Promise<unknown>;
+    /** Where the people of this routine are managed. The owner's, and only
+        theirs: who else is watching is the owner's business to keep. */
+    people?: string;
+    /** For anyone who was let in: nobody is put on a routine with their
+        say-so, so walking out is what makes that acceptable. */
+    onLeave?: () => Promise<unknown>;
+    /** Absent for anyone but the owner: deleting and sharing are theirs. */
+    onDelete?: () => Promise<unknown>;
     editable: boolean;
-    isPublic: boolean;
-    setVisibility: (isPublic: boolean) => Promise<unknown>;
+    isPublic?: boolean;
+    setVisibility?: (isPublic: boolean) => Promise<unknown>;
 }) {
     const t = useT();
 
@@ -92,35 +115,69 @@ export function RoutineOptions({
                             onClick={close}
                         />
                     )}
-                    <ActionButton
-                        action={async () => {
-                            close();
-                            await setVisibility(!isPublic);
-                        }}
-                        className={menuItemClass}
-                    >
-                        {isPublic ? (
-                            <Lock
+                    {people && (
+                        <Link
+                            href={people}
+                            onClick={close}
+                            className={menuItemClass}
+                        >
+                            <Users
                                 size={14}
                                 aria-hidden
                             />
-                        ) : (
-                            <Globe
+                            {t('members.link')}
+                        </Link>
+                    )}
+                    {setVisibility && (
+                        <ActionButton
+                            action={async () => {
+                                close();
+                                await setVisibility(!isPublic);
+                            }}
+                            className={menuItemClass}
+                        >
+                            {isPublic ? (
+                                <Lock
+                                    size={14}
+                                    aria-hidden
+                                />
+                            ) : (
+                                <Globe
+                                    size={14}
+                                    aria-hidden
+                                />
+                            )}
+                            {t(
+                                isPublic
+                                    ? 'routine.makePrivate'
+                                    : 'routine.makePublic'
+                            )}
+                        </ActionButton>
+                    )}
+                    {onLeave && (
+                        <ActionButton
+                            action={onLeave}
+                            confirm={{
+                                title: t('members.leaveTitle'),
+                                message: t('members.leaveConfirm', { name }),
+                                confirmLabel: t('members.leave'),
+                            }}
+                            className={menuDangerClass}
+                        >
+                            <LogOut
                                 size={14}
                                 aria-hidden
                             />
-                        )}
-                        {t(
-                            isPublic
-                                ? 'routine.makePrivate'
-                                : 'routine.makePublic'
-                        )}
-                    </ActionButton>
-                    <DeleteRoutineButton
-                        name={name}
-                        onDelete={onDelete}
-                        className={menuDangerClass}
-                    />
+                            {t('members.leave')}
+                        </ActionButton>
+                    )}
+                    {onDelete && (
+                        <DeleteRoutineButton
+                            name={name}
+                            onDelete={onDelete}
+                            className={menuDangerClass}
+                        />
+                    )}
                 </>
             )}
         </Dropdown>

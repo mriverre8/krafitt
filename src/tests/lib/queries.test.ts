@@ -1,8 +1,10 @@
-import { followList, isFollowing } from '@/lib/queries';
+import { followList, isFollowing, routineHistory } from '@/lib/queries';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const findFollows = vi.fn();
 const findFollow = vi.fn();
+const findRoutine = vi.fn();
+const findSessions = vi.fn();
 
 vi.mock('@/lib/db', () => ({
     prisma: {
@@ -10,17 +12,26 @@ vi.mock('@/lib/db', () => ({
             findMany: (...args: unknown[]) => findFollows(...args),
             findUnique: (...args: unknown[]) => findFollow(...args),
         },
+        routine: { findUnique: (...args: unknown[]) => findRoutine(...args) },
+        workoutSession: {
+            findMany: (...args: unknown[]) => findSessions(...args),
+        },
     },
 }));
 
 const ada = { id: 'ada', name: 'Ada', image: null };
 const bob = { id: 'bob', name: 'Bob', image: null };
 
+/** Ada's routine, one day, one exercise, no sets prescribed. */
+const routine = { id: 'r1', creatorId: 'ada', workouts: [] };
+
 beforeEach(() => {
     findFollows
         .mockReset()
         .mockResolvedValue([{ follower: ada, following: bob }]);
     findFollow.mockReset().mockResolvedValue(null);
+    findRoutine.mockReset().mockResolvedValue(routine);
+    findSessions.mockReset().mockResolvedValue([]);
 });
 
 const page = { skip: 0, take: 10 };
@@ -64,6 +75,50 @@ describe('isFollowing', () => {
                     followingId: 'bob',
                 },
             },
+        });
+    });
+});
+
+describe('routineHistory', () => {
+    // The point of the whole thing: a coach opening the history reads the
+    // numbers of whoever trains the routine, never their own blank. Nothing
+    // about who is looking reaches this function, which is what makes that
+    // impossible to get wrong later.
+    it('reads the log of whoever the routine belongs to', async () => {
+        await routineHistory('r1');
+        expect(findSessions).toHaveBeenCalledWith({
+            where: { routineId: 'r1', userId: 'ada' },
+            include: { logs: true },
+        });
+    });
+
+    it('answers with nothing for a routine that is not there', async () => {
+        findRoutine.mockResolvedValue(null);
+        await expect(routineHistory('r1')).resolves.toBeNull();
+        expect(findSessions).not.toHaveBeenCalled();
+    });
+
+    // Weeks are filed by day and then by week, so the history can draw a week
+    // nobody trained: the plan says which sets it would have been.
+    it('files every session under its day and week', async () => {
+        findSessions.mockResolvedValue([
+            {
+                workoutId: 'w1',
+                week: 2,
+                logs: [
+                    {
+                        exerciseId: 'e1',
+                        setIndex: 0,
+                        weight: 60,
+                        reps: 8,
+                        effort: 'hard',
+                    },
+                ],
+            },
+        ]);
+        const history = await routineHistory('r1');
+        expect(history?.byDay).toEqual({
+            w1: { 2: { e1: { 0: { weight: 60, reps: 8, effort: 'hard' } } } },
         });
     });
 });

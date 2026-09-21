@@ -97,3 +97,29 @@ describe('RoutineCard', () => {
         expect(screen.queryByText('Pending')).not.toBeInTheDocument();
     });
 });
+
+describe('RoutineCard for a routine somebody lent you', () => {
+    // Without it the list would be a row of routines you have to open one by
+    // one to find out whether you may touch them.
+    it('says what you are on it, beside its status', () => {
+        render(
+            <RoutineCard
+                {...props}
+                role="coach"
+            />
+        );
+
+        expect(screen.getByText('Coach')).toBeInTheDocument();
+        expect(screen.getByText('Pending')).toBeInTheDocument();
+    });
+
+    // Your own routines are all yours, so a badge saying so on every card
+    // would be noise. Every existing caller passes nothing.
+    it('says nothing when there is no role to report', () => {
+        render(<RoutineCard {...props} />);
+
+        expect(screen.queryByText('Coach')).not.toBeInTheDocument();
+        expect(screen.queryByText('Scout')).not.toBeInTheDocument();
+        expect(screen.queryByText('Owner')).not.toBeInTheDocument();
+    });
+});

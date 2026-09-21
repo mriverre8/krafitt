@@ -2,7 +2,8 @@ import { BackButton } from '@/components/ui/back-button';
 import { RoutineHistory } from '@/components/history/routine-history';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { routineHistory } from '@/lib/queries';
+import { memberRole, routineHistory } from '@/lib/queries';
+import { canView } from '@/lib/roles';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutineProgressPage({
@@ -12,13 +13,14 @@ export default async function RoutineProgressPage({
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const [history, t] = await Promise.all([
-        routineHistory(id, user.id),
-        getT(),
-    ]);
-    // Sharing a routine shares the plan, never the log: this page stays the
-    // owner's, and to anyone else the address simply does not exist.
-    if (!history || history.routine.creatorId !== user.id) notFound();
+    const [history, t] = await Promise.all([routineHistory(id), getT()]);
+    if (!history) notFound();
+
+    const role =
+        history.routine.creatorId === user.id
+            ? 'owner'
+            : await memberRole(id, user.id);
+    if (!canView(role)) notFound();
 
     const { routine, byDay } = history;
 

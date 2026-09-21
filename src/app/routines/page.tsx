@@ -6,7 +6,7 @@ import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { paginate } from '@/lib/pagination';
 import { isRoutineFinished } from '@/lib/progress';
-import { countRoutines, routinesOf } from '@/lib/queries';
+import { countRoutines, routinesOf, sharedRoutinesOf } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import { redirect } from 'next/navigation';
 
@@ -16,9 +16,10 @@ export default async function RoutinesPage({
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const [{ page: asked }, total, t] = await Promise.all([
+    const [{ page: asked }, total, shared, t] = await Promise.all([
         searchParams,
         countRoutines(user.id),
+        sharedRoutinesOf(user.id),
         getT(),
     ]);
     const { page, totalPages, skip, take } = paginate(asked, total);
@@ -58,6 +59,35 @@ export default async function RoutinesPage({
                 page={page}
                 totalPages={totalPages}
             />
+
+            {shared.length > 0 && (
+                <section className="space-y-3">
+                    <h2 className="eyebrow text-muted">
+                        {t('routines.sharedTitle')}
+                    </h2>
+                    <ul className="space-y-3">
+                        {shared.map((routine) => (
+                            <li key={routine.id}>
+                                <RoutineCard
+                                    id={routine.id}
+                                    name={routine.name}
+                                    durationWeeks={routine.durationWeeks}
+                                    workoutCount={routine._count.workouts}
+                                    cursor={routine.cursor}
+                                    isActive={routine.isActive}
+                                    finished={isRoutineFinished(
+                                        routine.cursor,
+                                        routine._count.workouts,
+                                        routine.durationWeeks
+                                    )}
+                                    canActivate={isRoutineComplete(routine, t)}
+                                    role={routine.role}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
             <CreateRoutineForm action={createRoutine} />
         </div>

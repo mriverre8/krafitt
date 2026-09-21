@@ -22,6 +22,7 @@ model User {
   accounts        Account[]
   routines        Routine[]
   workoutSessions WorkoutSession[]
+  memberships     RoutineMember[]
   followers       Follow[]         @relation("followers")
   following       Follow[]         @relation("following")
 }
@@ -91,8 +92,21 @@ model Routine {
 
   workouts Workout[]
   sessions WorkoutSession[]
+  members  RoutineMember[]
 
   @@index([creatorId])
+}
+
+model RoutineMember {
+  routineId String
+  userId    String
+  role      String
+  createdAt DateTime @default(now())
+  routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([routineId, userId])
+  @@index([userId])
 }
 
 /// One training day of the routine: "Push A", "Legs"...

@@ -11,6 +11,7 @@ Next.js App Router, server actions for every mutation, Prisma 7 on PostgreSQL, B
 - **Set-by-set logging** — fields stay locked until the workout is started; a set unlocks only when the previous set of the same exercise is filled in, and is persisted immediately. Filling the last set closes the session and moves the cursor on.
 - **Progression feedback** — each set shows what it was given the last time it came round, and whether the new entry went up, down or stayed level.
 - **Routine history** — per routine, a day-by-day and week-by-week grid of everything logged, including the weeks that were skipped.
+- **People on a routine** — the owner adds others by email and gives each one a role. A **coach** reads the plan and the history and may rename the routine, move its duration and edit the plan, under the same conditions that gate the owner; a **scout** only reads. Deleting, publishing, activating and training stay with the owner, and anyone added can walk out on their own.
 - **Edit locking** — a routine that has been activated, advanced or trained is frozen: its plan is what the logged sessions were recorded against. It can still be deleted.
 - **Profile** — active routine, finished routines, and completed-workout count.
 - **i18n** — English, Spanish and Catalan. English is the source dictionary and the other two are typed against it, so a missing key is a compile error.
@@ -41,7 +42,8 @@ Server components own data fetching and authorization; client components own int
 
 - **Data access** lives in `src/lib/queries.ts`. Pages call it directly; nothing fetches over HTTP.
 - **Mutations** live in `src/app/actions.ts` (`'use server'`). Forms consume them through `useActionState`, and non-form actions are bound server-side and passed down as props.
-- **Authorization** is centralised in `src/lib/access.ts`. `requireRoutine` checks ownership, `requireEditableRoutine` additionally refuses a routine that has gone live. Every action goes through one of them after `requireUser`.
+- **Authorization** is centralised in `src/lib/access.ts`. `requireRoutine(routineId, userId, allow?)` resolves what the caller holds — `owner` for the creator, otherwise their `RoutineMember` row or nothing — and hands it to `allow`, a predicate from `src/lib/roles.ts` that defaults to `canManage` (owner only). `requireEditableRoutine` passes `canEditPlan` and additionally refuses a routine that has gone live. Every action goes through one of them after `requireUser`.
+- **Roles are a predicate, not a list.** `roles.ts` is free of Prisma and React, so the same `canEditPlan`/`canManage`/`canView` decide what the server enforces and what the screens draw. A second spelling of "owner or coach" is the thing that would drift. The `role` column is a plain `String`: `toRole` reads anything it does not recognise as no role, which is where a future `athlete` lands until it is implemented.
 - **Pure logic** — progression (`lib/progress.ts`), rep prescriptions (`lib/reps.ts`) and plan validation (`lib/validate.ts`) are free of Prisma and React, and are the parts covered by unit tests. The same functions run on the server (enforcement) and on the client (enabling/disabling fields), so the UI and the action never disagree.
 - **Ordering is enforced server-side**: `logSet` re-derives the session's logs and rejects a set whose predecessors are missing, regardless of what the client sent.
 - **Client state** is limited to two Zustand stores: the modal host and the optimistic copy of the current day's logs.
@@ -54,12 +56,13 @@ src/
 │   ├── actions.ts               # all server actions
 │   ├── api/auth/[...all]/       # BetterAuth route handler (the only one)
 │   ├── routines/[id]/progress/  # routine history
+│   ├── routines/[id]/people/    # who else can see the routine
 │   ├── profile/
 │   ├── layout.tsx               # theme + locale resolution, nav, modal host
 │   └── globals.css              # theme tokens, Tailwind entry
 ├── components/                  # auth, chrome, history, modal, routine, ui, workout
 ├── i18n/                        # en (source), es, ca, provider, server helpers
-├── lib/                         # auth, db, access, queries, progress, reps, validate, ui
+├── lib/                         # auth, db, access, roles, queries, progress, reps, validate, ui
 ├── store/                       # zustand: modal, session
 └── tests/                       # vitest suites
 prisma/schema.prisma
@@ -135,10 +138,10 @@ pnpm format:check  # prettier --check "src/**/*.{ts,tsx}"
 | --------------------------- | -------------------------------------------------------------------------------------------- |
 | `src/app/`                  | Routes (server components), `loading.tsx` skeletons, and every server action                  |
 | `src/components/`           | One component per file, grouped by area: `auth`, `chrome`, `history`, `modal`, `routine`, `ui`, `workout`. Client components, since they use `useT()` |
-| `src/lib/`                  | Auth, Prisma client, access control, queries, pure domain logic, shared class strings          |
+| `src/lib/`                  | Auth, Prisma client, access control, roles, queries, pure domain logic, shared class strings    |
 | `src/i18n/`                 | Dictionaries and the server/client translators                                                 |
 | `src/store/`                | Zustand stores                                                                                 |
-| `src/tests/`                | One suite per component, plus `progress`, `reps`, `validate` and `i18n` key-parity tests       |
+| `src/tests/`                | One suite per component, plus `progress`, `reps`, `validate`, `roles`, `access` and `i18n` key-parity tests |
 | `prisma/schema.prisma`      | BetterAuth models (`User`, `Session`, `Account`, `Verification`) and the domain models         |
 | `prisma7.config.ts`         | Prisma 7 config: schema path, migrations path, `.env` loading, direct datasource URL           |
 
@@ -158,6 +161,7 @@ Schema (`prisma/schema.prisma`):
 
 - **BetterAuth**: `User`, `Session`, `Account`, `Verification`.
 - **Domain**: `Routine` (name, `durationWeeks`, `isActive`, `cursor`) → `Workout` (a training day, ordered) → `Exercise` (ordered) → `ExerciseSet` (order, `repMode`, `repMin`, `repMax`, `technique`).
+- **Sharing**: `RoutineMember`, keyed on `(routineId, userId)`, holding a `role` String (`coach` or `scout`). The creator is not a row — being the owner is not something anyone was granted.
 - **Training**: `WorkoutSession`, unique on `(userId, workoutId, week)`, holding `SetLog` rows unique on `(sessionId, exerciseId, setIndex)`.
 
 Everything cascades from `User`, so deleting an account removes its routines and logs.
@@ -185,6 +189,9 @@ Everything else is a server action in `src/app/actions.ts`:
 | `deleteWorkout(workoutId)`                                    | Deletes a training day from an editable routine                             |
 | `logSet(workoutId, week, exerciseId, setIndex, weight, reps)` | Opens the week's session on the first set, validates ranges and ordering, upserts the log, and closes the session when the last set lands |
 | `skipDay(routineId)`                                          | Advances the cursor without training                                        |
+| `findRoutineMember(routineId, prev, formData)`                | Looks someone up by email to add them. Answers with the person, `error` if no account uses that address, or `notice` if they are already in. Owner-only, so it is not a general user lookup |
+| `setRoutineMember(routineId, userId, role)`                   | Lets someone in, or changes what they may do: one idempotent upsert for both |
+| `removeRoutineMember(routineId, userId)`                      | Takes someone out, or walks out yourself — the owner check is skipped when you are removing yourself |
 
 Form actions return `{ error?: string; ok?: true }` for `useActionState`; the rest throw, and validation limits are shared with the form fields through `src/lib/constants.ts`.
 
@@ -228,7 +235,7 @@ GitHub Actions runs those three plus `oxlint` on `src` for every push to `main` 
 
 ## Notes
 
-- `prisma/migrations` is git-ignored, so the migration history is not versioned. A fresh clone generates its own initial migration on the first `pnpm db:migrate`, and there is no `prisma migrate deploy` step anywhere in the build.
+- `prisma/migrations` is git-ignored, so the migration history is not versioned, and there is no `prisma migrate deploy` step anywhere in the build. On a database that already has the tables but no history, `pnpm db:migrate` reports drift and offers to **reset** it; `npx prisma db push --config prisma7.config.ts` applies the schema without one. Check what a change would actually do first with `npx prisma migrate diff --config prisma7.config.ts --from-config-datasource --to-schema prisma/schema.prisma --script`.
 - `pnpm lint` runs ESLint, but CI lints with `oxlint@1.82.0` through `npx`. The two rule sets are not equivalent, and oxlint is not a project dependency.
 - `next.config.ts` is empty; the app runs on Next.js defaults.
 - `public/` still carries the `create-next-app` placeholders (`next.svg`, `vercel.svg`, `file.svg`, `globe.svg`, `window.svg`), which nothing references.

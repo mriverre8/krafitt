@@ -1,3 +1,4 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from './db';
 import {
     positionFromCursor,
@@ -5,6 +6,7 @@ import {
     type Logs,
     type PreviousLogs,
 } from './progress';
+import { toRole } from './roles';
 import { dayKey } from './training-year';
 
 function toLogs(
@@ -189,12 +191,42 @@ export async function followList(
 }
 
 /**
- * The list also carries the plan itself, so each card knows if it can go active.
+ * What a routine card needs to draw itself: every row drags its whole plan —
+ * days, exercises, sets — along with it, because the card says whether the
+ * routine could go active, and only the plan knows that. Written once and
+ * shared, so the two lists that use it cannot drift apart.
+ */
+const withPlan = {
+    _count: { select: { workouts: true } },
+    workouts: {
+        orderBy: { order: 'asc' },
+        select: {
+            name: true,
+            exercises: {
+                select: {
+                    name: true,
+                    sets: {
+                        select: {
+                            repMode: true,
+                            repMin: true,
+                            repMax: true,
+                            kind: true,
+                            value: true,
+                        },
+                    },
+                },
+            },
+        },
+    },
+} satisfies Prisma.RoutineInclude;
+
+/**
+ * The routines someone made.
  *
- * `page` cuts it down at the database rather than in the screen, because every
- * row drags its whole plan — days, exercises, sets — along with it. Left out,
- * the query is the whole list: the profile needs all of them to count what the
- * user has done.
+ * `page` cuts it down at the database rather than in the screen. Left out, the
+ * query is the whole list: the profile needs all of them to count what the
+ * user has done. Membership has no say here — a profile shows what that
+ * person wrote, not what was lent to them.
  */
 export async function routinesOf(
     userId: string,
@@ -204,30 +236,61 @@ export async function routinesOf(
         where: { creatorId: userId },
         orderBy: { createdAt: 'desc' },
         ...page,
+        include: withPlan,
+    });
+}
+
+/**
+ * The routines someone was let into. The role comes along: a list you cannot
+ * tell coach from scout in is a list you have to open each row to understand.
+ */
+export async function sharedRoutinesOf(userId: string) {
+    const routines = await prisma.routine.findMany({
+        where: { members: { some: { userId } } },
+        orderBy: { createdAt: 'desc' },
         include: {
-            _count: { select: { workouts: true } },
-            workouts: {
-                orderBy: { order: 'asc' },
-                select: {
-                    name: true,
-                    exercises: {
-                        select: {
-                            name: true,
-                            sets: {
-                                select: {
-                                    repMode: true,
-                                    repMin: true,
-                                    repMax: true,
-                                    kind: true,
-                                    value: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            },
+            ...withPlan,
+            members: { where: { userId }, select: { role: true } },
         },
     });
+    return routines.map(({ members, ...routine }) => ({
+        ...routine,
+        role: toRole(members[0]?.role),
+    }));
+}
+
+/** Just enough of a routine to title a page about it and say whose it is.
+    The plan is a heavy thing to drag along for a heading. */
+export function routineHeader(routineId: string) {
+    return prisma.routine.findUnique({
+        where: { id: routineId },
+        select: { name: true, creatorId: true },
+    });
+}
+
+/** The role someone holds on a routine, for the pages that read rather than
+    write. `access.ts` is where a role is *enforced*; this only reports one,
+    and it does not know that the creator is the owner. */
+export async function memberRole(routineId: string, userId: string) {
+    const member = await prisma.routineMember.findUnique({
+        where: { routineId_userId: { routineId, userId } },
+        select: { role: true },
+    });
+    return toRole(member?.role);
+}
+
+/** Everyone let into a routine, oldest first, with whatever the owner gave
+    them. The creator is not in here: being the owner is not a row. */
+export async function routineMembers(routineId: string) {
+    const members = await prisma.routineMember.findMany({
+        where: { routineId },
+        orderBy: { createdAt: 'asc' },
+        select: {
+            role: true,
+            user: { select: { id: true, name: true, image: true } },
+        },
+    });
+    return members.map(({ user, role }) => ({ ...user, role: toRole(role) }));
 }
 
 export function countRoutines(userId: string) {
@@ -266,28 +329,30 @@ export async function trainingDays(userId: string, from: Date) {
  * and the history page still has to draw that week's blanks — which sets they
  * would have been is only knowable from the plan.
  */
-export async function routineHistory(routineId: string, userId: string) {
-    const [routine, sessions] = await Promise.all([
-        prisma.routine.findUnique({
-            where: { id: routineId },
-            include: {
-                workouts: {
-                    orderBy: { order: 'asc' },
-                    include: {
-                        exercises: {
-                            orderBy: { order: 'asc' },
-                            include: { sets: { orderBy: { order: 'asc' } } },
-                        },
+export async function routineHistory(routineId: string) {
+    const routine = await prisma.routine.findUnique({
+        where: { id: routineId },
+        include: {
+            workouts: {
+                orderBy: { order: 'asc' },
+                include: {
+                    exercises: {
+                        orderBy: { order: 'asc' },
+                        include: { sets: { orderBy: { order: 'asc' } } },
                     },
                 },
             },
-        }),
-        prisma.workoutSession.findMany({
-            where: { routineId, userId },
-            include: { logs: true },
-        }),
-    ]);
+        },
+    });
     if (!routine) return null;
+
+    // Whose log this is, is settled by the routine and not by who is looking:
+    // a coach opening it reads the person who trains it, not their own blank.
+    // Costs the round trip the Promise.all used to save.
+    const sessions = await prisma.workoutSession.findMany({
+        where: { routineId, userId: routine.creatorId },
+        include: { logs: true },
+    });
 
     const byDay: Record<string, Record<number, Logs>> = {};
     for (const session of sessions)

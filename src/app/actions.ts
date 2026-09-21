@@ -19,8 +19,9 @@ import {
     WEIGHT,
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
+import { canEditPlan, isAssignable } from '@/lib/roles';
 import { isSetKind, readSetValue } from '@/lib/sets';
-import type { DayState, FormState } from '@/lib/forms';
+import type { DayState, FormState, MemberSearchState } from '@/lib/forms';
 import {
     currentWeek,
     isRoutineFinished,
@@ -30,7 +31,7 @@ import {
     type Effort,
     type Logs,
 } from '@/lib/progress';
-import { routineDetail } from '@/lib/queries';
+import { memberRole, routineDetail } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -147,7 +148,7 @@ export async function renameRoutine(
 
     if (!name) return { error: t('error.routineName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    await requireRoutine(routineId, user.id);
+    await requireRoutine(routineId, user.id, canEditPlan);
 
     await prisma.routine.update({ where: { id: routineId }, data: { name } });
     revalidatePath(`/routines/${routineId}`);
@@ -173,7 +174,7 @@ export async function setRoutineDuration(
     const user = await requireUser();
     const t = await getT();
     const durationWeeks = int(data, 'durationWeeks');
-    const routine = await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id, canEditPlan);
 
     if (routine.durationWeeks === null) {
         return { error: t('error.durationOpenEnded') };
@@ -530,6 +531,97 @@ export async function skipDay(routineId: string) {
         data: { cursor: { increment: 1 } },
     });
     revalidatePath('/');
+}
+
+// ---------- people on a routine ----------
+
+/**
+ * Who to add, looked up by email. The id is unique but nobody knows anyone
+ * else's, and names are not unique at all: the address is the one thing a
+ * person can be asked for and typed in.
+ *
+ * Case is folded on both sides because Postgres compares it and BetterAuth
+ * stores whatever the provider handed over — `Ada@x.com` and `ada@x.com` are
+ * one account, and a search that missed on capitals would be unexplainable.
+ *
+ * ponytail: answering "no account with that email" tells the asker whether an
+ * address is registered. The price of adding people outright instead of
+ * sending invitations; swap both for a pending invite keyed by email if that
+ * ever matters.
+ */
+export async function findRoutineMember(
+    routineId: string,
+    _previous: MemberSearchState,
+    data: FormData
+): Promise<MemberSearchState> {
+    const user = await requireUser();
+    const t = await getT();
+    // Owner-only, so this is never a general lookup of the app's users.
+    await requireRoutine(routineId, user.id);
+
+    const email = str(data, 'email').toLowerCase();
+    if (!email) return { error: t('error.memberEmail') };
+
+    const found = await prisma.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true, name: true, image: true },
+    });
+    if (!found) return { error: t('error.memberNotFound') };
+    if (found.id === user.id) return { error: t('error.memberSelf') };
+
+    // Already in: say so and hand back no one. Changing a role is the list's
+    // job, so that there is one place it happens rather than two.
+    if (await memberRole(routineId, found.id))
+        return { notice: t('members.already', { name: found.name }) };
+
+    return { ok: true, found };
+}
+
+/**
+ * Letting someone in, and changing what they may do, are the same write: the
+ * search adds and the list's select moves them. Idempotent on purpose — a
+ * double click or a stale card is a no-op, the same way `toggleFollow` is.
+ */
+export async function setRoutineMember(
+    routineId: string,
+    userId: string,
+    role: string
+) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+    const t = await getT();
+
+    if (!isAssignable(role)) throw new Error(t('error.memberRole'));
+    if (userId === user.id) throw new Error(t('error.memberSelf'));
+
+    await prisma.routineMember.upsert({
+        where: { routineId_userId: { routineId, userId } },
+        create: { routineId, userId, role },
+        update: { role },
+    });
+    revalidatePath(`/routines/${routineId}/people`);
+    // The share badge shows on a private routine once somebody is in it.
+    revalidatePath(`/routines/${routineId}`);
+    revalidatePath('/routines');
+}
+
+/**
+ * Taking someone out, or walking out yourself. One guard covers both: nobody
+ * is added with their say-so, so leaving is what makes that acceptable.
+ */
+export async function removeRoutineMember(routineId: string, userId: string) {
+    const user = await requireUser();
+    const leaving = userId === user.id;
+    if (!leaving) await requireRoutine(routineId, user.id);
+
+    await prisma.routineMember.deleteMany({ where: { routineId, userId } });
+    revalidatePath(`/routines/${routineId}/people`);
+    revalidatePath(`/routines/${routineId}`);
+    revalidatePath('/routines');
+
+    // Walking out takes the page you were standing on with it: the routine and
+    // its people both stop existing for you the moment the row is gone.
+    if (leaving) redirect('/routines');
 }
 
 // ---------- follows ----------

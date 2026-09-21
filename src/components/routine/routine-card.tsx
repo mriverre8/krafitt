@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { Duration } from '@/lib/progress';
+import type { Grant } from '@/lib/roles';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
@@ -16,6 +17,7 @@ export type RoutineCardProps = {
     isActive: boolean;
     finished: boolean;
     canActivate: boolean;
+    role?: Grant;
 };
 
 export function RoutineCard(props: RoutineCardProps) {
@@ -54,39 +56,46 @@ export function RoutineCard(props: RoutineCardProps) {
                     </p>
                 </div>
 
-                {props.finished ? (
-                    <span
-                        className={`${badgeClass} border-surge text-surge shrink-0 border-2`}
-                    >
-                        <CircleCheck
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.finished')}
-                    </span>
-                ) : props.isActive ? (
-                    <span
-                        className={`${badgeClass} bg-volt text-on-volt shrink-0`}
-                    >
-                        <Flame
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.active')}
-                    </span>
-                ) : props.canActivate ? (
-                    <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
-                    >
-                        {t('routines.pending')}
-                    </span>
-                ) : (
-                    <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2 border-dashed`}
-                    >
-                        {t('routines.incomplete')}
-                    </span>
-                )}
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    {props.finished ? (
+                        <span
+                            className={`${badgeClass} border-surge text-surge border-2`}
+                        >
+                            <CircleCheck
+                                size={13}
+                                aria-hidden
+                            />
+                            {t('routines.finished')}
+                        </span>
+                    ) : props.isActive ? (
+                        <span className={`${badgeClass} bg-volt text-on-volt`}>
+                            <Flame
+                                size={13}
+                                aria-hidden
+                            />
+                            {t('routines.active')}
+                        </span>
+                    ) : props.canActivate ? (
+                        <span
+                            className={`${badgeClass} border-line text-muted border-2`}
+                        >
+                            {t('routines.pending')}
+                        </span>
+                    ) : (
+                        <span
+                            className={`${badgeClass} border-line text-muted border-2 border-dashed`}
+                        >
+                            {t('routines.incomplete')}
+                        </span>
+                    )}
+                    {props.role && (
+                        <span
+                            className={`${badgeClass} border-pulse text-pulse border-2`}
+                        >
+                            {t(`role.${props.role}`)}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="mt-5 space-y-2">
