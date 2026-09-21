@@ -99,10 +99,12 @@ describe('MemberSearch', () => {
         );
     });
 
-    // Once they are standing in the list below, the card has nothing left to
-    // say — and pressing Add twice must not read as a second person.
-    it('puts the card away once the person is in', async () => {
-        look();
+    // Once they are standing in the list above, the card has nothing left to
+    // say — and pressing Add twice must not read as a second person. The
+    // field empties with it, ready for the next address rather than holding
+    // the one that is already in.
+    it('puts the card away and empties the field once the person is in', async () => {
+        const { field } = look();
         fireEvent.click(await screen.findByRole('button', { name: 'Add' }));
 
         await waitFor(() =>
@@ -110,5 +112,6 @@ describe('MemberSearch', () => {
                 screen.queryByRole('button', { name: 'Add' })
             ).not.toBeInTheDocument()
         );
+        expect(field).toHaveValue('');
     });
 });

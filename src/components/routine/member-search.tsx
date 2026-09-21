@@ -98,6 +98,7 @@ export function MemberSearch({ routineId }: { routineId: string }) {
                                 found.id,
                                 DEFAULT_ROLE
                             );
+                            setEmail('');
                             setDismissed(found.id);
                         }}
                         className={`${primaryClass} flex shrink-0 items-center gap-1 px-3! py-1! text-xs! md:gap-1.5 md:px-5! md:py-1.5! md:text-sm!`}
