@@ -260,7 +260,7 @@ export default async function RoutinePage({
                             </WhenNotEditing>
                         </>
                     )}
-                    {owner && routine.isPublic && (
+                    {routine.isPublic && (
                         <WhenNotEditing>
                             <ShareRoutineButton name={routine.name} />
                         </WhenNotEditing>
