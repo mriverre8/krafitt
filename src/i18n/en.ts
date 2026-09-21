@@ -256,6 +256,7 @@ export const en = {
 
     'members.title': 'People',
     'members.link': 'People',
+    'members.linkCount': 'People ({count})',
     'members.subtitle': 'Who else can see this routine',
     'members.emptyTitle': 'Nobody else is in',
     'members.empty':

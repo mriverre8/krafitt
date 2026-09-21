@@ -29,7 +29,8 @@ function setup({
     isPublic = false,
     /** As the page passes them: a coach is handed the menu without the rows
         that belong to the owner alone. */
-    people = '/routines/r1/people' as string | undefined,
+    people = { href: '/routines/r1/people', count: 3 } as
+        { href: string; count: number } | undefined,
     onLeave = vi.fn(async () => {}),
     owner = true,
     /** As the page passes them: a scout changes nothing, so every row but the
@@ -205,7 +206,7 @@ describe('RoutineOptions for someone who was let in', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Options' }));
         await screen.findByRole('button', { name: /Leave routine/ });
         expect(
-            screen.queryByRole('link', { name: 'People' })
+            screen.queryByRole('link', { name: /People/ })
         ).not.toBeInTheDocument();
     });
 
@@ -214,7 +215,7 @@ describe('RoutineOptions for someone who was let in', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Options' }));
         expect(
-            await screen.findByRole('link', { name: 'People' })
+            await screen.findByRole('link', { name: 'People (3)' })
         ).toHaveAttribute('href', '/routines/r1/people');
         expect(
             screen.queryByRole('button', { name: /Leave routine/ })
@@ -282,7 +283,29 @@ describe('RoutineOptions for a scout', () => {
             ).not.toBeInTheDocument();
         }
         expect(
-            screen.queryByRole('link', { name: 'People' })
+            screen.queryByRole('link', { name: /People/ })
         ).not.toBeInTheDocument();
+    });
+});
+
+describe('the people row of RoutineOptions', () => {
+    it('counts the people who are in', async () => {
+        setup();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('link', { name: 'People (3)' })
+        ).toHaveAttribute('href', '/routines/r1/people');
+    });
+
+    // A count is there to say how many. None is what the page says itself the
+    // moment it opens, so "(0)" would be a number nobody needed.
+    it('says no number when nobody is in', async () => {
+        setup({ people: { href: '/routines/r1/people', count: 0 } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+        expect(
+            await screen.findByRole('link', { name: 'People' })
+        ).toBeInTheDocument();
     });
 });

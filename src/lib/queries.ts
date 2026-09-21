@@ -372,7 +372,8 @@ export async function routineDetail(routineId: string) {
         where: { id: routineId },
         include: {
             creator: { select: { name: true, image: true } },
-            _count: { select: { sessions: true } },
+            // members: the options menu counts them beside the way in.
+            _count: { select: { sessions: true, members: true } },
             workouts: {
                 orderBy: { order: 'asc' },
                 include: {

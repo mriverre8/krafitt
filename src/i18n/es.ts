@@ -259,6 +259,7 @@ export const es: Dict = {
 
     'members.title': 'Personas',
     'members.link': 'Personas',
+    'members.linkCount': 'Personas ({count})',
     'members.subtitle': 'Quién más puede ver esta rutina',
     'members.emptyTitle': 'Todavía no hay nadie',
     'members.empty':

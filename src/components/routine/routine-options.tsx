@@ -38,9 +38,10 @@ export function RoutineOptions({
     name: string;
     rename?: FormAction;
     duration?: { weeks: number; min: number; save: FormAction };
-    /** Where the people of this routine are managed. The owner's, and only
-        theirs: who else is watching is the owner's business to keep. */
-    people?: string;
+    /** Where the people of this routine are managed, and how many are in it.
+        The owner's, and only theirs: who else is watching is the owner's
+        business to keep. */
+    people?: { href: string; count: number };
     /** For anyone who was let in: nobody is put on a routine with their
         say-so, so walking out is what makes that acceptable. */
     onLeave?: () => Promise<unknown>;
@@ -117,7 +118,7 @@ export function RoutineOptions({
                     )}
                     {people && (
                         <Link
-                            href={people}
+                            href={people.href}
                             onClick={close}
                             className={menuItemClass}
                         >
@@ -125,7 +126,15 @@ export function RoutineOptions({
                                 size={14}
                                 aria-hidden
                             />
-                            {t('members.link')}
+                            {/* No "(0)": a count is there to say how many,
+                                and none of them is what the page itself
+                                says when you open it. */}
+                            {t(
+                                people.count > 0
+                                    ? 'members.linkCount'
+                                    : 'members.link',
+                                { count: people.count }
+                            )}
                         </Link>
                     )}
                     {setVisibility && (

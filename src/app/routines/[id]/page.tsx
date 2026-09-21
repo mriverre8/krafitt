@@ -132,7 +132,11 @@ export default async function RoutinePage({
                                         duration={editor ? duration : undefined}
                                         people={
                                             owner
-                                                ? `/routines/${routine.id}/people`
+                                                ? {
+                                                      href: `/routines/${routine.id}/people`,
+                                                      count: routine._count
+                                                          .members,
+                                                  }
                                                 : undefined
                                         }
                                         onLeave={
