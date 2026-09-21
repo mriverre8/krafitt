@@ -1,87 +1,58 @@
 import { createRoutine } from '@/app/actions';
 import { CreateRoutineForm } from '@/components/routine/create-routine-form';
-import { RoutineCard } from '@/components/routine/routine-card';
-import { RoutineSharedCard } from '@/components/routine/routine-shared-card';
-import { Pagination } from '@/components/ui/pagination';
+import {
+    RoutineList,
+    SharedRoutineList,
+} from '@/components/routine/routine-lists';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { paginate } from '@/lib/pagination';
-import { isRoutineFinished } from '@/lib/progress';
-import { countRoutines, routinesOf, sharedRoutinesOf } from '@/lib/queries';
-import { isRoutineComplete } from '@/lib/validate';
+import { PREVIEW_SIZE } from '@/lib/pagination';
+import {
+    countRoutines,
+    countSharedRoutines,
+    routinesOf,
+    sharedRoutinesOf,
+} from '@/lib/queries';
+import { ghostClass } from '@/lib/ui';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-export default async function RoutinesPage({
-    searchParams,
-}: PageProps<'/routines'>) {
+export default async function RoutinesPage() {
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const [{ page: asked }, total, shared, t] = await Promise.all([
-        searchParams,
+    const preview = { skip: 0, take: PREVIEW_SIZE };
+    const [total, sharedTotal, routines, shared, t] = await Promise.all([
         countRoutines(user.id),
-        sharedRoutinesOf(user.id),
+        countSharedRoutines(user.id),
+        routinesOf(user.id, preview),
+        sharedRoutinesOf(user.id, preview),
         getT(),
     ]);
-    const { page, totalPages, skip, take } = paginate(asked, total);
-    const routines = await routinesOf(user.id, { skip, take });
+
+    const viewMore = (href: string) => (
+        <Link
+            href={href}
+            className={`${ghostClass} block text-center`}
+        >
+            {t('routines.viewMore')}
+        </Link>
+    );
 
     return (
         <div className="space-y-6">
             <h1 className="display text-6xl">{t('routines.title')}</h1>
 
-            <ul className="space-y-3">
-                {routines.map((routine) => (
-                    <li key={routine.id}>
-                        <RoutineCard
-                            id={routine.id}
-                            name={routine.name}
-                            durationWeeks={routine.durationWeeks}
-                            workoutCount={routine._count.workouts}
-                            cursor={routine.cursor}
-                            isActive={routine.isActive}
-                            finished={isRoutineFinished(
-                                routine.cursor,
-                                routine._count.workouts,
-                                routine.durationWeeks
-                            )}
-                            canActivate={isRoutineComplete(routine, t)}
-                        />
-                    </li>
-                ))}
-                {routines.length === 0 && (
-                    <li className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center">
-                        {t('routines.empty')}
-                    </li>
-                )}
-            </ul>
-
-            <Pagination
-                page={page}
-                totalPages={totalPages}
-            />
+            <RoutineList routines={routines} />
+            {total > PREVIEW_SIZE && viewMore('/routines/all')}
 
             {shared.length > 0 && (
                 <section className="space-y-3">
                     <h2 className="eyebrow text-muted">
                         {t('routines.sharedTitle')}
                     </h2>
-                    <ul className="space-y-3">
-                        {shared.map((routine) => (
-                            <li key={routine.id}>
-                                <RoutineSharedCard
-                                    id={routine.id}
-                                    name={routine.name}
-                                    durationWeeks={routine.durationWeeks}
-                                    workoutCount={routine._count.workouts}
-                                    cursor={routine.cursor}
-                                    ownerName={routine.creator.name}
-                                    ownerImage={routine.creator.image}
-                                    role={routine.role}
-                                />
-                            </li>
-                        ))}
-                    </ul>
+                    <SharedRoutineList routines={shared} />
+                    {sharedTotal > PREVIEW_SIZE && viewMore('/routines/shared')}
                 </section>
             )}
 
