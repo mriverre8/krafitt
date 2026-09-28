@@ -5,6 +5,7 @@ import {
     deleteWorkout,
     duplicateRoutine,
     removeRoutineMember,
+    saveRoutine,
     renameRoutine,
     renameWorkout,
     saveExercises,
@@ -35,7 +36,7 @@ import {
     isRoutineLocked,
 } from '@/lib/progress';
 import { memberRole, routineDetail } from '@/lib/queries';
-import { canEditPlan, canManage, canView } from '@/lib/roles';
+import { canEditPlan, canManage, canSave, canView } from '@/lib/roles';
 import { badgeClass } from '@/lib/ui';
 import {
     isRoutineComplete,
@@ -109,71 +110,73 @@ export default async function RoutinePage({
                                       days: routine.workouts.length,
                                   })}
                         </p>
-                        {canView(role) && (
-                            <div className="flex shrink-0 items-center gap-4">
-                                <WhenNotEditing>
-                                    <RoutineOptions
-                                        name={routine.name}
-                                        rename={
-                                            !editor || finished
-                                                ? undefined
-                                                : renameRoutine.bind(
-                                                      null,
-                                                      routine.id
-                                                  )
-                                        }
-                                        onDelete={
-                                            owner
-                                                ? deleteRoutine.bind(
-                                                      null,
-                                                      routine.id
-                                                  )
-                                                : undefined
-                                        }
-                                        onDuplicate={
-                                            owner
-                                                ? duplicateRoutine.bind(
-                                                      null,
-                                                      routine.id
-                                                  )
-                                                : undefined
-                                        }
-                                        duration={editor ? duration : undefined}
-                                        people={
-                                            owner
-                                                ? {
-                                                      href: `/routines/${routine.id}/people`,
-                                                      count: routine._count
-                                                          .members,
-                                                  }
-                                                : undefined
-                                        }
-                                        onLeave={
-                                            owner
-                                                ? undefined
-                                                : removeRoutineMember.bind(
-                                                      null,
-                                                      routine.id,
-                                                      user.id
-                                                  )
-                                        }
-                                        editable={editor && !locked}
-                                        isPublic={routine.isPublic}
-                                        setVisibility={
-                                            owner
-                                                ? setRoutineVisibility.bind(
-                                                      null,
-                                                      routine.id
-                                                  )
-                                                : undefined
-                                        }
-                                    />
-                                </WhenNotEditing>
-                                <WhenEditing>
-                                    <EditModeToggle />
-                                </WhenEditing>
-                            </div>
-                        )}
+                        <div className="flex shrink-0 items-center gap-4">
+                            <WhenNotEditing>
+                                <RoutineOptions
+                                    name={routine.name}
+                                    rename={
+                                        !editor || finished
+                                            ? undefined
+                                            : renameRoutine.bind(
+                                                  null,
+                                                  routine.id
+                                              )
+                                    }
+                                    onDelete={
+                                        owner
+                                            ? deleteRoutine.bind(
+                                                  null,
+                                                  routine.id
+                                              )
+                                            : undefined
+                                    }
+                                    onDuplicate={
+                                        owner
+                                            ? duplicateRoutine.bind(
+                                                  null,
+                                                  routine.id
+                                              )
+                                            : undefined
+                                    }
+                                    duration={editor ? duration : undefined}
+                                    people={
+                                        owner
+                                            ? {
+                                                  href: `/routines/${routine.id}/people`,
+                                                  count: routine._count.members,
+                                              }
+                                            : undefined
+                                    }
+                                    onSave={
+                                        canSave(role, routine.isPublic)
+                                            ? saveRoutine.bind(null, routine.id)
+                                            : undefined
+                                    }
+                                    onLeave={
+                                        owner || !role
+                                            ? undefined
+                                            : removeRoutineMember.bind(
+                                                  null,
+                                                  routine.id,
+                                                  user.id
+                                              )
+                                    }
+                                    editable={editor && !locked}
+                                    isPublic={routine.isPublic}
+                                    setVisibility={
+                                        owner
+                                            ? setRoutineVisibility.bind(
+                                                  null,
+                                                  routine.id
+                                              )
+                                            : undefined
+                                    }
+                                />
+                            </WhenNotEditing>
+                            <WhenEditing>
+                                <EditModeToggle />
+                            </WhenEditing>
+                        </div>
                     </div>
                 </header>
 

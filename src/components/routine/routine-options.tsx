@@ -9,6 +9,7 @@ import { Dropdown } from '@/components/ui/dropdown';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { EditModeToggle } from '@/components/routine/edit-mode';
 import {
+    Bookmark,
     CalendarRange,
     Copy,
     Ellipsis,
@@ -33,6 +34,7 @@ export function RoutineOptions({
     onLeave,
     onDelete,
     onDuplicate,
+    onSave,
     editable,
     isPublic,
     setVisibility,
@@ -51,6 +53,8 @@ export function RoutineOptions({
     onDelete?: () => Promise<unknown>;
     /** The owner's too: a copy is a routine of their own, made from one. */
     onDuplicate?: () => Promise<unknown>;
+    /** For anyone but the owner, on a routine made public: a copy of their own. */
+    onSave?: () => Promise<unknown>;
     editable: boolean;
     isPublic?: boolean;
     setVisibility?: (isPublic: boolean) => Promise<unknown>;
@@ -165,6 +169,24 @@ export function RoutineOptions({
                                     ? 'routine.makePrivate'
                                     : 'routine.makePublic'
                             )}
+                        </ActionButton>
+                    )}
+                    {onSave && (
+                        <ActionButton
+                            action={onSave}
+                            confirm={{
+                                title: t('routine.save'),
+                                message: t('routine.saveConfirm', { name }),
+                                confirmLabel: t('routine.save'),
+                                danger: false,
+                            }}
+                            className={menuItemClass}
+                        >
+                            <Bookmark
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('routine.save')}
                         </ActionButton>
                     )}
                     {onDuplicate && (

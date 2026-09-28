@@ -19,7 +19,7 @@ import {
     WEIGHT,
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
-import { canEditPlan, isAssignable } from '@/lib/roles';
+import { canEditPlan, canSave, isAssignable } from '@/lib/roles';
 import { isSetKind, readSetValue } from '@/lib/sets';
 import type { DayState, FormState, MemberSearchState } from '@/lib/forms';
 import {
@@ -210,19 +210,16 @@ export async function deleteRoutine(routineId: string) {
  * the cursor and the sessions, so leaving those behind is what makes the copy
  * pending — and private, like any routine that was just made.
  */
-export async function duplicateRoutine(routineId: string) {
-    const user = await requireUser();
-    await requireRoutine(routineId, user.id);
-
-    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
-    if (!routine) throw new Error(t('error.routineNotFound'));
-
-    const room = NAME_MAX - t('routine.copyName', { name: '' }).length;
+async function copyRoutine(
+    routine: NonNullable<Awaited<ReturnType<typeof routineDetail>>>,
+    creatorId: string,
+    name: string
+) {
     const copy = await prisma.routine.create({
         data: {
-            name: t('routine.copyName', { name: routine.name.slice(0, room) }),
+            name,
             durationWeeks: routine.durationWeeks,
-            creatorId: user.id,
+            creatorId,
             workouts: {
                 create: routine.workouts.map((workout) => ({
                     name: workout.name,
@@ -251,6 +248,39 @@ export async function duplicateRoutine(routineId: string) {
 
     revalidatePath('/routines');
     redirect(`/routines/${copy.id}`);
+}
+
+export async function duplicateRoutine(routineId: string) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+
+    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
+    if (!routine) throw new Error(t('error.routineNotFound'));
+
+    const room = NAME_MAX - t('routine.copyName', { name: '' }).length;
+    await copyRoutine(
+        routine,
+        user.id,
+        t('routine.copyName', { name: routine.name.slice(0, room) })
+    );
+}
+
+/**
+ * Someone else's plan, made one's own; who may is `canSave`'s call. The name
+ * stays — in the saver's list there is no original for it to be a copy of.
+ */
+export async function saveRoutine(routineId: string) {
+    const user = await requireUser();
+    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
+    if (!routine) throw new Error(t('error.routineNotFound'));
+
+    const role =
+        routine.creatorId === user.id
+            ? 'owner'
+            : await memberRole(routineId, user.id);
+    if (!canSave(role, routine.isPublic)) throw new Error(t('error.noAccess'));
+
+    await copyRoutine(routine, user.id, routine.name);
 }
 
 // ---------- workouts and exercises ----------

@@ -47,3 +47,8 @@ export const canManage = (role: Grant) => role === 'owner';
 /** Reading the plan and the history. A public routine opens the plan to
     everyone; the history only ever opens to these. */
 export const canView = (role: Grant) => role !== null;
+
+/** Taking a copy of someone else's plan: whoever may read it may keep it —
+    through public, or through a role on it. */
+export const canSave = (role: Grant, isPublic: boolean) =>
+    role !== 'owner' && (isPublic || canView(role));

@@ -259,6 +259,9 @@ export const en = {
     'routine.duplicateConfirm':
         'Duplicate the routine {name}? The copy starts from scratch, with no progress.',
     'routine.copyName': '{name} (copy)',
+    'routine.save': 'Save routine',
+    'routine.saveConfirm':
+        'Save the routine {name} to your routines? You get your own copy, with no progress.',
 
     'members.title': 'People',
     'members.link': 'People',

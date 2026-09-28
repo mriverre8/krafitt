@@ -262,6 +262,9 @@ export const ca: Dict = {
     'routine.duplicateConfirm':
         'Duplicar la rutina {name}? La còpia comença de zero, sense progrés.',
     'routine.copyName': '{name} (còpia)',
+    'routine.save': 'Desar rutina',
+    'routine.saveConfirm':
+        'Desar la rutina {name} a les teves rutines? Tindràs la teva pròpia còpia, sense progrés.',
 
     'members.title': 'Persones',
     'members.link': 'Persones',
