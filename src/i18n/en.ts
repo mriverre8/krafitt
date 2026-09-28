@@ -255,6 +255,10 @@ export const en = {
     'routine.discard': 'Discard changes',
     'routine.delete': 'Delete routine',
     'routine.deleteConfirm': 'Delete the routine {name}? All progress is lost.',
+    'routine.duplicate': 'Duplicate routine',
+    'routine.duplicateConfirm':
+        'Duplicate the routine {name}? The copy starts from scratch, with no progress.',
+    'routine.copyName': '{name} (copy)',
 
     'members.title': 'People',
     'members.link': 'People',

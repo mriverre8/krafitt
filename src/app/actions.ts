@@ -204,6 +204,55 @@ export async function deleteRoutine(routineId: string) {
     redirect('/routines');
 }
 
+/**
+ * A fresh start on the same plan: days, exercises and sets are copied, and
+ * nothing that was lived through them is. Being started or finished is read off
+ * the cursor and the sessions, so leaving those behind is what makes the copy
+ * pending — and private, like any routine that was just made.
+ */
+export async function duplicateRoutine(routineId: string) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+
+    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
+    if (!routine) throw new Error(t('error.routineNotFound'));
+
+    const room = NAME_MAX - t('routine.copyName', { name: '' }).length;
+    const copy = await prisma.routine.create({
+        data: {
+            name: t('routine.copyName', { name: routine.name.slice(0, room) }),
+            durationWeeks: routine.durationWeeks,
+            creatorId: user.id,
+            workouts: {
+                create: routine.workouts.map((workout) => ({
+                    name: workout.name,
+                    order: workout.order,
+                    exercises: {
+                        create: workout.exercises.map((exercise) => ({
+                            name: exercise.name,
+                            order: exercise.order,
+                            sets: {
+                                create: exercise.sets.map((set) => ({
+                                    order: set.order,
+                                    repMode: set.repMode,
+                                    repMin: set.repMin,
+                                    repMax: set.repMax,
+                                    technique: set.technique,
+                                    kind: set.kind,
+                                    value: set.value,
+                                })),
+                            },
+                        })),
+                    },
+                })),
+            },
+        },
+    });
+
+    revalidatePath('/routines');
+    redirect(`/routines/${copy.id}`);
+}
+
 // ---------- workouts and exercises ----------
 
 export async function addWorkout(

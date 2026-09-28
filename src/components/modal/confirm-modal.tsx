@@ -1,13 +1,14 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { dangerClass, ghostClass } from '@/lib/ui';
+import { dangerClass, ghostClass, primaryClass } from '@/lib/ui';
 import { Modal } from '@/components/modal/modal';
 
 export type ConfirmModalProps = {
     title: string;
     message: string;
     confirmLabel?: string;
+    danger?: boolean;
     onConfirm: () => void;
     onClose: () => void;
 };
@@ -16,6 +17,7 @@ export function ConfirmModal({
     title,
     message,
     confirmLabel,
+    danger = true,
     onConfirm,
     onClose,
 }: ConfirmModalProps) {
@@ -41,7 +43,9 @@ export function ConfirmModal({
                         onClose();
                         onConfirm();
                     }}
-                    className={dangerClass}
+                    className={
+                        danger ? dangerClass : `${primaryClass} py-2.5 text-sm`
+                    }
                 >
                     {confirmLabel ?? t('common.delete')}
                 </button>

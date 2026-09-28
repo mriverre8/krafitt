@@ -3,6 +3,7 @@ import {
     deactivateRoutine,
     deleteRoutine,
     deleteWorkout,
+    duplicateRoutine,
     removeRoutineMember,
     renameRoutine,
     renameWorkout,
@@ -124,6 +125,14 @@ export default async function RoutinePage({
                                         onDelete={
                                             owner
                                                 ? deleteRoutine.bind(
+                                                      null,
+                                                      routine.id
+                                                  )
+                                                : undefined
+                                        }
+                                        onDuplicate={
+                                            owner
+                                                ? duplicateRoutine.bind(
                                                       null,
                                                       routine.id
                                                   )

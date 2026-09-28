@@ -258,6 +258,10 @@ export const es: Dict = {
     'routine.delete': 'Borrar rutina',
     'routine.deleteConfirm':
         '¿Borrar la rutina {name}? Se pierde todo el progreso.',
+    'routine.duplicate': 'Duplicar rutina',
+    'routine.duplicateConfirm':
+        '¿Duplicar la rutina {name}? La copia empieza de cero, sin progreso.',
+    'routine.copyName': '{name} (copia)',
 
     'members.title': 'Personas',
     'members.link': 'Personas',

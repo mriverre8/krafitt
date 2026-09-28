@@ -10,6 +10,7 @@ import { DeleteRoutineButton } from '@/components/routine/delete-routine-button'
 import { EditModeToggle } from '@/components/routine/edit-mode';
 import {
     CalendarRange,
+    Copy,
     Ellipsis,
     Globe,
     Lock,
@@ -31,6 +32,7 @@ export function RoutineOptions({
     people,
     onLeave,
     onDelete,
+    onDuplicate,
     editable,
     isPublic,
     setVisibility,
@@ -47,6 +49,8 @@ export function RoutineOptions({
     onLeave?: () => Promise<unknown>;
     /** Absent for anyone but the owner: deleting and sharing are theirs. */
     onDelete?: () => Promise<unknown>;
+    /** The owner's too: a copy is a routine of their own, made from one. */
+    onDuplicate?: () => Promise<unknown>;
     editable: boolean;
     isPublic?: boolean;
     setVisibility?: (isPublic: boolean) => Promise<unknown>;
@@ -161,6 +165,26 @@ export function RoutineOptions({
                                     ? 'routine.makePrivate'
                                     : 'routine.makePublic'
                             )}
+                        </ActionButton>
+                    )}
+                    {onDuplicate && (
+                        <ActionButton
+                            action={onDuplicate}
+                            confirm={{
+                                title: t('routine.duplicate'),
+                                message: t('routine.duplicateConfirm', {
+                                    name,
+                                }),
+                                confirmLabel: t('routine.duplicate'),
+                                danger: false,
+                            }}
+                            className={menuItemClass}
+                        >
+                            <Copy
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('routine.duplicate')}
                         </ActionButton>
                     )}
                     {onLeave && (
