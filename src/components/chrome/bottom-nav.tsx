@@ -7,10 +7,6 @@ import { usePathname } from 'next/navigation';
 
 const shownClass = 'hidden standalone:max-md:flex in-data-editing:hidden!';
 
-const linkClass =
-    'flex flex-1 items-center justify-center gap-1.5 rounded-md font-display text-sm ' +
-    'font-bold uppercase tracking-wide transition-colors';
-
 export function BottomNav({ userId }: { userId: string }) {
     const t = useT();
     const pathname = usePathname();
@@ -61,7 +57,7 @@ export function BottomNav({ userId }: { userId: string }) {
                         key={href}
                         href={href}
                         aria-current={active ? 'page' : undefined}
-                        className={`${linkClass} relative ${
+                        className={`font-display relative flex flex-1 items-center justify-center gap-1.5 rounded-md text-sm font-bold tracking-wide uppercase transition-colors ${
                             active
                                 ? 'text-pulse'
                                 : 'text-muted hover:text-pulse'
