@@ -18,6 +18,7 @@ export const en = {
     'pagination.status': 'Page {page} of {total}',
 
     'nav.today': 'Today',
+    'nav.home': 'Home',
     'nav.routines': 'Routines',
     'nav.signOut': 'Sign out',
     'nav.signOutConfirm':

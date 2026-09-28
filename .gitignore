@@ -52,6 +52,7 @@ next-env.d.ts
 /.agents
 /.windsurf
 /.claude
+/.impeccable
 /skills-lock.json
 /CLAUDE.md
 

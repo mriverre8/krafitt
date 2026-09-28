@@ -1,4 +1,5 @@
 import { ModalHost } from '@/components/modal/modal-host';
+import { BottomNav } from '@/components/chrome/bottom-nav';
 import { Footer } from '@/components/chrome/footer';
 import { NavBar } from '@/components/chrome/nav-bar';
 import { I18nProvider } from '@/i18n/i18n-provider';
@@ -24,10 +25,14 @@ const body = Barlow({
 // The price of sub-16px fields: iOS Safari zooms into any focused input whose
 // font-size is under 16px, and capping the scale is the only thing that stops
 // it. Costs pinch-to-zoom on the whole app (WCAG 1.4.4).
+//
+// `cover` is what gives env(safe-area-inset-*) a value on iOS, so the
+// installed app's bottom bar can clear the home indicator.
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
+    viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -74,6 +79,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                         {children}
                     </main>
                     <Footer />
+                    {user && <BottomNav userId={user.id} />}
                     <ModalHost />
                 </I18nProvider>
             </body>
