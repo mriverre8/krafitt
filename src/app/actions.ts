@@ -19,7 +19,7 @@ import {
     WEIGHT,
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
-import { canEditPlan, isAssignable } from '@/lib/roles';
+import { canEditPlan, canSave, isAssignable } from '@/lib/roles';
 import { isSetKind, readSetValue } from '@/lib/sets';
 import type { DayState, FormState, MemberSearchState } from '@/lib/forms';
 import {
@@ -202,6 +202,85 @@ export async function deleteRoutine(routineId: string) {
     await prisma.routine.delete({ where: { id: routineId } });
     revalidatePath('/');
     redirect('/routines');
+}
+
+/**
+ * A fresh start on the same plan: days, exercises and sets are copied, and
+ * nothing that was lived through them is. Being started or finished is read off
+ * the cursor and the sessions, so leaving those behind is what makes the copy
+ * pending — and private, like any routine that was just made.
+ */
+async function copyRoutine(
+    routine: NonNullable<Awaited<ReturnType<typeof routineDetail>>>,
+    creatorId: string,
+    name: string
+) {
+    const copy = await prisma.routine.create({
+        data: {
+            name,
+            durationWeeks: routine.durationWeeks,
+            creatorId,
+            workouts: {
+                create: routine.workouts.map((workout) => ({
+                    name: workout.name,
+                    order: workout.order,
+                    exercises: {
+                        create: workout.exercises.map((exercise) => ({
+                            name: exercise.name,
+                            order: exercise.order,
+                            sets: {
+                                create: exercise.sets.map((set) => ({
+                                    order: set.order,
+                                    repMode: set.repMode,
+                                    repMin: set.repMin,
+                                    repMax: set.repMax,
+                                    technique: set.technique,
+                                    kind: set.kind,
+                                    value: set.value,
+                                })),
+                            },
+                        })),
+                    },
+                })),
+            },
+        },
+    });
+
+    revalidatePath('/routines');
+    redirect(`/routines/${copy.id}`);
+}
+
+export async function duplicateRoutine(routineId: string) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+
+    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
+    if (!routine) throw new Error(t('error.routineNotFound'));
+
+    const room = NAME_MAX - t('routine.copyName', { name: '' }).length;
+    await copyRoutine(
+        routine,
+        user.id,
+        t('routine.copyName', { name: routine.name.slice(0, room) })
+    );
+}
+
+/**
+ * Someone else's plan, made one's own; who may is `canSave`'s call. The name
+ * stays — in the saver's list there is no original for it to be a copy of.
+ */
+export async function saveRoutine(routineId: string) {
+    const user = await requireUser();
+    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
+    if (!routine) throw new Error(t('error.routineNotFound'));
+
+    const role =
+        routine.creatorId === user.id
+            ? 'owner'
+            : await memberRole(routineId, user.id);
+    if (!canSave(role, routine.isPublic)) throw new Error(t('error.noAccess'));
+
+    await copyRoutine(routine, user.id, routine.name);
 }
 
 // ---------- workouts and exercises ----------

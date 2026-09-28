@@ -258,6 +258,13 @@ export const ca: Dict = {
     'routine.delete': 'Esborrar rutina',
     'routine.deleteConfirm':
         'Esborrar la rutina {name}? Es perd tot el progrés.',
+    'routine.duplicate': 'Duplicar rutina',
+    'routine.duplicateConfirm':
+        'Duplicar la rutina {name}? La còpia comença de zero, sense progrés.',
+    'routine.copyName': '{name} (còpia)',
+    'routine.save': 'Desar rutina',
+    'routine.saveConfirm':
+        'Desar la rutina {name} a les teves rutines? Tindràs la teva pròpia còpia, sense progrés.',
 
     'members.title': 'Persones',
     'members.link': 'Persones',

@@ -2,6 +2,7 @@ import {
     ASSIGNABLE,
     canEditPlan,
     canManage,
+    canSave,
     canView,
     isAssignable,
     toRole,
@@ -68,5 +69,22 @@ describe('what each grant allows', () => {
         expect(canEditPlan(null)).toBe(false);
         expect(canManage(null)).toBe(false);
         expect(canView(null)).toBe(false);
+    });
+});
+
+describe('canSave', () => {
+    it('lets anyone but the owner keep a public routine', () => {
+        expect(grants.filter((g) => canSave(g, true))).toEqual([
+            'coach',
+            'scout',
+            null,
+        ]);
+    });
+
+    it('lets anyone let in keep a private one', () => {
+        expect(grants.filter((g) => canSave(g, false))).toEqual([
+            'coach',
+            'scout',
+        ]);
     });
 });

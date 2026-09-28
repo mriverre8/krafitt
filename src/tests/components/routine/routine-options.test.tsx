@@ -20,6 +20,8 @@ function setup({
     rename = vi.fn<FormAction>(async () => ({ ok: true })),
     setDuration = vi.fn<FormAction>(async () => ({ ok: true })),
     onDelete = vi.fn(async () => {}),
+    onDuplicate = vi.fn(async () => {}),
+    onSave = vi.fn(async () => {}),
     setVisibility = vi.fn(async () => {}),
     /** As the page passes it: absent for an open-ended routine, or one over. */
     duration = { weeks: 8, min: 3 } as { weeks: number; min: number } | null,
@@ -52,6 +54,8 @@ function setup({
                         people={owner ? people : undefined}
                         onLeave={owner ? undefined : onLeave}
                         onDelete={owner ? onDelete : undefined}
+                        onDuplicate={owner ? onDuplicate : undefined}
+                        onSave={owner ? undefined : onSave}
                         editable={editor && editable}
                         isPublic={isPublic}
                         setVisibility={owner ? setVisibility : undefined}
@@ -63,7 +67,14 @@ function setup({
             </EditModeProvider>
         )
     );
-    return { rename, setDuration, onDelete, setVisibility };
+    return {
+        rename,
+        setDuration,
+        onDelete,
+        onDuplicate,
+        onSave,
+        setVisibility,
+    };
 }
 
 const options = () => screen.getByRole('button', { name: 'Options' });
@@ -134,6 +145,36 @@ describe('RoutineOptions', () => {
         const dialog = await screen.findByRole('dialog');
         fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
         await waitFor(() => expect(onDelete).toHaveBeenCalled());
+    });
+
+    it('duplicates from the menu, once confirmed, and only for the owner', async () => {
+        const { onDuplicate } = setup();
+        fireEvent.click(options());
+        fireEvent.click(screen.getByText('Duplicate routine'));
+
+        await acceptConfirm('Duplicate routine');
+        await waitFor(() => expect(onDuplicate).toHaveBeenCalled());
+    });
+
+    it('offers no duplicate to anyone but the owner', () => {
+        setup({ owner: false });
+        fireEvent.click(options());
+        expect(screen.queryByText('Duplicate routine')).not.toBeInTheDocument();
+    });
+
+    it("saves someone else's routine from the menu, once confirmed", async () => {
+        const { onSave } = setup({ owner: false });
+        fireEvent.click(options());
+        fireEvent.click(screen.getByText('Save routine'));
+
+        await acceptConfirm('Save routine');
+        await waitFor(() => expect(onSave).toHaveBeenCalled());
+    });
+
+    it('offers the owner no save of their own routine', () => {
+        setup();
+        fireEvent.click(options());
+        expect(screen.queryByText('Save routine')).not.toBeInTheDocument();
     });
 
     it('leaves the duration out when there is none to move', () => {
