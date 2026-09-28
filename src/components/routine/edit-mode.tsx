@@ -68,6 +68,15 @@ export function EditModeProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
+    // The bottom bar lives in the layout, outside this context, so it reads
+    // the mode off <html> instead: editing hands the whole bottom of the
+    // screen to the day's save bar.
+    useEffect(() => {
+        const root = document.documentElement;
+        root.toggleAttribute('data-editing', editing);
+        return () => root.removeAttribute('data-editing');
+    }, [editing]);
+
     function leaveEditing() {
         setDirtyDays(noDirtyDays);
         setDiscarded((n) => n + 1);

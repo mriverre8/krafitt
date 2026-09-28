@@ -20,6 +20,7 @@ export const es: Dict = {
     'pagination.status': 'Página {page} de {total}',
 
     'nav.today': 'Hoy',
+    'nav.home': 'Inicio',
     'nav.routines': 'Rutinas',
     'nav.signOut': 'Cerrar sesión',
     'nav.signOutConfirm':

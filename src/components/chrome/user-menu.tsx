@@ -53,7 +53,7 @@ export function UserMenu({
                     <Link
                         href="/"
                         onClick={close}
-                        className={`${itemClass} md:hidden`}
+                        className={`${itemClass} standalone:hidden md:hidden`}
                     >
                         <CalendarDays
                             size={14}
@@ -64,7 +64,7 @@ export function UserMenu({
                     <Link
                         href="/routines"
                         onClick={close}
-                        className={`${itemClass} md:hidden`}
+                        className={`${itemClass} standalone:hidden md:hidden`}
                     >
                         <Dumbbell
                             size={14}
@@ -75,7 +75,7 @@ export function UserMenu({
                     <Link
                         href={`/profile/${id}`}
                         onClick={close}
-                        className={itemClass}
+                        className={`${itemClass} standalone:max-md:hidden`}
                     >
                         <User
                             size={14}

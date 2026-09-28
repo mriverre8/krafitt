@@ -4,6 +4,10 @@
    cookie, so there is no flash and no blocking inline script. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Opened from the home-screen icon rather than a browser tab: the only time
+   the app has no browser chrome of its own and gets a bottom bar instead. */
+@custom-variant standalone (@media (display-mode: standalone));
+
 /* One rule runs the whole palette: VOLT fills, PULSE speaks.
    Volt is a torch orange — the heat of effort — and it only ever works as a
    filled surface under dark ink; as text it sits at 2.9:1 on the light
