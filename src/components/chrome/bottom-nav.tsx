@@ -38,10 +38,10 @@ export function BottomNav({ userId }: { userId: string }) {
         <>
             <div
                 aria-hidden
-                className={`${shownClass} h-[calc(5.25rem+env(safe-area-inset-bottom))] shrink-0`}
+                className={`${shownClass} h-[calc(5.5rem+env(safe-area-inset-bottom))] shrink-0`}
             />
             <nav
-                className={`${shownClass} bg-bg/60 fixed inset-x-7 bottom-[max(1rem,env(safe-area-inset-bottom))] z-20 h-13 gap-1 rounded-md border border-white/25 p-1.5 shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_8px_24px_rgb(0_0_0/0.18)] backdrop-blur-lg backdrop-saturate-150 dark:border-white/10`}
+                className={`${shownClass} bg-bg/60 fixed inset-x-7 bottom-[max(1rem,env(safe-area-inset-bottom))] z-20 h-14 gap-1 rounded-md border border-white/25 p-1.5 shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_8px_24px_rgb(0_0_0/0.18)] backdrop-blur-lg backdrop-saturate-150 dark:border-white/10`}
             >
                 <div
                     aria-hidden
