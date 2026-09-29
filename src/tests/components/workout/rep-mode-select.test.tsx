@@ -22,7 +22,7 @@ describe('RepModeSelect', () => {
         expect(screen.getByLabelText(label)).toHaveValue('amrap');
     });
 
-    // All four, always: the mode is what decides what the rest of the row asks
+    // All of them, always: the mode is what decides what the rest of the row asks
     // for, so none of them is ever hidden behind the others.
     it('offers every way a set can prescribe its reps', () => {
         select();
@@ -30,7 +30,14 @@ describe('RepModeSelect', () => {
             screen
                 .getAllByRole('option')
                 .map((option) => (option as HTMLOptionElement).value)
-        ).toEqual(['range', 'fixed', 'amrap', 'unspecified']);
+        ).toEqual([
+            'range',
+            'fixed',
+            'amrap',
+            'time',
+            'unspecified',
+            'unspecifiedTime',
+        ]);
         expect(
             screen.getByRole('option', { name: 'Range' })
         ).toBeInTheDocument();

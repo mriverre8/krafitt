@@ -11,7 +11,7 @@ import {
     type WeekState,
 } from '@/lib/progress';
 import { EFFORT_ICON, EFFORT_SAID } from '@/lib/effort';
-import { formatReps } from '@/lib/reps';
+import { formatLogged, formatReps, isTimed } from '@/lib/reps';
 import { setName, setPlaces, setShortLabel } from '@/lib/sets';
 import { cardClass, iconButtonClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -246,6 +246,21 @@ export function HistoryExercise({
                                                     : undefined;
                                             const Mark =
                                                 mark && EFFORT_ICON[mark];
+                                            // Reps read as a count; seconds
+                                            // carry their own unit.
+                                            const said = isTimed(set.repMode)
+                                                ? t('progress.loggedResult', {
+                                                      weight: value.weight,
+                                                      result: formatLogged(
+                                                          set.repMode,
+                                                          value.reps,
+                                                          t
+                                                      ),
+                                                  })
+                                                : t('progress.logged', {
+                                                      weight: value.weight,
+                                                      reps: value.reps,
+                                                  });
 
                                             return (
                                                 <td
@@ -253,10 +268,7 @@ export function HistoryExercise({
                                                     className={cell}
                                                 >
                                                     <span className="sr-only">
-                                                        {t('progress.logged', {
-                                                            weight: value.weight,
-                                                            reps: value.reps,
-                                                        }) +
+                                                        {said +
                                                             (move
                                                                 ? `, ${t(
                                                                       move.dir ===
@@ -291,7 +303,11 @@ export function HistoryExercise({
                                                                 'reps'
                                                             )}
                                                         >
-                                                            {value.reps}
+                                                            {formatLogged(
+                                                                set.repMode,
+                                                                value.reps,
+                                                                t
+                                                            )}
                                                         </span>
                                                         <span className="w-2.5 shrink-0">
                                                             {Mark && (

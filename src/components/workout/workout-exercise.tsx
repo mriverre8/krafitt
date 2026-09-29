@@ -62,6 +62,7 @@ export function WorkoutExercise({
                                 label={setShortLabel(place)}
                                 name={setName(place)}
                                 sub={sub}
+                                repMode={set.repMode}
                                 enabled={isSetEnabled(setIndex)}
                                 saved={logs[setIndex]}
                                 previous={previous[setIndex]}

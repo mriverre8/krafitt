@@ -389,7 +389,8 @@ function readPlan(raw: string, t: Translate) {
                 kind: setKind,
                 repMode: mode,
                 repMin: min,
-                repMax: max,
+                // A timed set names one number at most.
+                repMax: mode === 'time' ? null : max,
                 value: amount,
                 technique:
                     setKind !== 'normal' || typeof technique !== 'string'

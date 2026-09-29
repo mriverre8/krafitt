@@ -8,6 +8,7 @@ import {
     type SetValue,
 } from '@/lib/progress';
 import { REPS, WEIGHT } from '@/lib/constants';
+import { isTimed } from '@/lib/reps';
 import { inputClass } from '@/lib/ui';
 import { EffortMark } from '@/components/workout/effort-mark';
 import { EffortSelector } from '@/components/workout/effort-selector';
@@ -19,6 +20,7 @@ export function SetRow({
     label,
     name,
     sub,
+    repMode = 'range',
     enabled,
     saved,
     previous,
@@ -33,6 +35,8 @@ export function SetRow({
     name?: string;
     /** A drop or rest-pause set: it hangs off the row above it. */
     sub?: boolean;
+    /** How the set counts: a timed set asks for seconds instead of reps. */
+    repMode?: string;
     enabled: boolean;
     saved?: SetValue;
     previous?: PreviousValue;
@@ -149,9 +153,16 @@ export function SetRow({
                                 min={REPS.min}
                                 max={REPS.max}
                                 placeholder={`${previous?.reps ?? ''} ${t(
-                                    'today.reps'
+                                    isTimed(repMode)
+                                        ? 'today.seconds'
+                                        : 'today.reps'
                                 )}`.trim()}
-                                aria-label={t('today.repsLabel', { n: number })}
+                                aria-label={t(
+                                    isTimed(repMode)
+                                        ? 'today.secondsLabel'
+                                        : 'today.repsLabel',
+                                    { n: number }
+                                )}
                                 disabled={!enabled}
                                 value={reps}
                                 onChange={(event) =>
