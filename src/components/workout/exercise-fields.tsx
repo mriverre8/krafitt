@@ -16,6 +16,7 @@ import {
     setPlaces,
     type SubKind,
 } from '@/lib/sets';
+import { isTimed, type RepMode } from '@/lib/reps';
 import type { ExerciseFault } from '@/lib/validate';
 import {
     cardClass,
@@ -89,6 +90,16 @@ export function ExerciseFields({
                 i === setIndex ? { ...set, ...patch } : set
             ),
         });
+    }
+
+    /** Seconds are not reps: crossing into or out of a timed set starts the
+        numbers over rather than reading one as the other. */
+    function setMode(setIndex: number, mode: RepMode) {
+        const timed = isTimed(mode) || isTimed(exercise.sets[setIndex].mode);
+        updateSet(
+            setIndex,
+            timed ? { mode, repMin: '', repMax: '' } : { mode }
+        );
     }
 
     /**
@@ -188,9 +199,7 @@ export function ExerciseFields({
                                 exerciseNumber={exerciseNumber}
                                 setLabel={setLabel}
                                 mode={set.mode}
-                                onChange={(mode) =>
-                                    updateSet(setIndex, { mode })
-                                }
+                                onChange={(mode) => setMode(setIndex, mode)}
                             />
                             <RepsFields
                                 exerciseNumber={exerciseNumber}
@@ -246,7 +255,7 @@ export function ExerciseFields({
                                             setLabel={subName}
                                             mode={sub.mode}
                                             onChange={(mode) =>
-                                                updateSet(subIndex, { mode })
+                                                setMode(subIndex, mode)
                                             }
                                         />
                                         <RepsFields

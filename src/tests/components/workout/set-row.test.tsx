@@ -10,6 +10,22 @@ const base = {
 };
 
 describe('SetRow', () => {
+    it('asks a timed set for seconds, whether or not the plan names them', () => {
+        for (const repMode of ['time', 'unspecifiedTime']) {
+            const { unmount } = render(
+                <SetRow
+                    {...base}
+                    repMode={repMode}
+                />
+            );
+            expect(screen.getByLabelText('Seconds set 1')).toHaveAttribute(
+                'placeholder',
+                'sec'
+            );
+            unmount();
+        }
+    });
+
     it('disables both inputs when the set is locked', () => {
         render(
             <SetRow

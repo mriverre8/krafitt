@@ -1,6 +1,6 @@
 import { createT } from '@/i18n/config';
 import { en } from '@/i18n/en';
-import { formatReps, isRepMode, isSetComplete } from '@/lib/reps';
+import { formatLogged, formatReps, isRepMode, isSetComplete } from '@/lib/reps';
 import { describe, expect, it } from 'vitest';
 
 const t = createT(en);
@@ -71,5 +71,27 @@ describe('reps', () => {
     it('only accepts the known modes', () => {
         expect(isRepMode('amrap')).toBe(true);
         expect(isRepMode('whatever')).toBe(false);
+    });
+
+    // Time asks for its seconds like fixed asks for its reps; N/A time, like
+    // N/A reps, asks for nothing.
+    it('prescribes seconds for time, and nothing for N/A time', () => {
+        const time = (repMode: string, repMin: number | null) => ({
+            repMode,
+            repMin,
+            repMax: null,
+        });
+        expect(isSetComplete(time('time', null))).toBe(false);
+        expect(isSetComplete(time('time', 0))).toBe(false);
+        expect(isSetComplete(time('time', 45))).toBe(true);
+        expect(formatReps(time('time', 45), t)).toBe('45 s');
+        expect(isSetComplete(time('unspecifiedTime', null))).toBe(true);
+        expect(formatReps(time('unspecifiedTime', null), t)).toBe('N/A time');
+    });
+
+    it('reads a logged value in the unit of its mode', () => {
+        expect(formatLogged('range', 8, t)).toBe('8');
+        expect(formatLogged('time', 52, t)).toBe('52 s');
+        expect(formatLogged('unspecifiedTime', 52, t)).toBe('52 s');
     });
 });

@@ -92,4 +92,29 @@ describe('RepsFields', () => {
             screen.getByLabelText('Exercise 2, min reps set DS1')
         ).toBeInTheDocument();
     });
+
+    it('asks a timed set for its seconds in one box', () => {
+        const seconds = 'Exercise 1, seconds set 1';
+        const onChange = vi.fn();
+        reps({ mode: 'time', repMin: '30', onChange });
+        expect(screen.getByLabelText(seconds)).toHaveValue(30);
+        expect(screen.getByLabelText(seconds)).toHaveAttribute(
+            'placeholder',
+            'sec'
+        );
+        expect(screen.queryByLabelText(max)).not.toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText(seconds), {
+            target: { value: '45' },
+        });
+        expect(onChange).toHaveBeenCalledWith({ repMin: '45' });
+    });
+
+    it('reads N/A time as a readout, like N/A reps', () => {
+        reps({ mode: 'unspecifiedTime' });
+        expect(
+            screen.queryByLabelText('Exercise 1, seconds set 1')
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Unspecified time')).toBeInTheDocument();
+    });
 });

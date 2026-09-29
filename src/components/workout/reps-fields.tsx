@@ -13,6 +13,7 @@ const repsSlotClass =
  * slot is the component's own, not the caller's: the range fills it with two
  * boxes and a joining word, and a mode that prescribes nothing fills it with a
  * readout saying so, and either way the row is one column wider than the mode.
+ * A timed set takes one box, like a fixed count, but in seconds.
  */
 export function RepsFields({
     exerciseNumber,
@@ -36,6 +37,7 @@ export function RepsFields({
     onChange: (patch: { repMin?: string; repMax?: string }) => void;
 }) {
     const t = useT();
+    const timed = mode === 'time';
 
     if (hasNoReps(mode)) {
         const amrap = mode === 'amrap';
@@ -49,7 +51,13 @@ export function RepsFields({
                             : 'text-muted text-xs md:text-sm'
                     }`}
                 >
-                    {t(amrap ? 'reps.toFailure' : 'reps.noneSpecified')}
+                    {t(
+                        amrap
+                            ? 'reps.toFailure'
+                            : mode === 'unspecifiedTime'
+                              ? 'reps.noTime'
+                              : 'reps.noneSpecified'
+                    )}
                 </span>
             </div>
         );
@@ -68,8 +76,8 @@ export function RepsFields({
                         repMin: event.target.value.slice(0, REPS.digits),
                     })
                 }
-                placeholder={t('today.reps')}
-                aria-label={t('exercise.repMin', {
+                placeholder={t(timed ? 'today.seconds' : 'today.reps')}
+                aria-label={t(timed ? 'exercise.seconds' : 'exercise.repMin', {
                     exercise: exerciseNumber,
                     set: setLabel,
                 })}

@@ -13,18 +13,34 @@ export type RepSpec = {
     repMax: number | null;
 };
 
-export const REP_MODES = ['range', 'fixed', 'amrap', 'unspecified'] as const;
+export const REP_MODES = [
+    'range',
+    'fixed',
+    'amrap',
+    'time',
+    'unspecified',
+    'unspecifiedTime',
+] as const;
 export type RepMode = (typeof REP_MODES)[number];
 
 export function isRepMode(value: unknown): value is RepMode {
     return REP_MODES.includes(value as RepMode);
 }
 
-/** These modes prescribe no number: AMRAP by design, unspecified because the
-    routine leaves the call to the day. Neither takes a rep field, and neither
-    can be half-written. */
+/** These modes prescribe no number: AMRAP by design, the two unspecified ones
+    because the routine leaves the call to the day. None takes a field, and
+    none can be half-written. */
 export function hasNoReps(repMode: string): boolean {
-    return repMode === 'amrap' || repMode === 'unspecified';
+    return (
+        repMode === 'amrap' ||
+        repMode === 'unspecified' ||
+        repMode === 'unspecifiedTime'
+    );
+}
+
+/** The set is held for seconds rather than counted in reps. */
+export function isTimed(repMode: string): boolean {
+    return repMode === 'time' || repMode === 'unspecifiedTime';
 }
 
 const inRange = (value: number | null) =>
@@ -44,7 +60,7 @@ export function badRepFields({ repMode, repMin, repMax }: RepSpec): {
 } {
     if (hasNoReps(repMode)) return { min: false, max: false };
     const min = !inRange(repMin);
-    if (repMode === 'fixed') return { min, max: false };
+    if (repMode === 'fixed' || repMode === 'time') return { min, max: false };
     // A range that starts and ends on the same number is not a range: that
     // prescription is what the fixed mode is for.
     return { min, max: !inRange(repMax) || (!min && repMax! <= repMin!) };
@@ -63,9 +79,19 @@ export function formatReps(set: RepSpec, t: Translate): string {
             return t('reps.amrap');
         case 'unspecified':
             return t('reps.unspecified');
+        case 'unspecifiedTime':
+            return t('reps.unspecifiedTime');
+        case 'time':
+            return t('reps.seconds', { n: set.repMin! });
         case 'fixed':
             return t('today.setPlanFixed', { reps: set.repMin! });
         default:
             return t('today.setPlan', { min: set.repMin!, max: set.repMax! });
     }
+}
+
+/** What a logged set did, in the unit its mode counts in: the log keeps
+    seconds for a timed set in the same column as reps. */
+export function formatLogged(repMode: string, reps: number, t: Translate) {
+    return isTimed(repMode) ? t('reps.seconds', { n: reps }) : String(reps);
 }
