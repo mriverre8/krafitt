@@ -251,13 +251,15 @@ export default async function RoutinePage({
                     ) : (
                         <>
                             {!locked && (
-                                <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
-                                    <CircleCheck
-                                        size={16}
-                                        aria-hidden
-                                    />
-                                    {t('validate.ok')}
-                                </p>
+                                <WhenEditing>
+                                    <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
+                                        <CircleCheck
+                                            size={16}
+                                            aria-hidden
+                                        />
+                                        {t('validate.ok')}
+                                    </p>
+                                </WhenEditing>
                             )}
                             <WhenNotEditing>
                                 <ActionButton
