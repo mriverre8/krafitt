@@ -1,11 +1,10 @@
-import { removeRoutineMember, setRoutineMember } from '@/app/actions';
-import { MemberMenu } from '@/components/routine/member-menu';
+import { removeRoutineMember } from '@/app/actions';
+import { ActionButton } from '@/components/ui/action-button';
 import { Avatar } from '@/components/ui/avatar';
 import { getT } from '@/i18n/server';
 import { routineMembers } from '@/lib/queries';
-import { DEFAULT_ROLE } from '@/lib/roles';
-import { cardClass } from '@/lib/ui';
-import { Binoculars, Whistle } from 'lucide-react';
+import { cardClass, removeButtonClass } from '@/lib/ui';
+import { Trash } from 'lucide-react';
 import Link from 'next/link';
 
 export async function MemberRows({ routineId }: { routineId: string }) {
@@ -41,48 +40,34 @@ export async function MemberRows({ routineId }: { routineId: string }) {
                                 className="size-8 text-sm md:size-10 md:text-base"
                             />
                         </Link>
-                        <div className="min-w-0">
-                            <Link
-                                href={`/profile/${member.id}`}
-                                className="hover:text-pulse display block truncate text-xl transition-colors md:text-2xl"
-                            >
-                                {member.name}
-                            </Link>
-                            {member.role && (
-                                <span className="eyebrow text-muted mt-1 flex items-center gap-1.5">
-                                    {member.role === 'scout' ? (
-                                        <Binoculars
-                                            size={13}
-                                            aria-hidden
-                                            className="shrink-0"
-                                        />
-                                    ) : (
-                                        <Whistle
-                                            size={13}
-                                            aria-hidden
-                                            className="shrink-0"
-                                        />
-                                    )}
-                                    {t(`role.${member.role}`)}
-                                </span>
-                            )}
-                        </div>
+                        <Link
+                            href={`/profile/${member.id}`}
+                            className="hover:text-pulse display block min-w-0 truncate text-xl transition-colors md:text-2xl"
+                        >
+                            {member.name}
+                        </Link>
                     </div>
 
-                    <MemberMenu
-                        name={member.name}
-                        role={member.role ?? DEFAULT_ROLE}
-                        setRole={setRoutineMember.bind(
+                    <ActionButton
+                        action={removeRoutineMember.bind(
                             null,
                             routineId,
                             member.id
                         )}
-                        onRemove={removeRoutineMember.bind(
-                            null,
-                            routineId,
-                            member.id
-                        )}
-                    />
+                        label={t('members.remove', { name: member.name })}
+                        confirm={{
+                            title: t('members.removeTitle'),
+                            message: t('members.removeConfirm', {
+                                name: member.name,
+                            }),
+                        }}
+                        className={`${removeButtonClass} -my-1.5`}
+                    >
+                        <Trash
+                            size={16}
+                            aria-hidden
+                        />
+                    </ActionButton>
                 </li>
             ))}
         </ul>

@@ -1,5 +1,5 @@
 import { MemberSearch } from '@/components/routine/member-search';
-import { findRoutineMember, setRoutineMember } from '@/app/actions';
+import { addRoutineMember, findRoutineMember } from '@/app/actions';
 import type { MemberSearchState } from '@/lib/forms';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,11 +7,11 @@ import { renderWithLocale } from '@/tests/setup-helpers';
 
 vi.mock('@/app/actions', () => ({
     findRoutineMember: vi.fn(),
-    setRoutineMember: vi.fn(),
+    addRoutineMember: vi.fn(),
 }));
 
 const search = vi.mocked(findRoutineMember);
-const add = vi.mocked(setRoutineMember);
+const add = vi.mocked(addRoutineMember);
 
 const ada = { id: 'ada', name: 'Ada', image: null };
 
@@ -72,8 +72,7 @@ describe('MemberSearch', () => {
     });
 
     // Already in the routine is the one answer that is neither a find nor a
-    // mistake: it is said plainly, and there is nothing to press. Roles are
-    // moved in the list, so this is not a second place to do it.
+    // mistake: it is said plainly, and there is nothing to press.
     it('says so when the person is already in, and offers no button', async () => {
         answers({ notice: 'Ada is already on this routine' });
         look();
@@ -87,15 +86,13 @@ describe('MemberSearch', () => {
         ).not.toBeInTheDocument();
     });
 
-    // Least privilege on the one click that happens before anyone thinks
-    // about roles: what they may actually do is decided in the list.
-    it('adds the person it found as a scout, not a coach', async () => {
+    it('adds the person it found', async () => {
         look();
 
         fireEvent.click(await screen.findByRole('button', { name: 'Add' }));
 
         await waitFor(() =>
-            expect(add).toHaveBeenCalledWith('r1', 'ada', 'scout')
+            expect(add).toHaveBeenCalledWith('r1', 'ada')
         );
     });
 

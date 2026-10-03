@@ -56,7 +56,6 @@ export function SharedRoutineList({ routines }: { routines: Shared[] }) {
                         cursor={routine.cursor}
                         ownerName={routine.creator.name}
                         ownerImage={routine.creator.image}
-                        role={routine.role}
                     />
                 </li>
             ))}

@@ -13,7 +13,6 @@ const props: RoutineSharedCardProps = {
     cursor: 6,
     ownerName: 'Ada',
     ownerImage: null,
-    role: 'coach',
 };
 
 describe('RoutineSharedCard', () => {
@@ -33,19 +32,6 @@ describe('RoutineSharedCard', () => {
             'href',
             '/routines/r1'
         );
-    });
-
-    it('says what you are on it', () => {
-        render(<RoutineSharedCard {...props} />);
-        expect(screen.getByText('Coach')).toBeInTheDocument();
-
-        render(
-            <RoutineSharedCard
-                {...props}
-                role="scout"
-            />
-        );
-        expect(screen.getByText('Scout')).toBeInTheDocument();
     });
 
     // Active, pending, incomplete and finished all answer "what could you do

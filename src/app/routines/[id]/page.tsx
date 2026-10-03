@@ -35,8 +35,7 @@ import {
     isRoutineFinished,
     isRoutineLocked,
 } from '@/lib/progress';
-import { memberRole, routineDetail } from '@/lib/queries';
-import { canEditPlan, canManage, canSave, canView } from '@/lib/roles';
+import { isMember, routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
 import {
     isRoutineComplete,
@@ -58,14 +57,11 @@ export default async function RoutinePage({
     if (!routine) notFound();
 
     // One extra lookup, and only for someone who did not write the routine.
-    const role =
-        routine.creatorId === user.id ? 'owner' : await memberRole(id, user.id);
-    // Public opens the plan to whoever holds the address; a role opens it to
-    // one named person, and opens the log along with it.
-    if (!canView(role) && !routine.isPublic) notFound();
-
-    const owner = canManage(role);
-    const editor = canEditPlan(role);
+    const owner = routine.creatorId === user.id;
+    const member = !owner && (await isMember(id, user.id));
+    // Public opens the plan to whoever holds the address; being let in opens
+    // it to one named person, and opens the log along with it.
+    if (!owner && !member && !routine.isPublic) notFound();
 
     const complete = isRoutineComplete(routine, t);
     const finished = isRoutineFinished(
@@ -79,7 +75,7 @@ export default async function RoutinePage({
     });
 
     const addDay =
-        locked || !editor ? undefined : addWorkoutTo.bind(null, routine.id);
+        locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
 
     const durationFloor = currentWeek(routine.cursor, routine.workouts.length);
     const duration =
@@ -115,7 +111,7 @@ export default async function RoutinePage({
                                 <RoutineOptions
                                     name={routine.name}
                                     rename={
-                                        !editor || finished
+                                        !owner || finished
                                             ? undefined
                                             : renameRoutine.bind(
                                                   null,
@@ -138,7 +134,7 @@ export default async function RoutinePage({
                                               )
                                             : undefined
                                     }
-                                    duration={editor ? duration : undefined}
+                                    duration={owner ? duration : undefined}
                                     people={
                                         owner
                                             ? {
@@ -148,20 +144,20 @@ export default async function RoutinePage({
                                             : undefined
                                     }
                                     onSave={
-                                        canSave(role, routine.isPublic)
+                                        !owner && (routine.isPublic || member)
                                             ? saveRoutine.bind(null, routine.id)
                                             : undefined
                                     }
                                     onLeave={
-                                        owner || !role
-                                            ? undefined
-                                            : removeRoutineMember.bind(
+                                        member
+                                            ? removeRoutineMember.bind(
                                                   null,
                                                   routine.id,
                                                   user.id
                                               )
+                                            : undefined
                                     }
-                                    editable={editor && !locked}
+                                    editable={owner && !locked}
                                     isPublic={routine.isPublic}
                                     setVisibility={
                                         owner
@@ -196,13 +192,6 @@ export default async function RoutinePage({
                                     name: routine.creator.name,
                                 })}
                             </Link>
-                            {role && (
-                                <p
-                                    className={`${badgeClass} border-pulse text-pulse border-2`}
-                                >
-                                    {t(`role.${role}`)}
-                                </p>
-                            )}
                             {!complete && (
                                 <p
                                     className={`${badgeClass} border-line text-muted border-2 border-dashed`}
@@ -279,7 +268,7 @@ export default async function RoutinePage({
                             <ShareRoutineButton name={routine.name} />
                         </WhenNotEditing>
                     )}
-                    {canView(role) && locked && (
+                    {(owner || member) && locked && (
                         <HistoryLink routineId={routine.id} />
                     )}
                 </div>
