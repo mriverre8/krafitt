@@ -91,9 +91,7 @@ describe('MemberSearch', () => {
 
         fireEvent.click(await screen.findByRole('button', { name: 'Add' }));
 
-        await waitFor(() =>
-            expect(add).toHaveBeenCalledWith('r1', 'ada')
-        );
+        await waitFor(() => expect(add).toHaveBeenCalledWith('r1', 'ada'));
     });
 
     // Once they are standing in the list above, the card has nothing left to

@@ -271,8 +271,7 @@ export const en = {
     'members.linkCount': 'People ({count})',
     'members.subtitle': 'Who else can see this routine',
     'members.emptyTitle': 'Nobody else is in',
-    'members.empty':
-        'Add someone so they can follow the plan and its history.',
+    'members.empty': 'Add someone so they can follow the plan and its history.',
     'members.search': 'Search',
     'members.searchLabel': 'Search people',
     'members.emailPlaceholder': 'name@example.com',
