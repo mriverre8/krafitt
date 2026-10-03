@@ -2,8 +2,7 @@ import { BackButton } from '@/components/ui/back-button';
 import { RoutineHistory } from '@/components/history/routine-history';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { memberRole, routineHistory } from '@/lib/queries';
-import { canView } from '@/lib/roles';
+import { isMember, routineHistory } from '@/lib/queries';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutineProgressPage({
@@ -16,11 +15,8 @@ export default async function RoutineProgressPage({
     const [history, t] = await Promise.all([routineHistory(id), getT()]);
     if (!history) notFound();
 
-    const role =
-        history.routine.creatorId === user.id
-            ? 'owner'
-            : await memberRole(id, user.id);
-    if (!canView(role)) notFound();
+    if (history.routine.creatorId !== user.id && !(await isMember(id, user.id)))
+        notFound();
 
     const { routine, byDay } = history;
 

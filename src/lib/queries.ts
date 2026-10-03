@@ -6,7 +6,6 @@ import {
     type Logs,
     type PreviousLogs,
 } from './progress';
-import { toRole } from './roles';
 import { dayKey } from './training-year';
 
 function toLogs(
@@ -241,32 +240,27 @@ export async function routinesOf(
 }
 
 /**
- * The routines someone was let into, with the role they hold and whose routine
- * it is: a list you cannot tell coach from scout in, or tell apart by owner, is
- * a list you have to open each row to understand.
+ * The routines someone was let into, and whose routine each one is: a list
+ * you cannot tell apart by owner is a list you have to open each row to
+ * understand.
  *
  * Deliberately not `withPlan`. A card of somebody else's routine says nothing
  * about whether it could be set active — that is not a move you have — so
  * there is nothing here to drag its days, exercises and sets along for.
  */
-export async function sharedRoutinesOf(
+export function sharedRoutinesOf(
     userId: string,
     page?: { skip: number; take: number }
 ) {
-    const routines = await prisma.routine.findMany({
+    return prisma.routine.findMany({
         where: { members: { some: { userId } } },
         orderBy: { createdAt: 'desc' },
         ...page,
         include: {
             _count: { select: { workouts: true } },
             creator: { select: { name: true, image: true } },
-            members: { where: { userId }, select: { role: true } },
         },
     });
-    return routines.map(({ members, ...routine }) => ({
-        ...routine,
-        role: toRole(members[0]?.role),
-    }));
 }
 
 /** Just enough of a routine to title a page about it and say whose it is.
@@ -278,29 +272,25 @@ export function routineHeader(routineId: string) {
     });
 }
 
-/** The role someone holds on a routine, for the pages that read rather than
-    write. `access.ts` is where a role is *enforced*; this only reports one,
-    and it does not know that the creator is the owner. */
-export async function memberRole(routineId: string, userId: string) {
+/** Whether someone was let into a routine, for the pages that read rather
+    than write. The creator is never a member: owning is not a row. */
+export async function isMember(routineId: string, userId: string) {
     const member = await prisma.routineMember.findUnique({
         where: { routineId_userId: { routineId, userId } },
-        select: { role: true },
+        select: { userId: true },
     });
-    return toRole(member?.role);
+    return member !== null;
 }
 
-/** Everyone let into a routine, oldest first, with whatever the owner gave
-    them. The creator is not in here: being the owner is not a row. */
+/** Everyone let into a routine, oldest first. The creator is not in here:
+    being the owner is not a row. */
 export async function routineMembers(routineId: string) {
     const members = await prisma.routineMember.findMany({
         where: { routineId },
         orderBy: { createdAt: 'asc' },
-        select: {
-            role: true,
-            user: { select: { id: true, name: true, image: true } },
-        },
+        select: { user: { select: { id: true, name: true, image: true } } },
     });
-    return members.map(({ user, role }) => ({ ...user, role: toRole(role) }));
+    return members.map(({ user }) => user);
 }
 
 export function countRoutines(userId: string) {
@@ -363,7 +353,7 @@ export async function routineHistory(routineId: string) {
     if (!routine) return null;
 
     // Whose log this is, is settled by the routine and not by who is looking:
-    // a coach opening it reads the person who trains it, not their own blank.
+    // a member opening it reads the person who trains it, not their own blank.
     // Costs the round trip the Promise.all used to save.
     const sessions = await prisma.workoutSession.findMany({
         where: { routineId, userId: routine.creatorId },

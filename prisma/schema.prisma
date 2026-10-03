@@ -100,7 +100,6 @@ model Routine {
 model RoutineMember {
   routineId String
   userId    String
-  role      String
   createdAt DateTime @default(now())
   routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

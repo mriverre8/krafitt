@@ -80,7 +80,7 @@ describe('isFollowing', () => {
 });
 
 describe('routineHistory', () => {
-    // The point of the whole thing: a coach opening the history reads the
+    // The point of the whole thing: a member opening the history reads the
     // numbers of whoever trains the routine, never their own blank. Nothing
     // about who is looking reaches this function, which is what makes that
     // impossible to get wrong later.

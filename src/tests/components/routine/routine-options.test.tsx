@@ -29,15 +29,12 @@ function setup({
     finished = false,
     editable = true,
     isPublic = false,
-    /** As the page passes them: a coach is handed the menu without the rows
-        that belong to the owner alone. */
+    /** As the page passes them: a member is handed the menu without the rows
+        that belong to the owner alone, which is all of them but the way out. */
     people = { href: '/routines/r1/people', count: 3 } as
         { href: string; count: number } | undefined,
     onLeave = vi.fn(async () => {}),
     owner = true,
-    /** As the page passes them: a scout changes nothing, so every row but the
-        people of the routine falls away. */
-    editor = true,
 } = {}) {
     renderWithLocale(
         withModals(
@@ -45,9 +42,9 @@ function setup({
                 <WhenNotEditing>
                     <RoutineOptions
                         name="Push Pull Legs"
-                        rename={!editor || finished ? undefined : rename}
+                        rename={!owner || finished ? undefined : rename}
                         duration={
-                            editor && duration
+                            owner && duration
                                 ? { ...duration, save: setDuration }
                                 : undefined
                         }
@@ -56,7 +53,7 @@ function setup({
                         onDelete={owner ? onDelete : undefined}
                         onDuplicate={owner ? onDuplicate : undefined}
                         onSave={owner ? undefined : onSave}
-                        editable={editor && editable}
+                        editable={owner && editable}
                         isPublic={isPublic}
                         setVisibility={owner ? setVisibility : undefined}
                     />
@@ -281,31 +278,14 @@ describe('RoutineOptions for someone who was let in', () => {
 
         await waitFor(() => expect(onLeave).toHaveBeenCalled());
     });
-
-    // A coach renames, moves the duration and edits the plan. Deleting the
-    // routine and publishing it stay with whoever it belongs to.
-    it('keeps deleting and publishing out of a coach menu', async () => {
-        setup({ owner: false });
-
-        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
-        expect(
-            await screen.findByRole('button', { name: 'Rename routine' })
-        ).toBeInTheDocument();
-        expect(
-            screen.queryByRole('button', { name: 'Delete routine' })
-        ).not.toBeInTheDocument();
-        expect(
-            screen.queryByRole('button', { name: 'Make public' })
-        ).not.toBeInTheDocument();
-    });
 });
 
-describe('RoutineOptions for a scout', () => {
-    const scout = { owner: false, editor: false };
+describe('RoutineOptions for a member', () => {
+    const member = { owner: false };
 
     // Everything that would change the routine is gone; the way out is not.
     it('offers a way out and nothing else', async () => {
-        setup(scout);
+        setup(member);
 
         fireEvent.click(screen.getByRole('button', { name: 'Options' }));
         expect(

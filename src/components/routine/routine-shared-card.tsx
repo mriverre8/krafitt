@@ -2,8 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { Duration } from '@/lib/progress';
-import type { Grant } from '@/lib/roles';
-import { badgeClass, cardLinkClass } from '@/lib/ui';
+import { cardLinkClass } from '@/lib/ui';
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/avatar';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
@@ -16,7 +15,6 @@ export type RoutineSharedCardProps = {
     cursor: number;
     ownerName: string;
     ownerImage: string | null;
-    role: Grant;
 };
 
 export function RoutineSharedCard(props: RoutineSharedCardProps) {
@@ -60,14 +58,6 @@ export function RoutineSharedCard(props: RoutineSharedCardProps) {
                         </span>
                     </p>
                 </div>
-
-                {props.role && (
-                    <span
-                        className={`${badgeClass} border-pulse text-pulse shrink-0 border-2`}
-                    >
-                        {t(`role.${props.role}`)}
-                    </span>
-                )}
             </div>
 
             <div className="mt-5 space-y-2">

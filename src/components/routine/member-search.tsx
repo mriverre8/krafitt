@@ -1,12 +1,11 @@
 'use client';
 
-import { findRoutineMember, setRoutineMember } from '@/app/actions';
+import { addRoutineMember, findRoutineMember } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { Avatar } from '@/components/ui/avatar';
 import { FormError } from '@/components/ui/form-error';
 import { useT } from '@/i18n/use-t';
 import { EMAIL_PATTERN } from '@/lib/constants';
-import { DEFAULT_ROLE } from '@/lib/roles';
 import {
     cardClass,
     ghostClass,
@@ -93,11 +92,7 @@ export function MemberSearch({ routineId }: { routineId: string }) {
                     </span>
                     <ActionButton
                         action={async () => {
-                            await setRoutineMember(
-                                routineId,
-                                found.id,
-                                DEFAULT_ROLE
-                            );
+                            await addRoutineMember(routineId, found.id);
                             setEmail('');
                             setDismissed(found.id);
                         }}

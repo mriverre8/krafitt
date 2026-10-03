@@ -23,7 +23,7 @@ import Link from 'next/link';
 
 /**
  * Everything a routine can be done to from its own header. Which rows appear is
- * the page's call, not this one's: a coach is handed the same menu with the
+ * the page's call, not this one's: a member is handed the same menu with the
  * owner's rows left out, so there is one menu rather than two to keep in step.
  */
 export function RoutineOptions({

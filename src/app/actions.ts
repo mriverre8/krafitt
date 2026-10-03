@@ -19,7 +19,6 @@ import {
     WEIGHT,
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
-import { canEditPlan, canSave, isAssignable } from '@/lib/roles';
 import { isSetKind, readSetValue } from '@/lib/sets';
 import type { DayState, FormState, MemberSearchState } from '@/lib/forms';
 import {
@@ -31,7 +30,7 @@ import {
     type Effort,
     type Logs,
 } from '@/lib/progress';
-import { memberRole, routineDetail } from '@/lib/queries';
+import { isMember, routineDetail } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -148,7 +147,7 @@ export async function renameRoutine(
 
     if (!name) return { error: t('error.routineName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    await requireRoutine(routineId, user.id, canEditPlan);
+    await requireRoutine(routineId, user.id);
 
     await prisma.routine.update({ where: { id: routineId }, data: { name } });
     revalidatePath(`/routines/${routineId}`);
@@ -174,7 +173,7 @@ export async function setRoutineDuration(
     const user = await requireUser();
     const t = await getT();
     const durationWeeks = int(data, 'durationWeeks');
-    const routine = await requireRoutine(routineId, user.id, canEditPlan);
+    const routine = await requireRoutine(routineId, user.id);
 
     if (routine.durationWeeks === null) {
         return { error: t('error.durationOpenEnded') };
@@ -266,19 +265,18 @@ export async function duplicateRoutine(routineId: string) {
 }
 
 /**
- * Someone else's plan, made one's own; who may is `canSave`'s call. The name
- * stays — in the saver's list there is no original for it to be a copy of.
+ * Someone else's plan, made one's own: whoever may read it may keep it —
+ * through public, or through being let in. The name stays — in the saver's list there is no original for it to be a copy of.
  */
 export async function saveRoutine(routineId: string) {
     const user = await requireUser();
     const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
     if (!routine) throw new Error(t('error.routineNotFound'));
 
-    const role =
-        routine.creatorId === user.id
-            ? 'owner'
-            : await memberRole(routineId, user.id);
-    if (!canSave(role, routine.isPublic)) throw new Error(t('error.noAccess'));
+    const allowed =
+        routine.creatorId !== user.id &&
+        (routine.isPublic || (await isMember(routineId, user.id)));
+    if (!allowed) throw new Error(t('error.noAccess'));
 
     await copyRoutine(routine, user.id, routine.name);
 }
@@ -649,35 +647,29 @@ export async function findRoutineMember(
     if (!found) return { error: t('error.memberNotFound') };
     if (found.id === user.id) return { error: t('error.memberSelf') };
 
-    // Already in: say so and hand back no one. Changing a role is the list's
-    // job, so that there is one place it happens rather than two.
-    if (await memberRole(routineId, found.id))
+    // Already in: say so and hand back no one.
+    if (await isMember(routineId, found.id))
         return { notice: t('members.already', { name: found.name }) };
 
     return { ok: true, found };
 }
 
 /**
- * Letting someone in, and changing what they may do, are the same write: the
- * search adds and the list's select moves them. Idempotent on purpose — a
- * double click or a stale card is a no-op, the same way `toggleFollow` is.
+ * Letting someone in as a member: they read, keep a copy, and walk out.
+ * Idempotent on purpose — a double click or a stale card is a no-op, the same
+ * way `toggleFollow` is.
  */
-export async function setRoutineMember(
-    routineId: string,
-    userId: string,
-    role: string
-) {
+export async function addRoutineMember(routineId: string, userId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);
     const t = await getT();
 
-    if (!isAssignable(role)) throw new Error(t('error.memberRole'));
     if (userId === user.id) throw new Error(t('error.memberSelf'));
 
     await prisma.routineMember.upsert({
         where: { routineId_userId: { routineId, userId } },
-        create: { routineId, userId, role },
-        update: { role },
+        create: { routineId, userId },
+        update: {},
     });
     revalidatePath(`/routines/${routineId}/people`);
     // The share badge shows on a private routine once somebody is in it.
