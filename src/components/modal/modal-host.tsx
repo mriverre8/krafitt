@@ -14,6 +14,9 @@ const modals = {
     rename: dynamic(() =>
         import('./rename-routine-modal').then((m) => m.RenameRoutineModal)
     ),
+    send: dynamic(() =>
+        import('./send-routine-modal').then((m) => m.SendRoutineModal)
+    ),
     settings: dynamic(() =>
         import('./settings-modal').then((m) => m.SettingsModal)
     ),

@@ -261,6 +261,10 @@ export const en = {
     'routine.duplicate': 'Duplicate routine',
     'routine.duplicateConfirm':
         'Duplicate the routine {name}? The copy starts from scratch, with no progress.',
+    'routine.send': 'Send routine',
+    'routine.sendLabel': "User's account",
+    'routine.sendFound': 'Person found',
+    'routine.sendAddMe': 'Add me as a member of their copy',
     'routine.copyName': '{name} (copy)',
     'routine.save': 'Save routine',
     'routine.saveConfirm':
@@ -356,6 +360,7 @@ export const en = {
     'error.followSelf': 'You cannot follow yourself',
     'error.memberEmail': 'Type an email address',
     'error.memberNotFound': 'No account uses that email',
+    'error.sendSelf': "You can't send the routine to yourself",
     'error.memberSelf': 'This routine is already yours',
     'error.workoutNotFound': 'Workout not found',
     'error.routineName': 'Give the routine a name',

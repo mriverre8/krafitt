@@ -4,8 +4,10 @@ import {
     deleteRoutine,
     deleteWorkout,
     duplicateRoutine,
+    findRecipient,
     removeRoutineMember,
     saveRoutine,
+    sendRoutine,
     renameRoutine,
     renameWorkout,
     saveExercises,
@@ -146,6 +148,20 @@ export default async function RoutinePage({
                                     onSave={
                                         !owner && (routine.isPublic || member)
                                             ? saveRoutine.bind(null, routine.id)
+                                            : undefined
+                                    }
+                                    send={
+                                        owner && complete
+                                            ? {
+                                                  find: findRecipient.bind(
+                                                      null,
+                                                      routine.id
+                                                  ),
+                                                  send: sendRoutine.bind(
+                                                      null,
+                                                      routine.id
+                                                  ),
+                                              }
                                             : undefined
                                     }
                                     onLeave={
