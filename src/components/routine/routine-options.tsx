@@ -155,9 +155,6 @@ export function RoutineOptions({
                                 size={14}
                                 aria-hidden
                             />
-                            {/* No "(0)": a count is there to say how many,
-                                and none of them is what the page itself
-                                says when you open it. */}
                             {t(
                                 people.count > 0
                                     ? 'members.linkCount'
