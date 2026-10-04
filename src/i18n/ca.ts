@@ -264,6 +264,10 @@ export const ca: Dict = {
     'routine.duplicate': 'Duplicar rutina',
     'routine.duplicateConfirm':
         'Duplicar la rutina {name}? La còpia comença de zero, sense progrés.',
+    'routine.send': 'Enviar rutina',
+    'routine.sendLabel': "Compte de l'usuari",
+    'routine.sendFound': 'Persona trobada',
+    'routine.sendAddMe': 'Afegir-me com a membre de la seva còpia',
     'routine.copyName': '{name} (còpia)',
     'routine.save': 'Desar rutina',
     'routine.saveConfirm':
@@ -360,6 +364,7 @@ export const ca: Dict = {
     'error.followSelf': 'No et pots seguir a tu mateix',
     'error.memberEmail': 'Escriu un correu electrònic',
     'error.memberNotFound': 'Cap compte no fa servir aquest correu',
+    'error.sendSelf': 'No et pots enviar la rutina a tu mateix',
     'error.memberSelf': 'Aquesta rutina ja és teva',
     'error.workoutNotFound': 'Entrenament no trobat',
     'error.routineName': 'Posa-li un nom a la rutina',

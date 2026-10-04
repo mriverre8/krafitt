@@ -6,6 +6,7 @@ import { labelClass, menuDangerClass, menuItemClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
+import type { SendRoutineModalProps } from '@/components/modal/send-routine-modal';
 import { DeleteRoutineButton } from '@/components/routine/delete-routine-button';
 import { EditModeToggle } from '@/components/routine/edit-mode';
 import {
@@ -16,6 +17,7 @@ import {
     Globe,
     Lock,
     LogOut,
+    Send,
     Type,
     Users,
 } from 'lucide-react';
@@ -35,6 +37,7 @@ export function RoutineOptions({
     onDelete,
     onDuplicate,
     onSave,
+    send,
     editable,
     isPublic,
     setVisibility,
@@ -55,6 +58,8 @@ export function RoutineOptions({
     onDuplicate?: () => Promise<unknown>;
     /** For anyone but the owner, on a routine made public: a copy of their own. */
     onSave?: () => Promise<unknown>;
+    /** The owner's, once the plan is complete: a copy handed to someone else. */
+    send?: Omit<SendRoutineModalProps, 'onClose'>;
     editable: boolean;
     isPublic?: boolean;
     setVisibility?: (isPublic: boolean) => Promise<unknown>;
@@ -124,6 +129,22 @@ export function RoutineOptions({
                             onClick={close}
                         />
                     )}
+                    {send && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                close();
+                                showModal('send', send);
+                            }}
+                            className={menuItemClass}
+                        >
+                            <Send
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('routine.send')}
+                        </button>
+                    )}
                     {people && (
                         <Link
                             href={people.href}
@@ -134,9 +155,6 @@ export function RoutineOptions({
                                 size={14}
                                 aria-hidden
                             />
-                            {/* No "(0)": a count is there to say how many,
-                                and none of them is what the page itself
-                                says when you open it. */}
                             {t(
                                 people.count > 0
                                     ? 'members.linkCount'

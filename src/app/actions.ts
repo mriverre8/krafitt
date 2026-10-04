@@ -20,7 +20,12 @@ import {
 } from '@/lib/constants';
 import { isRepMode } from '@/lib/reps';
 import { isSetKind, readSetValue } from '@/lib/sets';
-import type { DayState, FormState, MemberSearchState } from '@/lib/forms';
+import type {
+    DayState,
+    FormState,
+    FoundUser,
+    MemberSearchState,
+} from '@/lib/forms';
 import {
     currentWeek,
     isRoutineFinished,
@@ -208,17 +213,22 @@ export async function deleteRoutine(routineId: string) {
  * nothing that was lived through them is. Being started or finished is read off
  * the cursor and the sessions, so leaving those behind is what makes the copy
  * pending — and private, like any routine that was just made.
+ *
+ * `memberId` lets someone in on the copy in the same write: the sender of a
+ * routine watching how the recipient gets on with it.
  */
 async function copyRoutine(
     routine: NonNullable<Awaited<ReturnType<typeof routineDetail>>>,
     creatorId: string,
-    name: string
+    name: string,
+    memberId?: string
 ) {
-    const copy = await prisma.routine.create({
+    return prisma.routine.create({
         data: {
             name,
             durationWeeks: routine.durationWeeks,
             creatorId,
+            members: memberId ? { create: { userId: memberId } } : undefined,
             workouts: {
                 create: routine.workouts.map((workout) => ({
                     name: workout.name,
@@ -244,9 +254,6 @@ async function copyRoutine(
             },
         },
     });
-
-    revalidatePath('/routines');
-    redirect(`/routines/${copy.id}`);
 }
 
 export async function duplicateRoutine(routineId: string) {
@@ -257,11 +264,13 @@ export async function duplicateRoutine(routineId: string) {
     if (!routine) throw new Error(t('error.routineNotFound'));
 
     const room = NAME_MAX - t('routine.copyName', { name: '' }).length;
-    await copyRoutine(
+    const copy = await copyRoutine(
         routine,
         user.id,
         t('routine.copyName', { name: routine.name.slice(0, room) })
     );
+    revalidatePath('/routines');
+    redirect(`/routines/${copy.id}`);
 }
 
 /**
@@ -278,7 +287,57 @@ export async function saveRoutine(routineId: string) {
         (routine.isPublic || (await isMember(routineId, user.id)));
     if (!allowed) throw new Error(t('error.noAccess'));
 
-    await copyRoutine(routine, user.id, routine.name);
+    const copy = await copyRoutine(routine, user.id, routine.name);
+    revalidatePath('/routines');
+    redirect(`/routines/${copy.id}`);
+}
+
+/**
+ * Who to send a routine to, looked up by email the same way the member search
+ * does. Owner-only for the same reason: never a general lookup of the app's
+ * users. Being a member already is no bar — they get a copy of their own.
+ */
+export async function findRecipient(
+    routineId: string,
+    email: string
+): Promise<{ found?: FoundUser; error?: string }> {
+    const user = await requireUser();
+    const t = await getT();
+    await requireRoutine(routineId, user.id);
+
+    const found = await userByEmail(email);
+    if (!found) return { error: t('error.memberNotFound') };
+    if (found.id === user.id) return { error: t('error.sendSelf') };
+    return { found };
+}
+
+/**
+ * The owner's plan, handed to someone else as a routine of their own — the
+ * same fresh copy `saveRoutine` makes, only pushed rather than pulled. Nothing
+ * on the sender's side changes, so there is nothing of theirs to revalidate.
+ */
+export async function sendRoutine(
+    routineId: string,
+    userId: string,
+    addMe: boolean
+) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+    const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
+
+    if (!routine) throw new Error(t('error.routineNotFound'));
+    // The menu hides the option on an incomplete routine; this is what holds.
+    if (!isRoutineComplete(routine, t)) {
+        throw new Error(t('error.routineIncomplete'));
+    }
+    if (userId === user.id) throw new Error(t('error.sendSelf'));
+
+    await copyRoutine(
+        routine,
+        userId,
+        routine.name,
+        addMe ? user.id : undefined
+    );
 }
 
 // ---------- workouts and exercises ----------
@@ -637,13 +696,10 @@ export async function findRoutineMember(
     // Owner-only, so this is never a general lookup of the app's users.
     await requireRoutine(routineId, user.id);
 
-    const email = str(data, 'email').toLowerCase();
+    const email = str(data, 'email');
     if (!email) return { error: t('error.memberEmail') };
 
-    const found = await prisma.user.findFirst({
-        where: { email: { equals: email, mode: 'insensitive' } },
-        select: { id: true, name: true, image: true },
-    });
+    const found = await userByEmail(email);
     if (!found) return { error: t('error.memberNotFound') };
     if (found.id === user.id) return { error: t('error.memberSelf') };
 
@@ -653,6 +709,12 @@ export async function findRoutineMember(
 
     return { ok: true, found };
 }
+
+const userByEmail = (email: string) =>
+    prisma.user.findFirst({
+        where: { email: { equals: email.trim(), mode: 'insensitive' } },
+        select: { id: true, name: true, image: true },
+    });
 
 /**
  * Letting someone in as a member: they read, keep a copy, and walk out.
