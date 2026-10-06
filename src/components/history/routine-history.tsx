@@ -11,13 +11,16 @@ export function RoutineHistory({
     days,
     durationWeeks,
     cursor,
+    initialDay = 0,
 }: {
     days: HistoryDay[];
     durationWeeks: Duration;
     cursor: number;
+    /** The day tab to open on, counted from 0. Past the last day means the last. */
+    initialDay?: number;
 }) {
     const baseId = useId();
-    const [selected, setSelected] = useState(0);
+    const [selected, setSelected] = useState(initialDay);
     const index = Math.min(selected, Math.max(days.length - 1, 0));
 
     if (days.length === 0) return null;

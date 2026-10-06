@@ -7,8 +7,9 @@ import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutineProgressPage({
     params,
+    searchParams,
 }: PageProps<'/routines/[id]/progress'>) {
-    const { id } = await params;
+    const [{ id }, query] = await Promise.all([params, searchParams]);
     const user = await currentUser();
     if (!user) redirect('/');
 
@@ -19,6 +20,8 @@ export default async function RoutineProgressPage({
         notFound();
 
     const { routine, byDay } = history;
+    const day = Number(query.currentDay);
+    const initialDay = Number.isInteger(day) && day > 0 ? day : 0;
 
     return (
         <div className="space-y-6">
@@ -48,6 +51,7 @@ export default async function RoutineProgressPage({
                     }))}
                     durationWeeks={routine.durationWeeks}
                     cursor={routine.cursor}
+                    initialDay={initialDay}
                 />
             )}
         </div>
