@@ -5,7 +5,7 @@ import { getT } from '@/i18n/server';
 import { isRoutineFinished } from '@/lib/progress';
 import { OWNER_PREVIEW_SIZE } from '@/lib/pagination';
 import type { routinesOf, sharingOwners } from '@/lib/queries';
-import { ghostClass } from '@/lib/ui';
+import { cardClass, ghostClass } from '@/lib/ui';
 import { isRoutineComplete } from '@/lib/validate';
 import Link from 'next/link';
 
@@ -73,9 +73,15 @@ export async function SharedOwnerBlocks({ owners }: { owners: Owner[] }) {
 
     if (owners.length === 0)
         return (
-            <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center">
-                {t('routines.sharedEmpty')}
-            </p>
+            // Drawn like an empty routine: same card, same title over body.
+            <div className={`${cardClass} mt-10`}>
+                <h2 className="display text-3xl">
+                    {t('routines.sharedEmptyTitle')}
+                </h2>
+                <p className="text-muted mt-2 text-sm md:text-base">
+                    {t('routines.sharedEmptyBody')}
+                </p>
+            </div>
         );
 
     return (
