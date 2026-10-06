@@ -30,12 +30,14 @@ export type TodayWorkoutProps = {
     week: number;
     totalWeeks: Duration;
     workout: { id: string; name: string; exercises: ExerciseView[] };
+    /** Where `workout` sits among the routine's days, counted from 0. */
+    day: number;
     logs: Logs;
     previous: PreviousLogs;
 };
 
 export function TodayWorkout(props: TodayWorkoutProps) {
-    const { routineId, routineName, week, totalWeeks, workout, previous } =
+    const { routineId, routineName, week, totalWeeks, workout, day, previous } =
         props;
     const t = useT();
     const router = useRouter();
@@ -138,7 +140,10 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                 {sessionProgress}
                             </p>
                         )}
-                        <HistoryLink routineId={routineId} />
+                        <HistoryLink
+                            routineId={routineId}
+                            day={day}
+                        />
                     </div>
                 </div>
             </header>

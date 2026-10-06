@@ -47,6 +47,7 @@ const props: TodayWorkoutProps = {
             },
         ],
     },
+    day: 1,
     logs: {},
     previous: {},
 };
@@ -59,6 +60,14 @@ describe('TodayWorkout', () => {
     beforeEach(() => {
         useSessionStore.setState({ logs: {}, day: undefined });
         vi.clearAllMocks();
+    });
+
+    it('opens the history on the day being trained', () => {
+        render(<TodayWorkout {...props} />);
+        expect(screen.getByRole('link')).toHaveAttribute(
+            'href',
+            '/routines/r1/progress?currentDay=1'
+        );
     });
 
     // A routine with one day in it comes round again under the same workout

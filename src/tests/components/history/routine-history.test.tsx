@@ -205,6 +205,25 @@ describe('RoutineHistory', () => {
         expect(panel('Push A')).not.toBeVisible();
     });
 
+    it('opens on the day it is asked to', () => {
+        const panel = (name: string) =>
+            screen
+                .getByRole('heading', { name, hidden: true })
+                .closest('[role="tabpanel"]');
+
+        const { unmount } = render(<RoutineHistory {...base} />);
+        expect(panel('Push A')).toBeVisible();
+        unmount();
+
+        render(
+            <RoutineHistory
+                {...base}
+                initialDay={1}
+            />
+        );
+        expect(panel('Pull A')).toBeVisible();
+    });
+
     it('has nothing to show for a routine with no days', () => {
         const { container } = render(
             <RoutineHistory

@@ -115,6 +115,7 @@ export async function todayWorkout(userId: string) {
         routine,
         finished: false as const,
         workout,
+        day: position.workoutIndex,
         week,
         logs: toLogs(session?.logs ?? []),
         previous: toPrevious(previousSessions),
