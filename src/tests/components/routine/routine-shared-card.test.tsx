@@ -11,17 +11,14 @@ const props: RoutineSharedCardProps = {
     durationWeeks: 4,
     workoutCount: 3,
     cursor: 6,
-    ownerName: 'Ada',
-    ownerImage: null,
 };
 
 describe('RoutineSharedCard', () => {
-    it('summarises the routine and says whose it is', () => {
+    it('summarises the routine', () => {
         render(<RoutineSharedCard {...props} />);
 
         expect(screen.getByText('Strength')).toBeInTheDocument();
         expect(screen.getByText('4 weeks · 3 days')).toBeInTheDocument();
-        expect(screen.getByText('Routine by Ada')).toBeInTheDocument();
         expect(screen.getByText('6/12 workouts')).toBeInTheDocument();
     });
 

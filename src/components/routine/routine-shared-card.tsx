@@ -4,7 +4,6 @@ import { useT } from '@/i18n/use-t';
 import type { Duration } from '@/lib/progress';
 import { cardLinkClass } from '@/lib/ui';
 import Link from 'next/link';
-import { Avatar } from '@/components/ui/avatar';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 
 export type RoutineSharedCardProps = {
@@ -13,8 +12,6 @@ export type RoutineSharedCardProps = {
     durationWeeks: Duration;
     workoutCount: number;
     cursor: number;
-    ownerName: string;
-    ownerImage: string | null;
 };
 
 export function RoutineSharedCard(props: RoutineSharedCardProps) {
@@ -46,16 +43,6 @@ export function RoutineSharedCard(props: RoutineSharedCardProps) {
                                   weeks: props.durationWeeks,
                                   days: props.workoutCount,
                               })}
-                    </p>
-                    <p className="text-muted mt-2 flex items-center gap-1.5 text-sm">
-                        <Avatar
-                            name={props.ownerName}
-                            src={props.ownerImage}
-                            className="size-5 text-[9px]"
-                        />
-                        <span className="truncate">
-                            {t('routine.by', { name: props.ownerName })}
-                        </span>
                     </p>
                 </div>
             </div>

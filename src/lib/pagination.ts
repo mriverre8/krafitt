@@ -10,6 +10,10 @@ export const PAGE_SIZE = 10;
     paged page. Short on purpose: the index is a landing pad, not the list. */
 export const PREVIEW_SIZE = 5;
 
+/** Routines each owner's block on the shared list shows before its own page
+    takes over. Fewer than a preview: there are several blocks stacked. */
+export const OWNER_PREVIEW_SIZE = 3;
+
 /**
  * The page the URL asks for, clamped to the pages that exist. Anything else —
  * no param, a word, a negative, a page past the end after a routine was

@@ -752,10 +752,9 @@ export async function removeRoutineMember(routineId: string, userId: string) {
     revalidatePath(`/routines/${routineId}/people`);
     revalidatePath(`/routines/${routineId}`);
     revalidatePath('/routines');
+    revalidatePath('/routines/shared');
 
-    // Walking out takes the page you were standing on with it: the routine and
-    // its people both stop existing for you the moment the row is gone.
-    if (leaving) redirect('/routines');
+    if (leaving) redirect('/routines/shared');
 }
 
 // ---------- follows ----------

@@ -202,6 +202,9 @@ export const es: Dict = {
     'routines.title': 'Mis rutinas',
     'routines.empty': 'Aún no tienes rutinas.',
     'routines.sharedTitle': 'Compartidas conmigo',
+    'routines.sharedEmptyTitle': 'Aún no hay nada compartido',
+    'routines.sharedEmptyBody':
+        'Cuando alguien comparta una rutina contigo aparecerá aquí, agrupada con las demás de esa persona.',
     'routines.viewMore': 'Ver más',
     'routines.active': 'Activa',
     'routines.markActive': 'Marcar activa',
