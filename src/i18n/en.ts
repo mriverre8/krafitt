@@ -200,6 +200,7 @@ export const en = {
     'routines.title': 'My routines',
     'routines.empty': 'You have no routines yet.',
     'routines.sharedTitle': 'Shared with me',
+    'routines.sharedEmpty': 'Nobody has shared a routine with you yet.',
     'routines.viewMore': 'View more',
     'routines.active': 'Active',
     'routines.markActive': 'Set active',

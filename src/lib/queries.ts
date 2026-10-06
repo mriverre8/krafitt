@@ -1,5 +1,6 @@
 import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from './db';
+import { OWNER_PREVIEW_SIZE } from './pagination';
 import {
     positionFromCursor,
     toEffort,
@@ -239,21 +240,60 @@ export async function routinesOf(
     });
 }
 
+/** Routines `userId` was let into. The creator is never a member, so this
+    never matches the user's own. */
+const sharedWith = (userId: string) => ({ members: { some: { userId } } });
+
 /**
- * The routines someone was let into, and whose routine each one is: a list
- * you cannot tell apart by owner is a list you have to open each row to
- * understand.
+ * The people who let `userId` into at least one routine, each with the first
+ * few of those routines and how many there are in all: the shared list is
+ * grouped by owner, and each group only previews before it hands over to its
+ * own page. Ordered by name, then id, so a page boundary never moves between
+ * two people of the same name.
  *
  * Deliberately not `withPlan`. A card of somebody else's routine says nothing
  * about whether it could be set active — that is not a move you have — so
  * there is nothing here to drag its days, exercises and sets along for.
  */
+export function sharingOwners(
+    userId: string,
+    page: { skip: number; take: number }
+) {
+    const where = sharedWith(userId);
+    return prisma.user.findMany({
+        where: { routines: { some: where } },
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        ...page,
+        select: {
+            id: true,
+            name: true,
+            image: true,
+            _count: { select: { routines: { where } } },
+            routines: {
+                where,
+                orderBy: { createdAt: 'desc' },
+                take: OWNER_PREVIEW_SIZE,
+                include: { _count: { select: { workouts: true } } },
+            },
+        },
+    });
+}
+
+export function countSharingOwners(userId: string) {
+    return prisma.user.count({
+        where: { routines: { some: sharedWith(userId) } },
+    });
+}
+
+/** One owner's routines that `userId` was let into, with whose they are so the
+    page can be titled without a second lookup. */
 export function sharedRoutinesOf(
     userId: string,
-    page?: { skip: number; take: number }
+    ownerId: string,
+    page: { skip: number; take: number }
 ) {
     return prisma.routine.findMany({
-        where: { members: { some: { userId } } },
+        where: { creatorId: ownerId, ...sharedWith(userId) },
         orderBy: { createdAt: 'desc' },
         ...page,
         include: {
@@ -297,9 +337,9 @@ export function countRoutines(userId: string) {
     return prisma.routine.count({ where: { creatorId: userId } });
 }
 
-export function countSharedRoutines(userId: string) {
+export function countSharedRoutines(userId: string, ownerId: string) {
     return prisma.routine.count({
-        where: { members: { some: { userId } } },
+        where: { creatorId: ownerId, ...sharedWith(userId) },
     });
 }
 

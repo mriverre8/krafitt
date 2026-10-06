@@ -202,6 +202,7 @@ export const ca: Dict = {
     'routines.title': 'Les meves rutines',
     'routines.empty': 'Encara no tens rutines.',
     'routines.sharedTitle': 'Compartides amb mi',
+    'routines.sharedEmpty': 'Encara ningú ha compartit rutines amb tu.',
     'routines.viewMore': "Veure'n més",
     'routines.active': 'Activa',
     'routines.markActive': 'Marcar activa',
