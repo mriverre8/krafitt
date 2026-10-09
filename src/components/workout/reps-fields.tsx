@@ -8,6 +8,13 @@ import { numberClass, rowFieldClass } from '@/lib/ui';
 const repsSlotClass =
     'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2';
 
+/** Digits only, so a minus sign, a decimal point or an `e` never reaches the
+    draft — the server would turn the day away over them, with nothing to say
+    which box was at fault. A text box rather than a number one: a number box
+    reports a lone "-" as empty and leaves it on screen. */
+const digits = (value: string) =>
+    value.replace(/\D/g, '').slice(0, REPS.digits);
+
 /**
  * What the set asks for in reps, in the one slot the row always gives it. The
  * slot is the component's own, not the caller's: the range fills it with two
@@ -66,15 +73,11 @@ export function RepsFields({
     return (
         <div className={repsSlotClass}>
             <input
-                type="number"
+                type="text"
                 inputMode="numeric"
-                min={REPS.min}
-                max={REPS.max}
                 value={repMin}
                 onChange={(event) =>
-                    onChange({
-                        repMin: event.target.value.slice(0, REPS.digits),
-                    })
+                    onChange({ repMin: digits(event.target.value) })
                 }
                 placeholder={t(timed ? 'today.seconds' : 'today.reps')}
                 aria-label={t(timed ? 'exercise.seconds' : 'exercise.repMin', {
@@ -92,18 +95,11 @@ export function RepsFields({
                         {t('reps.to')}
                     </span>
                     <input
-                        type="number"
+                        type="text"
                         inputMode="numeric"
-                        min={REPS.min}
-                        max={REPS.max}
                         value={repMax}
                         onChange={(event) =>
-                            onChange({
-                                repMax: event.target.value.slice(
-                                    0,
-                                    REPS.digits
-                                ),
-                            })
+                            onChange({ repMax: digits(event.target.value) })
                         }
                         placeholder={t('today.reps')}
                         aria-label={t('exercise.repMax', {

@@ -282,17 +282,18 @@ export function ExerciseFields({
                                             />
                                         ) : (
                                             <input
-                                                type="number"
+                                                type="text"
                                                 inputMode="numeric"
-                                                min={limit.min}
-                                                max={limit.max}
                                                 value={sub.value}
                                                 onChange={(event) =>
                                                     updateSet(subIndex, {
-                                                        value: event.target.value.slice(
-                                                            0,
-                                                            limit.digits
-                                                        ),
+                                                        // Digits only, as in `RepsFields`.
+                                                        value: event.target.value
+                                                            .replace(/\D/g, '')
+                                                            .slice(
+                                                                0,
+                                                                limit.digits
+                                                            ),
                                                     })
                                                 }
                                                 placeholder={t('set.restUnit')}

@@ -10,16 +10,24 @@ import {
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import {
+    DROP_PERCENT,
     EXERCISES,
     NAME_MAX,
     REPS,
+    REST_SECONDS,
     maxDigits,
     SETS,
     WEEKS,
     WEIGHT,
 } from '@/lib/constants';
-import { isRepMode } from '@/lib/reps';
-import { isSetKind, readSetValue } from '@/lib/sets';
+import { isRepMode, isTimed } from '@/lib/reps';
+import {
+    isSetKind,
+    readSetValue,
+    setName,
+    setPlaces,
+    type Kinded,
+} from '@/lib/sets';
 import type {
     DayState,
     FormState,
@@ -391,56 +399,89 @@ function readReps(value: unknown): number | null | undefined {
  * about the shape is assumed. Blanks are kept as blanks — a routine is written
  * over several sittings, and `routineProblems` is what decides when it is
  * finished. Only nonsense is rejected outright.
+ *
+ * The one message the editor gets back sits under the whole day, so it says
+ * where: the exercise, named the way the day's own problems name it, and the
+ * set, by the label its fields carry.
  */
 function readPlan(raw: string, t: Translate) {
     let plan: unknown;
     try {
         plan = JSON.parse(raw);
     } catch {
-        return { error: t('error.exercises') };
+        return { error: t('error.planUnreadable') };
     }
-    if (
-        !Array.isArray(plan) ||
-        plan.length < 1 ||
-        plan.length > EXERCISES.max
-    ) {
-        return { error: t('error.exercises') };
+    if (!Array.isArray(plan)) return { error: t('error.planUnreadable') };
+    if (plan.length < 1 || plan.length > EXERCISES.max) {
+        return { error: t('error.exercises', { max: EXERCISES.max }) };
     }
 
     const exercises = [];
-    for (const entry of plan) {
+    for (const [index, entry] of plan.entries()) {
         const { id, name, sets } = (entry ?? {}) as Record<string, unknown>;
-        if (id !== null && typeof id !== 'string') {
-            return { error: t('error.exercises') };
+        if (
+            (id !== null && typeof id !== 'string') ||
+            typeof name !== 'string'
+        ) {
+            return { error: t('error.planUnreadable') };
         }
-        if (typeof name !== 'string') return { error: t('error.exercises') };
+        const numbered = t('validate.exerciseN', { n: index + 1 });
         if (name.trim().length > NAME_MAX) {
-            return { error: t('error.nameTooLong') };
+            return {
+                error: t('error.planName', { where: numbered, max: NAME_MAX }),
+            };
         }
+        const where = name.trim() || numbered;
         if (
             !Array.isArray(sets) ||
             sets.length < SETS.min ||
             sets.length > SETS.max
         ) {
-            return { error: t('error.sets') };
+            return {
+                error: t('error.sets', {
+                    where,
+                    min: SETS.min,
+                    max: SETS.max,
+                }),
+            };
         }
 
+        const places = setPlaces(sets.map((row) => (row ?? {}) as Kinded));
         const rows = [];
         for (const [order, row] of sets.entries()) {
             const { kind, mode, repMin, repMax, value, technique } = (row ??
                 {}) as Record<string, unknown>;
-            if (!isRepMode(mode)) return { error: t('error.sets') };
+            const at = { where, set: setName(places[order]) };
+            if (!isRepMode(mode)) return { error: t('error.planRepMode', at) };
             const setKind = kind === undefined ? 'normal' : kind;
-            if (!isSetKind(setKind) || (setKind !== 'normal' && order === 0)) {
-                return { error: t('error.sets') };
+            if (!isSetKind(setKind)) {
+                return { error: t('error.planSetKind', at) };
+            }
+            if (setKind !== 'normal' && order === 0) {
+                return { error: t('error.planSubFirst', { where }) };
             }
             const min = readReps(repMin);
             const max = readReps(repMax);
             if (min === undefined || max === undefined) {
-                return { error: t('error.repRange') };
+                return {
+                    error: t(
+                        isTimed(mode) ? 'error.planSeconds' : 'error.planReps',
+                        { ...at, max: maxDigits(REPS.digits) }
+                    ),
+                };
             }
             const amount = readSetValue(value, setKind);
-            if (amount === undefined) return { error: t('error.setValue') };
+            if (amount === undefined) {
+                const drop = setKind === 'drop';
+                return {
+                    error: t(drop ? 'error.planDrop' : 'error.planRest', {
+                        ...at,
+                        max: maxDigits(
+                            (drop ? DROP_PERCENT : REST_SECONDS).digits
+                        ),
+                    }),
+                };
+            }
             rows.push({
                 order,
                 kind: setKind,

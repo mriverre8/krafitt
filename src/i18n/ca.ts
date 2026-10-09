@@ -364,8 +364,18 @@ export const ca: Dict = {
 
     'validate.ok': 'La rutina està completa. Ja pots marcar-la com a activa.',
     'validate.exerciseN': 'Exercici {n}',
-    'validate.noName': '{where}: posa-li un nom.',
-    'validate.badSets': '{where}: les sèries no estan ben definides.',
+    'validate.noName': 'posa-li un nom',
+    'validate.noSets': 'afegeix almenys una sèrie',
+    'validate.setAt': '{where}, sèrie {set}',
+    'validate.noReps': 'falten les repeticions',
+    'validate.noSeconds': 'falten els segons',
+    'validate.repsRange': "les repeticions han d'estar entre {min} i {max}",
+    'validate.secondsRange': "els segons han d'estar entre {min} i {max}",
+    'validate.repOrder':
+        'el màxim de repeticions ha de ser més gran que el mínim',
+    'validate.noPause': 'falta la pausa',
+    'validate.pauseRange': "la pausa ha d'estar entre {min} i {max} segons",
+    'validate.noTechnique': 'posa nom a la tècnica o treu-la',
     'validate.showFields': 'Mostrar errors',
     'validate.problem': '1 cosa per completar',
     'validate.problems': '{n} coses per completar',
@@ -395,10 +405,24 @@ export const ca: Dict = {
     'error.routineIncomplete': 'Completa la rutina abans de marcar-la activa',
     'error.routineFinished': 'Aquesta rutina ja està acabada',
     'error.routineStarted': 'Una rutina ja començada no es pot editar',
-    'error.sets': 'Sèries: entre 1 i 20',
-    'error.exercises': 'Exercicis: entre 1 i 30',
-    'error.repRange': 'El rang de repeticions no és vàlid',
-    'error.setValue': 'La quantitat de la sèrie drop o rest pause no és vàlida',
+    'error.planUnreadable':
+        "No s'ha pogut llegir el dia. Torna a carregar la pàgina i torna-ho a provar.",
+    'error.exercises': 'Un dia porta entre 1 i {max} exercicis',
+    'error.planName': '{where}: el nom és massa llarg (màx. {max} caràcters)',
+    'error.sets': '{where}: un exercici porta entre {min} i {max} sèries',
+    'error.planRepMode':
+        '{where}, sèrie {set}: el tipus de repeticions no és vàlid',
+    'error.planSetKind': '{where}, sèrie {set}: el tipus de sèrie no és vàlid',
+    'error.planSubFirst':
+        '{where}: la primera sèrie no pot ser drop ni rest pause',
+    'error.planReps':
+        '{where}, sèrie {set}: les repeticions han de ser un nombre enter entre 0 i {max}',
+    'error.planSeconds':
+        '{where}, sèrie {set}: els segons han de ser un nombre enter entre 0 i {max}',
+    'error.planDrop':
+        '{where}, sèrie {set}: el percentatge de la drop ha de ser un nombre enter entre 0 i {max}',
+    'error.planRest':
+        '{where}, sèrie {set}: la pausa ha de ser un nombre enter de segons entre 0 i {max}',
     'error.weight': 'Pes no vàlid',
     'error.reps': 'Repeticions no vàlides',
     'error.alreadyFinished': 'Aquest entrenament ja està finalitzat',

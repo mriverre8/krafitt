@@ -1,8 +1,15 @@
 /** What still stands between a routine and being trainable. Pure: no Prisma. */
 
 import type { Translate } from '@/i18n/config';
-import { badRepFields, type RepSpec } from './reps';
-import { badSetValue, badTechnique, type KindedSet } from './sets';
+import { REPS, REST_SECONDS } from './constants';
+import { badRepFields, isTimed, type RepSpec } from './reps';
+import {
+    badSetValue,
+    badTechnique,
+    setName,
+    setPlaces,
+    type KindedSet,
+} from './sets';
 
 export type PlannedSet = RepSpec & KindedSet & { technique?: string | null };
 
@@ -45,32 +52,75 @@ const blankExercise: ExercisePlan = {
     in no save. */
 export const blankExerciseFault: ExerciseFault = exerciseFault(blankExercise);
 
+/** Why the rep boxes `badRepFields` flags are wrong. One line for both: a
+    range is one prescription, and an empty one is one thing to fill in. */
+function repProblem(
+    { repMode, repMin, repMax }: RepSpec,
+    bad: { min: boolean; max: boolean },
+    t: Translate
+): string {
+    const timed = isTimed(repMode);
+    if ((bad.min && repMin === null) || (bad.max && repMax === null)) {
+        return t(timed ? 'validate.noSeconds' : 'validate.noReps');
+    }
+    const outside = (reps: number) => reps < REPS.min || reps > REPS.max;
+    if (bad.min || outside(repMax!)) {
+        return t(timed ? 'validate.secondsRange' : 'validate.repsRange', REPS);
+    }
+    return t('validate.repOrder');
+}
+
+/** What is wrong with one set, a line per field the editor paints, so each
+    line has a red box to match once the errors are shown. */
+function setProblems(set: PlannedSet, t: Translate): string[] {
+    const problems: string[] = [];
+    const bad = badRepFields(set);
+    if (bad.min || bad.max) problems.push(repProblem(set, bad, t));
+    if (badSetValue(set)) {
+        problems.push(
+            set.value == null
+                ? t('validate.noPause')
+                : t('validate.pauseRange', REST_SECONDS)
+        );
+    }
+    if (badTechnique(set)) problems.push(t('validate.noTechnique'));
+    return problems;
+}
+
+/** One hole in a day: where it is, and what it is missing. Kept apart so the
+    card can make the place stand out — it is what the eye scans the list for. */
+export type Problem = { where: string; what: string };
+
 /**
  * Human-readable list of holes in one day, worded for the day's own card: the
- * day is the context, so nothing here repeats its name.
+ * day is the context, so nothing here repeats its name. Each line names the set
+ * by the label its fields carry, and says what it is missing.
  *
  * A day with no exercises is read as the one blank card the editor shows for it
  * — `toDrafts` never renders a day with nothing on it — so a freshly added day
  * complains about the fields on screen rather than about being empty.
  */
-export function workoutProblems(workout: WorkoutPlan, t: Translate): string[] {
+export function workoutProblems(workout: WorkoutPlan, t: Translate): Problem[] {
     const exercises =
         workout.exercises.length > 0 ? workout.exercises : [blankExercise];
 
     return exercises.flatMap((exercise, index) => {
-        const fault = exerciseFault(exercise);
         const where =
             exercise.name.trim() || t('validate.exerciseN', { n: index + 1 });
-        const problems: string[] = [];
-        if (fault.name) problems.push(t('validate.noName', { where }));
-        if (
-            exercise.sets.length === 0 ||
-            fault.sets.some(
-                (set) => set.min || set.max || set.value || set.technique
-            )
-        ) {
-            problems.push(t('validate.badSets', { where }));
+        const problems: Problem[] = [];
+        if (!exercise.name.trim()) {
+            problems.push({ where, what: t('validate.noName') });
         }
+        if (exercise.sets.length === 0) {
+            problems.push({ where, what: t('validate.noSets') });
+        }
+        const places = setPlaces(exercise.sets);
+        exercise.sets.forEach((set, i) => {
+            const at = t('validate.setAt', { where, set: setName(places[i]) });
+            for (const what of setProblems(set, t)) {
+                problems.push({ where: at, what });
+            }
+        });
         return problems;
     });
 }

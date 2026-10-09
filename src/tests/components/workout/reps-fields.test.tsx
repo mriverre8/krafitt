@@ -22,8 +22,8 @@ const reps = (props: Partial<Parameters<typeof RepsFields>[0]> = {}) =>
 describe('RepsFields', () => {
     it('opens on what the set holds', () => {
         reps();
-        expect(screen.getByLabelText(min)).toHaveValue(4);
-        expect(screen.getByLabelText(max)).toHaveValue(6);
+        expect(screen.getByLabelText(min)).toHaveValue('4');
+        expect(screen.getByLabelText(max)).toHaveValue('6');
     });
 
     // The mode decides the shape of the slot, and the slot is the same width
@@ -69,7 +69,6 @@ describe('RepsFields', () => {
         expect(onChange).toHaveBeenLastCalledWith({ repMax: '8' });
     });
 
-    // `maxLength` does nothing on a number input, so the cap has to hold here.
     it('cuts a typed number down to the digits reps are allowed', () => {
         const onChange = vi.fn();
         reps({ onChange });
@@ -77,6 +76,22 @@ describe('RepsFields', () => {
             target: { value: '1234' },
         });
         expect(onChange).toHaveBeenCalledWith({ repMin: '123' });
+    });
+
+    // Anything else would only be turned away by the server, under the form
+    // and with nothing to say which box it was.
+    it('keeps nothing but digits', () => {
+        const onChange = vi.fn();
+        reps({ onChange });
+        fireEvent.change(screen.getByLabelText(min), {
+            target: { value: '-6' },
+        });
+        expect(onChange).toHaveBeenLastCalledWith({ repMin: '6' });
+
+        fireEvent.change(screen.getByLabelText(max), {
+            target: { value: '1.5e' },
+        });
+        expect(onChange).toHaveBeenLastCalledWith({ repMax: '15' });
     });
 
     // jsdom has no Tailwind, so the utility class is what we can assert on.
@@ -97,7 +112,7 @@ describe('RepsFields', () => {
         const seconds = 'Exercise 1, seconds set 1';
         const onChange = vi.fn();
         reps({ mode: 'time', repMin: '30', onChange });
-        expect(screen.getByLabelText(seconds)).toHaveValue(30);
+        expect(screen.getByLabelText(seconds)).toHaveValue('30');
         expect(screen.getByLabelText(seconds)).toHaveAttribute(
             'placeholder',
             'sec'

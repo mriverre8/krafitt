@@ -3,7 +3,11 @@
 import { useT } from '@/i18n/use-t';
 import { EXERCISES } from '@/lib/constants';
 import type { DayAction, FormAction } from '@/lib/forms';
-import { blankExerciseFault, type ExerciseFault } from '@/lib/validate';
+import {
+    blankExerciseFault,
+    type ExerciseFault,
+    type Problem,
+} from '@/lib/validate';
 import {
     cardClass,
     dashedActionClass,
@@ -55,7 +59,7 @@ export function WorkoutEditor({
 }: {
     workout: { id: string; name: string; exercises: ExerciseView[] };
     /** What this day is still missing, as last saved. */
-    problems: string[];
+    problems: Problem[];
     /** The same holes as fields to paint, by exercise id. */
     faults: Record<string, ExerciseFault>;
     saveExercises: DayAction;
@@ -227,8 +231,13 @@ export function WorkoutEditor({
                         </button>
                     </div>
                     <ul className="text-muted mt-3 space-y-1.5 text-sm">
-                        {problems.map((problem, index) => (
-                            <li key={index}>{problem}</li>
+                        {problems.map(({ where, what }, index) => (
+                            <li key={index}>
+                                <span className="text-ink font-semibold">
+                                    {where}
+                                </span>
+                                : {what}
+                            </li>
                         ))}
                     </ul>
                 </div>
