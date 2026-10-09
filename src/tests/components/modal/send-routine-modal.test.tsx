@@ -40,7 +40,7 @@ describe('SendRoutineModal', () => {
         expect(sendButton).toBeDisabled();
     });
 
-    it('swaps the search for a check once someone is found', async () => {
+    it('swaps the search for a check and shows who was found', async () => {
         const { sendButton, type, search } = setup();
         type('Ada@Example.com');
         search();
@@ -48,7 +48,7 @@ describe('SendRoutineModal', () => {
         expect(
             await screen.findByRole('img', { name: 'Person found' })
         ).toBeInTheDocument();
-        expect(screen.queryByText('Ada')).not.toBeInTheDocument();
+        expect(screen.getByText('Ada')).toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Search' })
         ).not.toBeInTheDocument();
@@ -68,6 +68,7 @@ describe('SendRoutineModal', () => {
         type('ada@example.co');
         expect(screen.getByRole('button', { name: 'Search' })).toBeEnabled();
         expect(sendButton).toBeDisabled();
+        expect(screen.queryByText('Ada')).not.toBeInTheDocument();
 
         type('ada@example.com');
         expect(

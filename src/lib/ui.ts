@@ -24,6 +24,40 @@ export const wrongFieldClass = `${fieldBase} border-danger hover:border-danger`;
 
 export const inputClass = `w-full min-w-0 ${fieldClass}`;
 
+/**
+ * A search drawn as one frame rather than a field with a button beside it:
+ * the input inside has no box of its own (`ruled` stands its focus ring down)
+ * and the frame going pulse is the focus indicator for the whole bar. 48px,
+ * the height of the day tiles and the set rows. The volt tile at its end is
+ * the submit.
+ */
+const searchFrameBase =
+    'flex h-12 items-stretch rounded-md border-2 bg-surface2 transition-colors';
+
+export const searchFrameClass =
+    `${searchFrameBase} border-line hover:border-muted ` +
+    'focus-within:border-pulse focus-within:hover:border-pulse';
+
+/** The same frame once the search has found who it was looking for. Swapped,
+    not added, for the same reason as `wrongFieldClass`. */
+export const foundSearchFrameClass = `${searchFrameBase} border-surge-ink`;
+
+export const searchInputClass =
+    'ruled min-w-0 flex-1 bg-transparent pl-3.5 pr-1 text-sm md:text-base font-medium ' +
+    'text-ink placeholder:text-muted placeholder:font-normal focus:outline-none ' +
+    '[&::-webkit-search-cancel-button]:appearance-none';
+
+/** The square at the end of the frame. Volt as a fill, as everywhere. */
+const searchTileBase =
+    'm-1 grid w-10 shrink-0 place-items-center rounded-sm transition-colors';
+
+export const searchSubmitClass =
+    `charged ${searchTileBase} bg-volt text-on-volt hover:bg-volt2 ` +
+    'active:translate-y-px disabled:pointer-events-none disabled:opacity-40';
+
+/** What stands in the submit's place once someone is found. */
+export const searchFoundClass = `${searchTileBase} bg-surge text-on-surge`;
+
 /** One height for every control on a set row of the editor — select, number
     box, technique field, the readout that stands in for the numbers — so the
     columns line up down the card whatever each row is asking for. */

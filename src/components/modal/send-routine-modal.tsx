@@ -2,9 +2,21 @@
 
 import { useT } from '@/i18n/use-t';
 import { EMAIL_PATTERN } from '@/lib/constants';
+import { normalEmail } from '@/lib/utils';
 import type { FoundUser } from '@/lib/forms';
-import { ghostClass, inputClass, labelClass, primaryClass } from '@/lib/ui';
+import {
+    cardClass,
+    foundSearchFrameClass,
+    ghostClass,
+    labelClass,
+    primaryClass,
+    searchFoundClass,
+    searchFrameClass,
+    searchInputClass,
+    searchSubmitClass,
+} from '@/lib/ui';
 import { Modal } from '@/components/modal/modal';
+import { Avatar } from '@/components/ui/avatar';
 import { FormError } from '@/components/ui/form-error';
 import { CircleCheck, Search, Send } from 'lucide-react';
 import { useState, useTransition } from 'react';
@@ -14,8 +26,6 @@ export type SendRoutineModalProps = {
     send: (userId: string, addMe: boolean) => Promise<unknown>;
     onClose: () => void;
 };
-
-const normal = (email: string) => email.trim().toLowerCase();
 
 export function SendRoutineModal({
     find,
@@ -29,7 +39,7 @@ export function SendRoutineModal({
     const [error, setError] = useState<string>();
     const [pending, start] = useTransition();
 
-    const matched = found !== undefined && normal(email) === found.email;
+    const matched = found !== undefined && normalEmail(email) === found.email;
 
     return (
         <Modal
@@ -39,7 +49,7 @@ export function SendRoutineModal({
             <form
                 onSubmit={(event) => {
                     event.preventDefault();
-                    const asked = normal(email);
+                    const asked = normalEmail(email);
                     start(async () => {
                         const answer = await find(asked);
                         setError(answer.error);
@@ -54,7 +64,11 @@ export function SendRoutineModal({
                 >
                     {t('routine.sendLabel')}
                 </label>
-                <div className="flex gap-2">
+                <div
+                    className={
+                        matched ? foundSearchFrameClass : searchFrameClass
+                    }
+                >
                     <input
                         id="send-email"
                         type="email"
@@ -69,19 +83,15 @@ export function SendRoutineModal({
                             setError(undefined);
                         }}
                         placeholder={t('members.emailPlaceholder')}
-                        className={
-                            matched
-                                ? `${inputClass} border-surge-ink!`
-                                : inputClass
-                        }
+                        className={searchInputClass}
                     />
                     {matched ? (
-                        <span className="border-surge-ink flex shrink-0 items-center rounded-md border-2 px-4">
+                        <span className={searchFoundClass}>
                             <CircleCheck
                                 size={18}
+                                strokeWidth={2.5}
                                 role="img"
                                 aria-label={t('routine.sendFound')}
-                                className="text-surge-ink"
                             />
                         </span>
                     ) : (
@@ -90,10 +100,11 @@ export function SendRoutineModal({
                             disabled={pending || !email.trim()}
                             aria-label={t('members.search')}
                             title={t('members.search')}
-                            className={`${ghostClass} shrink-0`}
+                            className={searchSubmitClass}
                         >
                             <Search
                                 size={18}
+                                strokeWidth={2.5}
                                 aria-hidden
                             />
                         </button>
@@ -102,6 +113,20 @@ export function SendRoutineModal({
                 <div className="mt-1.5 empty:hidden">
                     <FormError message={error} />
                 </div>
+                {matched && (
+                    <div
+                        className={`${cardClass} mt-2 flex items-center gap-2 px-2! py-1.5!`}
+                    >
+                        <Avatar
+                            name={found.user.name}
+                            src={found.user.image}
+                            className="size-6 text-[0.625rem]"
+                        />
+                        <span className="display min-w-0 flex-1 truncate text-lg">
+                            {found.user.name}
+                        </span>
+                    </div>
+                )}
             </form>
 
             <label className="flex items-center gap-2 text-sm font-semibold">

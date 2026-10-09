@@ -2,10 +2,15 @@ import { SharedRoutineList } from '@/components/routine/routine-lists';
 import { Avatar } from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/back-button';
 import { Pagination } from '@/components/ui/pagination';
+import { SearchBar } from '@/components/ui/search-bar';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { paginate } from '@/lib/pagination';
-import { countSharedRoutines, sharedRoutinesOf } from '@/lib/queries';
+import { paginate, searchTerm } from '@/lib/pagination';
+import {
+    countSharedRoutines,
+    sharedRoutinesOf,
+    userHeader,
+} from '@/lib/queries';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function OwnerSharedRoutinesPage({
@@ -15,18 +20,28 @@ export default async function OwnerSharedRoutinesPage({
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const { ownerId } = await params;
-    const [{ page: asked }, total, t] = await Promise.all([
-        searchParams,
+    const [{ ownerId }, query] = await Promise.all([params, searchParams]);
+    const q = searchTerm(query.q);
+
+    const [shared, total, owner, t] = await Promise.all([
         countSharedRoutines(user.id, ownerId),
+        q ? countSharedRoutines(user.id, ownerId, q) : null,
+        userHeader(ownerId),
         getT(),
     ]);
 
-    if (total === 0) notFound();
+    if (shared === 0 || !owner) notFound();
 
-    const { page, totalPages, skip, take } = paginate(asked, total);
-    const routines = await sharedRoutinesOf(user.id, ownerId, { skip, take });
-    const owner = routines[0].creator;
+    const { page, totalPages, skip, take } = paginate(
+        query.page,
+        total ?? shared
+    );
+    const routines = await sharedRoutinesOf(
+        user.id,
+        ownerId,
+        { skip, take },
+        q
+    );
 
     return (
         <div className="space-y-6">
@@ -47,7 +62,16 @@ export default async function OwnerSharedRoutinesPage({
                 </h1>
             </header>
 
-            <SharedRoutineList routines={routines} />
+            <SearchBar
+                label={t('routines.searchLabel')}
+                placeholder={t('routines.searchPlaceholder')}
+                defaultValue={q}
+            />
+
+            <SharedRoutineList
+                routines={routines}
+                searching={Boolean(q)}
+            />
 
             <Pagination
                 page={page}

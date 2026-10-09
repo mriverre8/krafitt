@@ -7,6 +7,7 @@ import {
     isSetEnabled,
     positionFromCursor,
     profileRoutines,
+    routineStatus,
     setMove,
     weekState,
     type Logs,
@@ -298,5 +299,22 @@ describe('isSessionComplete', () => {
 
     it('never completes a workout that has no exercises', () => {
         expect(isSessionComplete([], {})).toBe(false);
+    });
+});
+
+describe('routineStatus', () => {
+    const shelf = { isActive: false, finished: false, canActivate: true };
+
+    // The card's badge and the list's status filter both read this, so the
+    // order is what keeps a filter from finding a card wearing another badge.
+    it('ranks finished over active, and splits the shelf on completeness', () => {
+        expect(
+            routineStatus({ ...shelf, isActive: true, finished: true })
+        ).toBe('finished');
+        expect(routineStatus({ ...shelf, isActive: true })).toBe('active');
+        expect(routineStatus(shelf)).toBe('pending');
+        expect(routineStatus({ ...shelf, canActivate: false })).toBe(
+            'incomplete'
+        );
     });
 });

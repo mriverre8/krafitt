@@ -1,7 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import type { Duration } from '@/lib/progress';
+import { routineStatus, type Duration } from '@/lib/progress';
 import { badgeClass, cardLinkClass } from '@/lib/ui';
 import { CircleCheck, Flame } from 'lucide-react';
 import Link from 'next/link';
@@ -30,7 +30,8 @@ export function RoutineCard(props: RoutineCardProps) {
             ? t('routines.progressOpen', { done })
             : t('routines.progress', { done, total });
 
-    const training = props.isActive && !props.finished;
+    const status = routineStatus(props);
+    const training = status === 'active';
 
     return (
         <Link
@@ -54,7 +55,7 @@ export function RoutineCard(props: RoutineCardProps) {
                     </p>
                 </div>
 
-                {props.finished ? (
+                {status === 'finished' ? (
                     <span
                         className={`${badgeClass} border-surge text-surge shrink-0 border-2`}
                     >
@@ -64,7 +65,7 @@ export function RoutineCard(props: RoutineCardProps) {
                         />
                         {t('routines.finished')}
                     </span>
-                ) : props.isActive ? (
+                ) : status === 'active' ? (
                     <span
                         className={`${badgeClass} bg-volt text-on-volt shrink-0`}
                     >
@@ -74,7 +75,7 @@ export function RoutineCard(props: RoutineCardProps) {
                         />
                         {t('routines.active')}
                     </span>
-                ) : props.canActivate ? (
+                ) : status === 'pending' ? (
                     <span
                         className={`${badgeClass} border-line text-muted shrink-0 border-2`}
                     >
