@@ -11,13 +11,14 @@ import { closeModal } from '@/store/modal';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { noopAction } from '@/tests/setup-helpers';
+import type { Problem } from '@/lib/validate';
 
 const sets = [{ repMode: 'range', repMin: 4, repMax: 6, technique: 'Top set' }];
 
 const day = (
     id: string,
     name: string,
-    problems: string[] = []
+    problems: Problem[] = []
 ): RoutineDay => ({
     id,
     name,
@@ -28,7 +29,7 @@ const day = (
 
 const days = [
     day('w1', 'Push A'),
-    day('w2', 'Pull A', ['Exercise 1: give it a name.']),
+    day('w2', 'Pull A', [{ where: 'Exercise 1', what: 'give it a name' }]),
     day('w3', 'Legs'),
 ];
 

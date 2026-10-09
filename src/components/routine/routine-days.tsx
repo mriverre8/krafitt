@@ -1,7 +1,7 @@
 'use client';
 
 import type { DayAction, FormAction, FormState } from '@/lib/forms';
-import type { ExerciseFault } from '@/lib/validate';
+import type { ExerciseFault, Problem } from '@/lib/validate';
 import { useId, useState } from 'react';
 import { DaySwitcher } from '@/components/routine/day-switcher';
 import { useDirtyDays } from '@/components/routine/edit-mode';
@@ -12,7 +12,7 @@ export type RoutineDay = {
     id: string;
     name: string;
     exercises: ExerciseView[];
-    problems: string[];
+    problems: Problem[];
     faults: Record<string, ExerciseFault>;
 };
 

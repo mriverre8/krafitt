@@ -70,7 +70,7 @@ const base = {
 
 /** A day whose only stored exercise has no name. */
 const flagged = {
-    problems: ['Exercise 1: give it a name.'],
+    problems: [{ where: 'Exercise 1', what: 'give it a name' }],
     faults: {
         e1: {
             name: true,
@@ -329,7 +329,7 @@ describe('WorkoutEditor', () => {
         await waitFor(() =>
             expect(
                 screen.getByLabelText('Exercise 2, min reps set 1')
-            ).toHaveValue(4)
+            ).toHaveValue('4')
         );
         expect(noBar()).toBeNull();
 
@@ -371,9 +371,12 @@ describe('WorkoutEditor', () => {
                 {...flagged}
             />
         );
-        expect(
-            screen.getByText('Exercise 1: give it a name.')
-        ).toBeInTheDocument();
+        const item = screen.getByRole('listitem');
+        expect(item).toHaveTextContent('Exercise 1: give it a name');
+        // The place is what the eye scans the list for, so it stands apart.
+        expect(within(item).getByText('Exercise 1')).toHaveClass(
+            'font-semibold'
+        );
     });
 
     it('points at the offending fields, and stops when asked again', () => {
@@ -410,8 +413,11 @@ describe('WorkoutEditor', () => {
                 {...base}
                 workout={{ ...workout, exercises: [] }}
                 problems={[
-                    'Exercise 1: give it a name.',
-                    'Exercise 1: the sets are not properly defined.',
+                    { where: 'Exercise 1', what: 'give it a name' },
+                    {
+                        where: 'Exercise 1, set 1',
+                        what: 'the reps are missing',
+                    },
                 ]}
             />
         );
@@ -510,9 +516,7 @@ describe('WorkoutEditor, before Edit is pressed', () => {
                 {...flagged}
             />
         );
-        expect(
-            screen.queryByText('Exercise 1: give it a name.')
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/give it a name/)).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Show errors' })
         ).not.toBeInTheDocument();

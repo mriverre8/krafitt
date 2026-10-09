@@ -360,8 +360,17 @@ export const en = {
 
     'validate.ok': 'The routine is complete. You can set it as active.',
     'validate.exerciseN': 'Exercise {n}',
-    'validate.noName': '{where}: give it a name.',
-    'validate.badSets': '{where}: the sets are not properly defined.',
+    'validate.noName': 'give it a name',
+    'validate.noSets': 'add at least one set',
+    'validate.setAt': '{where}, set {set}',
+    'validate.noReps': 'the reps are missing',
+    'validate.noSeconds': 'the seconds are missing',
+    'validate.repsRange': 'reps must be between {min} and {max}',
+    'validate.secondsRange': 'seconds must be between {min} and {max}',
+    'validate.repOrder': 'max reps must be higher than min reps',
+    'validate.noPause': 'the pause is missing',
+    'validate.pauseRange': 'the pause must be between {min} and {max} seconds',
+    'validate.noTechnique': 'name the technique or remove it',
     'validate.showFields': 'Show errors',
     'validate.problem': '1 thing left to finish',
     'validate.problems': '{n} things left to finish',
@@ -391,10 +400,23 @@ export const en = {
     'error.routineIncomplete': 'Finish the routine before setting it active',
     'error.routineFinished': 'This routine is already finished',
     'error.routineStarted': 'A routine you have started cannot be edited',
-    'error.sets': 'Sets: between 1 and 20',
-    'error.exercises': 'Exercises: between 1 and 30',
-    'error.repRange': 'The rep range is not valid',
-    'error.setValue': 'The drop or rest-pause amount is not valid',
+    'error.planUnreadable':
+        'The day could not be read. Reload the page and try again.',
+    'error.exercises': 'A day holds between 1 and {max} exercises',
+    'error.planName': '{where}: the name is too long (max {max} characters)',
+    'error.sets': '{where}: an exercise holds between {min} and {max} sets',
+    'error.planRepMode': '{where}, set {set}: the rep type is not valid',
+    'error.planSetKind': '{where}, set {set}: the set type is not valid',
+    'error.planSubFirst':
+        '{where}: the first set cannot be a drop or rest-pause set',
+    'error.planReps':
+        '{where}, set {set}: reps must be a whole number from 0 to {max}',
+    'error.planSeconds':
+        '{where}, set {set}: seconds must be a whole number from 0 to {max}',
+    'error.planDrop':
+        '{where}, set {set}: the drop percentage must be a whole number from 0 to {max}',
+    'error.planRest':
+        '{where}, set {set}: the pause must be a whole number of seconds from 0 to {max}',
     'error.weight': 'Invalid weight',
     'error.reps': 'Invalid reps',
     'error.alreadyFinished': 'This workout is already finished',

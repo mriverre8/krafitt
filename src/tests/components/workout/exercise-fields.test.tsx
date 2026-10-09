@@ -71,7 +71,7 @@ describe('ExerciseFields', () => {
             'Bench press'
         );
         expect(screen.getByLabelText('Exercise 1, min reps set 1')).toHaveValue(
-            4
+            '4'
         );
         expect(
             screen.getByLabelText('Exercise 1, reps type set 2')
@@ -96,8 +96,8 @@ describe('ExerciseFields', () => {
     });
 
     it('cuts a typed number down to the digits it is allowed', () => {
-        // `maxLength` does nothing on a number input, so the cap has to hold
-        // here: three digits for reps, two for a drop or rest-pause value.
+        // Three digits for reps, two for a rest-pause value — and digits only,
+        // so a minus sign never reaches the draft.
         const onChange = vi.fn();
         fields({ onChange });
         fireEvent.change(screen.getByLabelText('Exercise 1, min reps set 1'), {
@@ -117,6 +117,11 @@ describe('ExerciseFields', () => {
             target: { value: '123' },
         });
         expect(onChange.mock.calls[0][0].sets[1].value).toBe('12');
+
+        fireEvent.change(screen.getByPlaceholderText('sec'), {
+            target: { value: '-5' },
+        });
+        expect(onChange.mock.calls[1][0].sets[1].value).toBe('5');
     });
 
     it('adds and removes sets one at a time', () => {
@@ -312,7 +317,7 @@ describe('ExerciseFields', () => {
                 screen.queryByLabelText('Exercise 1, technique set RP1')
             ).not.toBeInTheDocument();
             expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
-                15
+                '15'
             );
             expect(
                 screen.getByLabelText('Exercise 1, min reps set RP1')
@@ -674,7 +679,7 @@ describe('ExerciseFields', () => {
                 },
             });
             expect(screen.getByLabelText('Exercise 1, RP1 amount')).toHaveValue(
-                15
+                '15'
             );
         });
     });

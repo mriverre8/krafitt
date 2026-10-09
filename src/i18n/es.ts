@@ -364,8 +364,18 @@ export const es: Dict = {
 
     'validate.ok': 'La rutina está completa. Ya puedes marcarla como activa.',
     'validate.exerciseN': 'Ejercicio {n}',
-    'validate.noName': '{where}: ponle un nombre.',
-    'validate.badSets': '{where}: las series no están bien definidas.',
+    'validate.noName': 'ponle un nombre',
+    'validate.noSets': 'añade al menos una serie',
+    'validate.setAt': '{where}, serie {set}',
+    'validate.noReps': 'faltan las repeticiones',
+    'validate.noSeconds': 'faltan los segundos',
+    'validate.repsRange': 'las repeticiones deben estar entre {min} y {max}',
+    'validate.secondsRange': 'los segundos deben estar entre {min} y {max}',
+    'validate.repOrder':
+        'el máximo de repeticiones debe ser mayor que el mínimo',
+    'validate.noPause': 'falta la pausa',
+    'validate.pauseRange': 'la pausa debe estar entre {min} y {max} segundos',
+    'validate.noTechnique': 'ponle nombre a la técnica o quítala',
     'validate.showFields': 'Mostrar errores',
     'validate.problem': '1 cosa por completar',
     'validate.problems': '{n} cosas por completar',
@@ -395,10 +405,25 @@ export const es: Dict = {
     'error.routineIncomplete': 'Completa la rutina antes de marcarla activa',
     'error.routineFinished': 'Esta rutina ya está terminada',
     'error.routineStarted': 'Una rutina ya empezada no se puede editar',
-    'error.sets': 'Series: entre 1 y 20',
-    'error.exercises': 'Ejercicios: entre 1 y 30',
-    'error.repRange': 'El rango de repeticiones no es válido',
-    'error.setValue': 'La cantidad de la serie drop o rest pause no es válida',
+    'error.planUnreadable':
+        'No se ha podido leer el día. Recarga la página y vuelve a intentarlo.',
+    'error.exercises': 'Un día lleva entre 1 y {max} ejercicios',
+    'error.planName':
+        '{where}: el nombre es demasiado largo (máx. {max} caracteres)',
+    'error.sets': '{where}: un ejercicio lleva entre {min} y {max} series',
+    'error.planRepMode':
+        '{where}, serie {set}: el tipo de repeticiones no es válido',
+    'error.planSetKind': '{where}, serie {set}: el tipo de serie no es válido',
+    'error.planSubFirst':
+        '{where}: la primera serie no puede ser drop ni rest pause',
+    'error.planReps':
+        '{where}, serie {set}: las repeticiones deben ser un número entero entre 0 y {max}',
+    'error.planSeconds':
+        '{where}, serie {set}: los segundos deben ser un número entero entre 0 y {max}',
+    'error.planDrop':
+        '{where}, serie {set}: el porcentaje de la drop debe ser un número entero entre 0 y {max}',
+    'error.planRest':
+        '{where}, serie {set}: la pausa debe ser un número entero de segundos entre 0 y {max}',
     'error.weight': 'Peso no válido',
     'error.reps': 'Repeticiones no válidas',
     'error.alreadyFinished': 'Este entrenamiento ya está finalizado',

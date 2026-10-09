@@ -27,8 +27,8 @@ describe('workoutProblems', () => {
     // they point at nothing the user can see.
     it('reads a day with no exercises as the blank card shown for it', () => {
         expect(workoutProblems({ exercises: [] }, t)).toEqual([
-            'Exercise 1: give it a name.',
-            'Exercise 1: the sets are not properly defined.',
+            { where: 'Exercise 1', what: 'give it a name' },
+            { where: 'Exercise 1, set 1', what: 'the reps are missing' },
         ]);
     });
 
@@ -49,8 +49,8 @@ describe('workoutProblems', () => {
                 t
             )
         ).toEqual([
-            'Exercise 1: give it a name.',
-            'Exercise 1: the sets are not properly defined.',
+            { where: 'Exercise 1', what: 'give it a name' },
+            { where: 'Exercise 1, set 1', what: 'the reps are missing' },
         ]);
     });
 
@@ -66,7 +66,7 @@ describe('workoutProblems', () => {
                 day([{ repMode: 'range', repMin: 6, repMax: null }]),
                 t
             )
-        ).toEqual(['Bench: the sets are not properly defined.']);
+        ).toEqual([{ where: 'Bench, set 1', what: 'the reps are missing' }]);
     });
 
     it('rejects a range that starts and ends on the same number', () => {
@@ -75,7 +75,12 @@ describe('workoutProblems', () => {
                 day([{ repMode: 'range', repMin: 8, repMax: 8 }]),
                 t
             )
-        ).toEqual(['Bench: the sets are not properly defined.']);
+        ).toEqual([
+            {
+                where: 'Bench, set 1',
+                what: 'max reps must be higher than min reps',
+            },
+        ]);
         // The same prescription, said the way the fixed mode says it.
         expect(
             workoutProblems(
@@ -95,7 +100,32 @@ describe('workoutProblems', () => {
             workoutProblems(day([{ ...set, technique: 'Top set' }]), t)
         ).toEqual([]);
         expect(workoutProblems(day([{ ...set, technique: '  ' }]), t)).toEqual([
-            'Bench: the sets are not properly defined.',
+            { where: 'Bench, set 1', what: 'name the technique or remove it' },
+        ]);
+    });
+
+    // The list sits apart from the fields, so each line says which set and
+    // what it is missing rather than that something, somewhere, is wrong.
+    it('says which set is wrong and why', () => {
+        expect(
+            workoutProblems(
+                day([
+                    set,
+                    { repMode: 'fixed', repMin: 0, repMax: null },
+                    { repMode: 'time', repMin: null, repMax: null },
+                    { ...set, kind: 'rest', value: null },
+                    { ...set, kind: 'rest', value: 90 },
+                ]),
+                t
+            )
+        ).toEqual([
+            { where: 'Bench, set 2', what: 'reps must be between 1 and 1000' },
+            { where: 'Bench, set 3', what: 'the seconds are missing' },
+            { where: 'Bench, set RP1', what: 'the pause is missing' },
+            {
+                where: 'Bench, set RP2',
+                what: 'the pause must be between 1 and 60 seconds',
+            },
         ]);
     });
 });
@@ -111,8 +141,8 @@ describe('workoutFaults', () => {
             { id: 'e2', name: 'Dips', sets: [set] },
         ];
         expect(workoutProblems({ exercises }, t)).toEqual([
-            'Exercise 1: give it a name.',
-            'Exercise 1: the sets are not properly defined.',
+            { where: 'Exercise 1', what: 'give it a name' },
+            { where: 'Exercise 1, set 1', what: 'the reps are missing' },
         ]);
         expect(workoutFaults(exercises)).toEqual({
             e1: {
