@@ -50,3 +50,10 @@ export function loadMore(value: string | string[] | undefined, total: number) {
 
     return { shown, next: shown < total ? shown + LOAD_SIZE : null };
 }
+
+/** What a search box left in the URL, trimmed. Blank and missing both come
+    back undefined, so a cleared box lists everything again. */
+export function searchTerm(value: string | string[] | undefined) {
+    const term = (Array.isArray(value) ? value[0] : value)?.trim();
+    return term || undefined;
+}

@@ -231,10 +231,10 @@ const withPlan = {
  */
 export async function routinesOf(
     userId: string,
-    page?: { skip: number; take: number }
+    { q, ...page }: { skip?: number; take?: number; q?: string } = {}
 ) {
     return prisma.routine.findMany({
-        where: { creatorId: userId },
+        where: { creatorId: userId, name: q ? like(q) : undefined },
         orderBy: { createdAt: 'desc' },
         ...page,
         include: withPlan,
@@ -244,6 +244,34 @@ export async function routinesOf(
 /** Routines `userId` was let into. The creator is never a member, so this
     never matches the user's own. */
 const sharedWith = (userId: string) => ({ members: { some: { userId } } });
+
+/** A case-blind "contains", the one way every search box here matches. */
+const like = (q: string) => ({ contains: q, mode: 'insensitive' as const });
+
+/** What a search on the shared list can be narrowed to. */
+export const SHARED_SEARCH_FIELDS = ['routine', 'person', 'email'] as const;
+export type SharedSearchField = (typeof SHARED_SEARCH_FIELDS)[number];
+
+/** Routines `userId` was let into that a search on the shared list matches:
+    by the routine's own name, or by whose it is — their name or their email.
+    `by` narrows it to one of those; left out, any of them will do. No search,
+    no narrowing. */
+function sharedMatching(
+    userId: string,
+    q?: string,
+    by?: SharedSearchField
+): Prisma.RoutineWhereInput {
+    if (!q) return sharedWith(userId);
+    const fields = {
+        routine: { name: like(q) },
+        person: { creator: { name: like(q) } },
+        email: { creator: { email: like(q) } },
+    } satisfies Record<SharedSearchField, Prisma.RoutineWhereInput>;
+    return {
+        ...sharedWith(userId),
+        OR: by ? [fields[by]] : Object.values(fields),
+    };
+}
 
 /**
  * The people who let `userId` into at least one routine, each with the first
@@ -258,9 +286,14 @@ const sharedWith = (userId: string) => ({ members: { some: { userId } } });
  */
 export function sharingOwners(
     userId: string,
-    page: { skip: number; take: number }
+    page: { skip: number; take: number },
+    q?: string,
+    by?: SharedSearchField
 ) {
-    const where = sharedWith(userId);
+    // One filter for the owners, their count and their preview: an owner found
+    // by name or email brings every routine they shared, one found through a
+    // routine's name brings only the routines that matched.
+    const where = sharedMatching(userId, q, by);
     return prisma.user.findMany({
         where: { routines: { some: where } },
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
@@ -280,27 +313,41 @@ export function sharingOwners(
     });
 }
 
-export function countSharingOwners(userId: string) {
+export function countSharingOwners(
+    userId: string,
+    q?: string,
+    by?: SharedSearchField
+) {
     return prisma.user.count({
-        where: { routines: { some: sharedWith(userId) } },
+        where: { routines: { some: sharedMatching(userId, q, by) } },
     });
 }
 
-/** One owner's routines that `userId` was let into, with whose they are so the
-    page can be titled without a second lookup. */
+/** One owner's routines that `userId` was let into, optionally only the ones
+    whose name matches a search. */
 export function sharedRoutinesOf(
     userId: string,
     ownerId: string,
-    page: { skip: number; take: number }
+    page: { skip: number; take: number },
+    q?: string
 ) {
     return prisma.routine.findMany({
-        where: { creatorId: ownerId, ...sharedWith(userId) },
+        where: {
+            creatorId: ownerId,
+            ...sharedWith(userId),
+            name: q ? like(q) : undefined,
+        },
         orderBy: { createdAt: 'desc' },
         ...page,
-        include: {
-            _count: { select: { workouts: true } },
-            creator: { select: { name: true, image: true } },
-        },
+        include: { _count: { select: { workouts: true } } },
+    });
+}
+
+/** Just enough of someone to title a page about them. */
+export function userHeader(userId: string) {
+    return prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, image: true },
     });
 }
 
@@ -338,9 +385,17 @@ export function countRoutines(userId: string) {
     return prisma.routine.count({ where: { creatorId: userId } });
 }
 
-export function countSharedRoutines(userId: string, ownerId: string) {
+export function countSharedRoutines(
+    userId: string,
+    ownerId: string,
+    q?: string
+) {
     return prisma.routine.count({
-        where: { creatorId: ownerId, ...sharedWith(userId) },
+        where: {
+            creatorId: ownerId,
+            ...sharedWith(userId),
+            name: q ? like(q) : undefined,
+        },
     });
 }
 

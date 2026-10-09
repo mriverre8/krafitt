@@ -52,6 +52,60 @@ describe('MemberSearch', () => {
         await waitFor(() => expect(search).toHaveBeenCalledTimes(1));
     });
 
+    it('cannot search an empty field', () => {
+        const { button } = setup();
+        expect(button).toBeDisabled();
+    });
+
+    // The answer on screen is already the answer for that address: asking
+    // again is a second trip for nothing. A changed address asks again.
+    it('does not search again for the address it just searched', async () => {
+        answers({ error: 'No account uses that email' });
+        const { field } = look('nobody@example.com');
+        await screen.findByRole('alert');
+        const button = () => screen.getByRole('button', { name: 'Search' });
+
+        fireEvent.change(field, { target: { value: ' Nobody@Example.com ' } });
+        fireEvent.click(button());
+        expect(search).toHaveBeenCalledTimes(1);
+
+        fireEvent.change(field, { target: { value: 'bob@example.com' } });
+        fireEvent.click(button());
+        await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
+    });
+
+    it('swaps the search for a check once someone is found', async () => {
+        look();
+
+        expect(
+            await screen.findByRole('img', { name: 'Person found' })
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Search' })
+        ).not.toBeInTheDocument();
+    });
+
+    // The card is the answer for one address: editing it away puts the card
+    // and the check away with it, and typing it back brings both with no
+    // second trip to the server.
+    it('forgets the find on an edit and gets it back on the same address', async () => {
+        const { field } = look();
+        await screen.findByRole('img', { name: 'Person found' });
+
+        fireEvent.change(field, { target: { value: 'ada@example.co' } });
+        expect(screen.getByRole('button', { name: 'Search' })).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: 'Add' })
+        ).not.toBeInTheDocument();
+
+        fireEvent.change(field, { target: { value: 'ada@example.com' } });
+        expect(
+            screen.getByRole('img', { name: 'Person found' })
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+        expect(search).toHaveBeenCalledTimes(1);
+    });
+
     it('shows whoever it found, with a way to add them', async () => {
         look();
 

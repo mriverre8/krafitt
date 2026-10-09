@@ -167,6 +167,27 @@ export function isRoutineFinished(
     return total > 0 && cursor >= total;
 }
 
+export const ROUTINE_STATUSES = [
+    'active',
+    'pending',
+    'incomplete',
+    'finished',
+] as const;
+export type RoutineStatus = (typeof ROUTINE_STATUSES)[number];
+
+/** The one badge a routine card wears, and what the status filter on the
+    routines list matches against: finished outranks active, and a routine on
+    the shelf is pending if it could be set active, incomplete if not. */
+export function routineStatus(routine: {
+    isActive: boolean;
+    finished: boolean;
+    canActivate: boolean;
+}): RoutineStatus {
+    if (routine.finished) return 'finished';
+    if (routine.isActive) return 'active';
+    return routine.canActivate ? 'pending' : 'incomplete';
+}
+
 /**
  * A routine that has been lived in is frozen: its plan is what the sessions
  * were logged against, and what the cursor is counting. Being active is enough

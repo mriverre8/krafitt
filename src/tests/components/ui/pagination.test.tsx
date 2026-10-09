@@ -1,7 +1,16 @@
 import { Pagination } from '@/components/ui/pagination';
 import { screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithLocale } from '@/tests/setup-helpers';
+
+let search = '';
+vi.mock('next/navigation', () => ({
+    useSearchParams: () => new URLSearchParams(search),
+}));
+
+beforeEach(() => {
+    search = '';
+});
 
 describe('Pagination', () => {
     it('stays out of the way while everything fits on one page', () => {
@@ -44,6 +53,20 @@ describe('Pagination', () => {
         expect(screen.getByRole('link', { name: 'Next' })).toHaveAttribute(
             'href',
             '?page=2'
+        );
+    });
+
+    it('keeps the search and filter it was opened with', () => {
+        search = 'q=push&status=active&page=1';
+        renderWithLocale(
+            <Pagination
+                page={1}
+                totalPages={2}
+            />
+        );
+        expect(screen.getByRole('link', { name: 'Next' })).toHaveAttribute(
+            'href',
+            '?q=push&status=active&page=2'
         );
     });
 });

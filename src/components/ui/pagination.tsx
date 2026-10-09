@@ -4,6 +4,7 @@ import { useT } from '@/i18n/use-t';
 import { ghostClass } from '@/lib/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 function Step({
@@ -45,7 +46,14 @@ export function Pagination({
     param?: string;
 }) {
     const t = useT();
+    const query = useSearchParams();
     if (totalPages <= 1) return null;
+
+    const hrefTo = (to: number) => {
+        const next = new URLSearchParams(query);
+        next.set(param, String(to));
+        return `?${next}`;
+    };
 
     return (
         <nav
@@ -53,7 +61,7 @@ export function Pagination({
             className="flex items-center justify-between gap-3"
         >
             <Step
-                href={`?${param}=${page - 1}`}
+                href={hrefTo(page - 1)}
                 disabled={page === 1}
             >
                 <ChevronLeft
@@ -71,7 +79,7 @@ export function Pagination({
             </span>
 
             <Step
-                href={`?${param}=${page + 1}`}
+                href={hrefTo(page + 1)}
                 disabled={page === totalPages}
             >
                 {t('pagination.next')}

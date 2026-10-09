@@ -6,14 +6,18 @@ import { Avatar } from '@/components/ui/avatar';
 import { FormError } from '@/components/ui/form-error';
 import { useT } from '@/i18n/use-t';
 import { EMAIL_PATTERN } from '@/lib/constants';
+import { normalEmail } from '@/lib/utils';
 import {
     cardClass,
-    ghostClass,
-    inputClass,
+    foundSearchFrameClass,
     labelClass,
     primaryClass,
+    searchFoundClass,
+    searchFrameClass,
+    searchInputClass,
+    searchSubmitClass,
 } from '@/lib/ui';
-import { Search, UserPlus } from 'lucide-react';
+import { CircleCheck, Search, UserPlus } from 'lucide-react';
 import { useActionState, useState } from 'react';
 
 export function MemberSearch({ routineId }: { routineId: string }) {
@@ -23,20 +27,31 @@ export function MemberSearch({ routineId }: { routineId: string }) {
         {}
     );
     const [email, setEmail] = useState('');
-    const [dismissed, setDismissed] = useState<string | null>(null);
+    const [searched, setSearched] = useState<string | null>(null);
 
-    const found = state.found?.id === dismissed ? undefined : state.found;
+    const current =
+        !pending && searched !== null && normalEmail(email) === searched;
+    const found = current ? state.found : undefined;
 
     return (
         <div className="space-y-3">
-            <form action={formAction}>
+            <form
+                action={formAction}
+                onSubmit={(event) => {
+                    const asked = normalEmail(email);
+                    if (asked === searched) event.preventDefault();
+                    else setSearched(asked);
+                }}
+            >
                 <label
                     htmlFor="member-email"
                     className={`${labelClass} mb-1 block`}
                 >
                     {t('members.searchLabel')}
                 </label>
-                <div className="flex gap-2">
+                <div
+                    className={found ? foundSearchFrameClass : searchFrameClass}
+                >
                     <input
                         id="member-email"
                         name="email"
@@ -46,30 +61,39 @@ export function MemberSearch({ routineId }: { routineId: string }) {
                         pattern={EMAIL_PATTERN}
                         required
                         value={email}
-                        onChange={(event) => {
-                            setEmail(event.target.value);
-                            setDismissed(null);
-                        }}
+                        onChange={(event) => setEmail(event.target.value)}
                         placeholder={t('members.emailPlaceholder')}
-                        className={inputClass}
+                        className={searchInputClass}
                     />
-                    <button
-                        type="submit"
-                        disabled={pending}
-                        aria-label={t('members.search')}
-                        title={t('members.search')}
-                        className={`${ghostClass} shrink-0`}
-                    >
-                        <Search
-                            size={18}
-                            aria-hidden
-                        />
-                    </button>
+                    {found ? (
+                        <span className={searchFoundClass}>
+                            <CircleCheck
+                                size={18}
+                                strokeWidth={2.5}
+                                role="img"
+                                aria-label={t('routine.sendFound')}
+                            />
+                        </span>
+                    ) : (
+                        <button
+                            type="submit"
+                            disabled={pending || !email.trim()}
+                            aria-label={t('members.search')}
+                            title={t('members.search')}
+                            className={searchSubmitClass}
+                        >
+                            <Search
+                                size={18}
+                                strokeWidth={2.5}
+                                aria-hidden
+                            />
+                        </button>
+                    )}
                 </div>
             </form>
 
-            <FormError message={state.error} />
-            {state.notice && (
+            {current && <FormError message={state.error} />}
+            {current && state.notice && (
                 <p
                     role="status"
                     className="text-muted text-sm font-semibold"
@@ -94,7 +118,7 @@ export function MemberSearch({ routineId }: { routineId: string }) {
                         action={async () => {
                             await addRoutineMember(routineId, found.id);
                             setEmail('');
-                            setDismissed(found.id);
+                            setSearched(null);
                         }}
                         className={`${primaryClass} flex shrink-0 items-center gap-1 px-3! py-1! text-xs! md:gap-1.5 md:px-5! md:py-1.5! md:text-sm!`}
                     >
