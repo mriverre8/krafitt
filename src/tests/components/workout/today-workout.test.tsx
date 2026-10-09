@@ -85,7 +85,7 @@ describe('TodayWorkout', () => {
         fireEvent.click(screen.getByLabelText('Save set 1'));
         fireEvent.click(screen.getByLabelText('Bank set 1'));
         await waitFor(() =>
-            expect(screen.getByLabelText('Weight set 1')).toHaveValue(80)
+            expect(screen.getByLabelText('Weight set 1')).toHaveValue('80')
         );
 
         rerender(
@@ -96,9 +96,9 @@ describe('TodayWorkout', () => {
             />
         );
         await waitFor(() =>
-            expect(screen.getByLabelText('Weight set 1')).toHaveValue(null)
+            expect(screen.getByLabelText('Weight set 1')).toHaveValue('')
         );
-        expect(screen.getByLabelText('Reps set 1')).toHaveValue(null);
+        expect(screen.getByLabelText('Reps set 1')).toHaveValue('');
     });
 
     it('shows the routine, day and week', () => {
@@ -169,7 +169,7 @@ describe('TodayWorkout', () => {
                 logs={{}}
             />
         );
-        expect(screen.getByLabelText('Weight set 1')).toHaveValue(80);
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('80');
     });
 
     // A one-day routine comes round again under the same workout id, and week 2
@@ -188,7 +188,7 @@ describe('TodayWorkout', () => {
                 logs={{}}
             />
         );
-        expect(screen.getByLabelText('Weight set 1')).toHaveValue(null);
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('');
     });
 
     it('says so when the day has no exercises', () => {

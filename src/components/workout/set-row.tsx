@@ -15,6 +15,21 @@ import { EffortSelector } from '@/components/workout/effort-selector';
 import { ArrowRight, Check, Layers, LayersPlus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** Kilos as typed: digits and one decimal point, a comma read as the point —
+    it is what a Spanish or Catalan decimal keypad offers — and no more digits
+    either side of it than `WEIGHT` allows. Text boxes rather than number ones,
+    as in the editor: a number box takes a minus sign. */
+function kilos(value: string) {
+    const [whole, ...decimals] = value
+        .replace(/,/g, '.')
+        .replace(/[^\d.]/g, '')
+        .split('.');
+    const kept = whole.slice(0, WEIGHT.digits);
+    return decimals.length
+        ? `${kept}.${decimals.join('').slice(0, WEIGHT.decimals)}`
+        : kept;
+}
+
 export function SetRow({
     setIndex,
     label,
@@ -65,7 +80,10 @@ export function SetRow({
         weight.trim() !== '' &&
         reps.trim() !== '' &&
         Number.isFinite(parsedWeight) &&
-        parsedWeight >= 0 &&
+        parsedWeight >= WEIGHT.min &&
+        // Past this the server throws rather than answering, so the set is
+        // never sent: the button just stays off, like for a blank field.
+        parsedWeight <= WEIGHT.max &&
         parsedReps > 0;
     const edited =
         !saved || saved.weight !== parsedWeight || saved.reps !== parsedReps;
@@ -99,6 +117,8 @@ export function SetRow({
     function press() {
         if (!asking) return setAsking(true);
         onSave(parsedWeight, parsedReps, effort);
+        // The boxes show what was banked, not what was typed: `6.` goes as 6.
+        setDraft({ weight: String(parsedWeight), reps: String(parsedReps) });
         drop();
     }
 
@@ -130,11 +150,8 @@ export function SetRow({
                 ) : (
                     <>
                         <input
-                            type="number"
+                            type="text"
                             inputMode="decimal"
-                            step={WEIGHT.step}
-                            min={WEIGHT.min}
-                            max={WEIGHT.max}
                             placeholder={`${previous?.weight ?? ''} ${t(
                                 'today.kg'
                             )}`.trim()}
@@ -142,16 +159,17 @@ export function SetRow({
                             disabled={!enabled}
                             value={weight}
                             onChange={(event) =>
-                                setDraft({ weight: event.target.value, reps })
+                                setDraft({
+                                    weight: kilos(event.target.value),
+                                    reps,
+                                })
                             }
                             className={`${inputClass} figure h-12 text-center text-lg`}
                         />
                         <div className="relative w-full min-w-0">
                             <input
-                                type="number"
+                                type="text"
                                 inputMode="numeric"
-                                min={REPS.min}
-                                max={REPS.max}
                                 placeholder={`${previous?.reps ?? ''} ${t(
                                     isTimed(repMode)
                                         ? 'today.seconds'
@@ -168,10 +186,9 @@ export function SetRow({
                                 onChange={(event) =>
                                     setDraft({
                                         weight,
-                                        reps: event.target.value.slice(
-                                            0,
-                                            REPS.digits
-                                        ),
+                                        reps: event.target.value
+                                            .replace(/\D/g, '')
+                                            .slice(0, REPS.digits),
                                     })
                                 }
                                 className={`${inputClass} figure h-12 text-center text-lg`}

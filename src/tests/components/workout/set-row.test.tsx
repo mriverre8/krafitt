@@ -73,6 +73,45 @@ describe('SetRow', () => {
         expect(onSave).toHaveBeenCalledWith(72.5, 7, 'normal');
     });
 
+    it('shows the number it banked, not the one half typed', () => {
+        const onSave = vi.fn();
+        render(
+            <SetRow
+                {...base}
+                onSave={onSave}
+            />
+        );
+        fireEvent.change(screen.getByLabelText('Weight set 1'), {
+            target: { value: '6.' },
+        });
+        fireEvent.change(screen.getByLabelText('Reps set 1'), {
+            target: { value: '08' },
+        });
+        fireEvent.click(screen.getByLabelText('Save set 1'));
+        fireEvent.click(screen.getByLabelText('Bank set 1'));
+        expect(onSave).toHaveBeenCalledWith(6, 8, 'normal');
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('6');
+        expect(screen.getByLabelText('Reps set 1')).toHaveValue('8');
+    });
+
+    // A Spanish decimal keypad offers a comma, and nothing here may go
+    // negative: the boxes keep digits and one decimal point, nothing else.
+    it('keeps only what a weight or a rep count can be', () => {
+        render(<SetRow {...base} />);
+        const weight = screen.getByLabelText('Weight set 1');
+        const reps = screen.getByLabelText('Reps set 1');
+
+        fireEvent.change(weight, { target: { value: '-62,5' } });
+        expect(weight).toHaveValue('62.5');
+        fireEvent.change(weight, { target: { value: '62.5.' } });
+        expect(weight).toHaveValue('62.5');
+        // Three digits before the point, three after.
+        fireEvent.change(weight, { target: { value: '12345.6789' } });
+        expect(weight).toHaveValue('123.678');
+        fireEvent.change(reps, { target: { value: '-8' } });
+        expect(reps).toHaveValue('8');
+    });
+
     it('shows the stored values and marks the set as done', () => {
         render(
             <SetRow
@@ -80,7 +119,7 @@ describe('SetRow', () => {
                 saved={{ weight: 60, reps: 10 }}
             />
         );
-        expect(screen.getByLabelText('Weight set 1')).toHaveValue(60);
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('60');
         expect(screen.getByLabelText('Save set 1')).toHaveAttribute(
             'data-done',
             'true'
@@ -132,8 +171,8 @@ describe('SetRow', () => {
         fireEvent.click(screen.getByLabelText('Bank set 1'));
         expect(onSave).toHaveBeenCalledWith(80, 8, 'hard');
         // The numbers are back once the question is answered.
-        expect(screen.getByLabelText('Weight set 1')).toHaveValue(80);
-        expect(screen.getByLabelText('Reps set 1')).toHaveValue(8);
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('80');
+        expect(screen.getByLabelText('Reps set 1')).toHaveValue('8');
     });
 
     it('gives the numbers back on a tap anywhere else', () => {
@@ -147,7 +186,7 @@ describe('SetRow', () => {
         expect(screen.queryByLabelText('Reps set 1')).not.toBeInTheDocument();
 
         fireEvent.mouseDown(document.body);
-        expect(screen.getByLabelText('Reps set 1')).toHaveValue(10);
+        expect(screen.getByLabelText('Reps set 1')).toHaveValue('10');
     });
 
     it('gives them back on Escape too', () => {
@@ -161,7 +200,7 @@ describe('SetRow', () => {
         fireEvent.keyDown(screen.getByLabelText('As planned'), {
             key: 'Escape',
         });
-        expect(screen.getByLabelText('Weight set 1')).toHaveValue(60);
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('60');
     });
 
     it('has nothing to bank when a banked set is asked and left alone', () => {
