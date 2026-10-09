@@ -10,8 +10,8 @@ describe('TodayPreview', () => {
         render(<TodayPreview />);
 
         expect(screen.getByText('2/4 sets')).toBeInTheDocument();
-        expect(screen.getByLabelText('Weight set 1')).toHaveValue(80);
-        expect(screen.getByLabelText('Reps set 2')).toHaveValue(9);
+        expect(screen.getByLabelText('Weight set 1')).toHaveValue('80');
+        expect(screen.getByLabelText('Reps set 2')).toHaveValue('9');
 
         // The sets keep the app's real states — so the third is open and lit
         // rather than greyed — and the whole block is inert instead.

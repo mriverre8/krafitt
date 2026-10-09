@@ -17,7 +17,9 @@ export const REPS = { min: 1, max: 1000, digits: 3 };
 export const DROP_PERCENT = { min: 1, max: 99, digits: 2 };
 /** How long the pause of a rest-pause set lasts, in seconds. */
 export const REST_SECONDS = { min: 1, max: 60, digits: 2 };
-export const WEIGHT = { min: 0, max: 1000, step: 0.5 };
+/** `digits` and `decimals` cap what the kilos box takes on either side of the
+    point; `max` is still what can be banked. */
+export const WEIGHT = { min: 0, max: 1000, step: 0.5, digits: 3, decimals: 3 };
 
 /**
  * The most a field of this many digits can hold, and so the widest a typed
