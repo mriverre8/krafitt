@@ -20,7 +20,7 @@ export function HistoryLink({
 
     return (
         <Link
-            href={`/routines/${routineId}/progress${query}`}
+            href={`/progress/${routineId}${query}`}
             aria-label={name ? t('progress.linkLabel', { name }) : undefined}
             className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse shrink-0 border-2`}
         >

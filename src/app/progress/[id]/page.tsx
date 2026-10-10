@@ -8,7 +8,7 @@ import { notFound, redirect } from 'next/navigation';
 export default async function RoutineProgressPage({
     params,
     searchParams,
-}: PageProps<'/routines/[id]/progress'>) {
+}: PageProps<'/progress/[id]'>) {
     const [{ id }, query] = await Promise.all([params, searchParams]);
     const user = await currentUser();
     if (!user) redirect('/');

@@ -25,10 +25,8 @@ export default function Loading() {
             <div className="space-y-8">
                 <DaySwitcherSkeleton />
 
-                {/* `DayPanel`: the day and its tally, the legend, and the
-                    table of one exercise, week by week. */}
                 <div className="space-y-4">
-                    <div className="flex h-[35px] justify-between gap-4">
+                    <div className="flex h-8.75 justify-between gap-4">
                         <Bar className="h-[32.4px] w-1/2" />
                         <Bar className="h-5 w-24 shrink-0 self-end" />
                     </div>
