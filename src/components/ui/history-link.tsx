@@ -16,11 +16,14 @@ export function HistoryLink({
     day?: number;
 }) {
     const t = useT();
-    const query = day === undefined ? '' : `?currentDay=${day}`;
+    const href =
+        day === undefined
+            ? `/routines/${routineId}/progress`
+            : `/progress/${routineId}?currentDay=${day}`;
 
     return (
         <Link
-            href={`/routines/${routineId}/progress${query}`}
+            href={href}
             aria-label={name ? t('progress.linkLabel', { name }) : undefined}
             className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse shrink-0 border-2`}
         >

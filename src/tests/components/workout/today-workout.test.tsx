@@ -66,7 +66,7 @@ describe('TodayWorkout', () => {
         render(<TodayWorkout {...props} />);
         expect(screen.getByRole('link')).toHaveAttribute(
             'href',
-            '/routines/r1/progress?currentDay=1'
+            '/progress/r1?currentDay=1'
         );
     });
 
