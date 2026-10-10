@@ -1,52 +1,56 @@
-import { Bar, Skeleton } from '@/components/ui/skeleton';
-import { cardClass } from '@/lib/ui';
+import {
+    BackBar,
+    Bar,
+    Copy,
+    DaySwitcherSkeleton,
+    Line,
+    Skeleton,
+} from '@/components/ui/skeleton';
+import { cardClass, eyebrowLine } from '@/lib/ui';
 
 export default function Loading() {
     return (
         <Skeleton>
-            <div className="space-y-2">
-                <Bar className="h-5 w-20" />
-                <Bar className="mt-5 h-3 w-40" />
-                <Bar className="h-14 w-2/3" />
-            </div>
-
-            <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                    <Bar className="h-3 w-24" />
-                    <div className="flex shrink-0 gap-1">
-                        <Bar className="h-9 w-9 rounded-md" />
-                        <Bar className="h-9 w-9 rounded-md" />
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    {[0, 1, 2].map((index) => (
-                        <Bar
-                            key={index}
-                            className="h-12 w-12 shrink-0 rounded-md"
-                        />
-                    ))}
+            <div>
+                <BackBar />
+                <div className="mt-5">
+                    <Bar className={`w-40 ${eyebrowLine}`} />
+                    <Copy
+                        k="progress.title"
+                        className="display mt-1 text-6xl"
+                    />
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <div className="flex items-baseline justify-between gap-4">
-                    <Bar className="h-9 w-1/2" />
-                    <Bar className="h-4 w-24 shrink-0" />
-                </div>
-                <Bar className="h-3 w-56" />
+            <div className="space-y-8">
+                <DaySwitcherSkeleton />
 
-                <div className={`${cardClass} space-y-3`}>
-                    <div className="flex items-center justify-between gap-2">
-                        <Bar className="h-7 w-1/2" />
-                        <Bar className="h-9 w-24 shrink-0 rounded-md" />
+                {/* `DayPanel`: the day and its tally, the legend, and the
+                    table of one exercise, week by week. */}
+                <div className="space-y-4">
+                    <div className="flex h-[35px] justify-between gap-4">
+                        <Bar className="h-[32.4px] w-1/2" />
+                        <Bar className="h-5 w-24 shrink-0 self-end" />
                     </div>
-                    <Bar className="h-10 w-full" />
-                    {[0, 1, 2].map((index) => (
-                        <Bar
-                            key={index}
-                            className="h-8 w-full"
-                        />
-                    ))}
+                    <Line
+                        className="h-6"
+                        bar="w-56"
+                    />
+                    <div className={cardClass}>
+                        <div className="flex h-11 items-center justify-between gap-2 md:h-8.5">
+                            <Bar className="h-6.75 w-1/2" />
+                            <Bar className="h-5 w-24 shrink-0" />
+                        </div>
+                        <div className="mt-3 space-y-2">
+                            <Bar className="h-9 w-full" />
+                            {[0, 1, 2].map((set) => (
+                                <Bar
+                                    key={set}
+                                    className="h-[50.5px] w-full"
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </Skeleton>

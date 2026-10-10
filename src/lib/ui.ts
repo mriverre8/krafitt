@@ -167,3 +167,11 @@ export const dashedActionClass =
 /** Uppercase pill, for a count or a status. */
 export const badgeClass =
     'eyebrow inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5';
+
+/** Skeleton heights (components/ui/skeleton.tsx) that loading files set too.
+    Here rather than there: that module is a client one, and a server file
+    importing a string from it gets a client reference, not the string. */
+export const eyebrowLine = 'h-[13.2px] md:h-[15.6px]';
+
+/** A `badgeClass` pill with its 2px border. */
+export const badgeLine = 'h-[29.2px] md:h-[31.6px]';
