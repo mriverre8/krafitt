@@ -23,6 +23,7 @@ model User {
   routines        Routine[]
   workoutSessions WorkoutSession[]
   memberships     RoutineMember[]
+  requests        RoutineRequest[]
   followers       Follow[]         @relation("followers")
   following       Follow[]         @relation("following")
 }
@@ -93,6 +94,7 @@ model Routine {
   workouts Workout[]
   sessions WorkoutSession[]
   members  RoutineMember[]
+  requests RoutineRequest[]
 
   @@index([creatorId])
 }
@@ -106,6 +108,25 @@ model RoutineMember {
 
   @@id([routineId, userId])
   @@index([userId])
+}
+
+/// Something the routine's creator asks of someone, waiting on their answer:
+/// accepting runs the write, declining deletes the row. The sender is not a
+/// column — only the creator may ask, so it is always `routine.creator`.
+model RoutineRequest {
+  id          String   @id @default(cuid())
+  /// "member" | "send"
+  kind        String
+  routineId   String
+  recipientId String
+  /// send only: the creator joins the recipient's copy as a member.
+  addSender   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  routine     Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  recipient   User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([kind, routineId, recipientId])
+  @@index([recipientId])
 }
 
 /// One training day of the routine: "Push A", "Legs"...

@@ -224,8 +224,11 @@ export async function deleteRoutine(routineId: string) {
  *
  * `memberId` lets someone in on the copy in the same write: the sender of a
  * routine watching how the recipient gets on with it.
+ *
+ * Not `async` on purpose: the bare Prisma query is lazy, so `acceptRequest`
+ * can run it inside a `$transaction` batch.
  */
-async function copyRoutine(
+function copyRoutine(
     routine: NonNullable<Awaited<ReturnType<typeof routineDetail>>>,
     creatorId: string,
     name: string,
@@ -320,9 +323,11 @@ export async function findRecipient(
 }
 
 /**
- * The owner's plan, handed to someone else as a routine of their own — the
+ * The owner's plan, offered to someone else as a routine of their own — the
  * same fresh copy `saveRoutine` makes, only pushed rather than pulled. Nothing
- * on the sender's side changes, so there is nothing of theirs to revalidate.
+ * is copied yet: it waits as a request until they accept it, and sending again
+ * before they answer only updates the member choice. Nothing on the sender's
+ * side changes, so there is nothing of theirs to revalidate.
  */
 export async function sendRoutine(
     routineId: string,
@@ -340,13 +345,23 @@ export async function sendRoutine(
     }
     if (userId === user.id) throw new Error(t('error.sendSelf'));
 
-    await copyRoutine(
-        routine,
-        userId,
-        routine.name,
-        addMe ? user.id : undefined
-    );
+    await prisma.routineRequest.upsert({
+        where: requestKey('send', routineId, userId),
+        create: {
+            kind: 'send',
+            routineId,
+            recipientId: userId,
+            addSender: addMe,
+        },
+        update: { addSender: addMe },
+    });
 }
+
+const requestKey = (
+    kind: 'member' | 'send',
+    routineId: string,
+    recipientId: string
+) => ({ kind_routineId_recipientId: { kind, routineId, recipientId } });
 
 // ---------- workouts and exercises ----------
 
@@ -723,9 +738,8 @@ export async function skipDay(routineId: string) {
  * one account, and a search that missed on capitals would be unexplainable.
  *
  * ponytail: answering "no account with that email" tells the asker whether an
- * address is registered. The price of adding people outright instead of
- * sending invitations; swap both for a pending invite keyed by email if that
- * ever matters.
+ * address is registered. The price of inviting accounts rather than
+ * addresses; key the invite by email instead if that ever matters.
  */
 export async function findRoutineMember(
     routineId: string,
@@ -748,6 +762,13 @@ export async function findRoutineMember(
     if (await isMember(routineId, found.id))
         return { notice: t('members.already', { name: found.name }) };
 
+    // Asked already and not answered yet: a second ask would change nothing.
+    const invited = await prisma.routineRequest.findUnique({
+        where: requestKey('member', routineId, found.id),
+        select: { id: true },
+    });
+    if (invited) return { notice: t('members.invited', { name: found.name }) };
+
     return { ok: true, found };
 }
 
@@ -758,31 +779,41 @@ const userByEmail = (email: string) =>
     });
 
 /**
- * Letting someone in as a member: they read, keep a copy, and walk out.
- * Idempotent on purpose — a double click or a stale card is a no-op, the same
- * way `toggleFollow` is.
+ * Asking someone in as a member: once they accept they read, keep a copy, and
+ * walk out. Nobody is let in without their say-so, so this only leaves a
+ * request, which the people page lists as pending. Idempotent on purpose — a
+ * double click or a stale card is a no-op, the same way `toggleFollow` is.
  */
-export async function addRoutineMember(routineId: string, userId: string) {
+export async function inviteRoutineMember(routineId: string, userId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);
     const t = await getT();
 
     if (userId === user.id) throw new Error(t('error.memberSelf'));
 
-    await prisma.routineMember.upsert({
-        where: { routineId_userId: { routineId, userId } },
-        create: { routineId, userId },
+    await prisma.routineRequest.upsert({
+        where: requestKey('member', routineId, userId),
+        create: { kind: 'member', routineId, recipientId: userId },
         update: {},
     });
     revalidatePath(`/routines/${routineId}/people`);
-    // The share badge shows on a private routine once somebody is in it.
-    revalidatePath(`/routines/${routineId}`);
-    revalidatePath('/routines');
+}
+
+/** Taking back an invitation nobody has answered yet. A stale button — they
+    answered in the meantime — is a no-op. */
+export async function cancelRoutineInvite(routineId: string, userId: string) {
+    const user = await requireUser();
+    await requireRoutine(routineId, user.id);
+
+    await prisma.routineRequest.deleteMany({
+        where: { kind: 'member', routineId, recipientId: userId },
+    });
+    revalidatePath(`/routines/${routineId}/people`);
 }
 
 /**
- * Taking someone out, or walking out yourself. One guard covers both: nobody
- * is added with their say-so, so leaving is what makes that acceptable.
+ * Taking someone out, or walking out yourself. The owner needs nobody's say-so
+ * to take a member out, and anyone may leave what they agreed to join.
  */
 export async function removeRoutineMember(routineId: string, userId: string) {
     const user = await requireUser();
@@ -796,6 +827,74 @@ export async function removeRoutineMember(routineId: string, userId: string) {
     revalidatePath('/routines/shared');
 
     if (leaving) redirect('/routines/shared');
+}
+
+// ---------- requests ----------
+
+/**
+ * Saying yes: the write the creator asked for runs now, and the request goes
+ * in the same transaction — a request answered twice fails rather than
+ * copying twice. Only the recipient can answer, so a request that is not
+ * theirs is no request at all.
+ *
+ * ponytail: a sent routine is copied as it stands now, not as it was sent. It
+ * locks once started, so the gap is edits made before then; snapshot the plan
+ * on the request if that ever matters.
+ */
+export async function acceptRequest(requestId: string) {
+    const user = await requireUser();
+    const t = await getT();
+    const request = await prisma.routineRequest.findFirst({
+        where: { id: requestId, recipientId: user.id },
+    });
+    if (!request) throw new Error(t('error.requestNotFound'));
+
+    const { routineId } = request;
+    const answered = prisma.routineRequest.delete({ where: { id: requestId } });
+
+    if (request.kind === 'member') {
+        await prisma.$transaction([
+            prisma.routineMember.upsert({
+                where: { routineId_userId: { routineId, userId: user.id } },
+                create: { routineId, userId: user.id },
+                update: {},
+            }),
+            answered,
+        ]);
+        revalidatePath(`/routines/${routineId}/people`);
+        // The share badge shows on a private routine once somebody is in it.
+        revalidatePath(`/routines/${routineId}`);
+        revalidatePath('/routines/shared');
+    } else {
+        const routine = await routineDetail(routineId);
+        if (!routine) throw new Error(t('error.routineNotFound'));
+        // It was complete when sent, but it may have been edited since.
+        if (!isRoutineComplete(routine, t))
+            throw new Error(t('error.routineIncomplete'));
+
+        await prisma.$transaction([
+            copyRoutine(
+                routine,
+                user.id,
+                routine.name,
+                request.addSender ? routine.creatorId : undefined
+            ),
+            answered,
+        ]);
+    }
+    revalidatePath('/routines/requests');
+    revalidatePath('/routines');
+}
+
+/** Saying no: the request goes and nothing else happens. A stale button is a
+    no-op, the same way `toggleFollow` is. */
+export async function declineRequest(requestId: string) {
+    const user = await requireUser();
+    await prisma.routineRequest.deleteMany({
+        where: { id: requestId, recipientId: user.id },
+    });
+    revalidatePath('/routines/requests');
+    revalidatePath('/routines');
 }
 
 // ---------- follows ----------

@@ -1,6 +1,6 @@
 'use client';
 
-import { addRoutineMember, findRoutineMember } from '@/app/actions';
+import { findRoutineMember, inviteRoutineMember } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { Avatar } from '@/components/ui/avatar';
 import { FormError } from '@/components/ui/form-error';
@@ -116,7 +116,7 @@ export function MemberSearch({ routineId }: { routineId: string }) {
                     </span>
                     <ActionButton
                         action={async () => {
-                            await addRoutineMember(routineId, found.id);
+                            await inviteRoutineMember(routineId, found.id);
                             setEmail('');
                             setSearched(null);
                         }}

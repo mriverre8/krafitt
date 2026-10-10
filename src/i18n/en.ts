@@ -300,13 +300,27 @@ export const en = {
     'members.emailPlaceholder': 'name@example.com',
     'members.add': 'Add',
     'members.already': '{name} is already on this routine',
+    'members.invited': '{name} already has an invitation waiting',
     'members.remove': 'Remove {name}',
     'members.removeTitle': 'Remove person',
     'members.removeConfirm': 'Remove {name} from this routine?',
+    'members.cancelInviteConfirm': 'Cancel the invitation to {name}?',
     'members.leave': 'Leave routine',
     'members.leaveTitle': 'Leave routine',
     'members.leaveConfirm':
         'Leave {name}? You will lose access to it and to its history.',
+
+    'requests.title': 'Requests',
+    'requests.tab': 'Requests ({count})',
+    'requests.emptyTitle': 'Nothing waiting',
+    'requests.empty':
+        'When someone invites you to a routine or sends you one, it shows up here.',
+    'requests.member': 'Wants to add you to {routine} so you can see it',
+    'requests.send': 'Wants to send you {routine}',
+    'requests.sendWithMember':
+        'Wants to send you {routine} and join it as a member',
+    'requests.accept': 'Accept',
+    'requests.decline': 'Decline',
 
     'exercise.namePlaceholder': 'Exercise',
     'exercise.nameLabel': 'Exercise {exercise} name',
@@ -390,6 +404,7 @@ export const en = {
     'error.memberNotFound': 'No account uses that email',
     'error.sendSelf': "You can't send the routine to yourself",
     'error.memberSelf': 'This routine is already yours',
+    'error.requestNotFound': 'That request no longer exists',
     'error.workoutNotFound': 'Workout not found',
     'error.routineName': 'Give the routine a name',
     'error.nameTooLong': 'That name is too long (max 60 characters)',

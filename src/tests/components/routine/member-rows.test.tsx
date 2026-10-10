@@ -1,5 +1,5 @@
 import { MemberRows } from '@/components/routine/member-rows';
-import { removeRoutineMember } from '@/app/actions';
+import { cancelRoutineInvite, removeRoutineMember } from '@/app/actions';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -16,19 +16,25 @@ vi.mock('@/i18n/server', async () => {
 
 vi.mock('@/app/actions', () => ({
     removeRoutineMember: vi.fn(),
+    cancelRoutineInvite: vi.fn(),
 }));
 
 const members = vi.fn();
+const invites = vi.fn();
 vi.mock('@/lib/queries', () => ({
     routineMembers: (...args: unknown[]) => members(...args),
+    routineInvites: (...args: unknown[]) => invites(...args),
 }));
 
 const ada = { id: 'ada', name: 'Ada', image: null };
 const bob = { id: 'bob', name: 'Bob', image: null };
+const cleo = { id: 'cleo', name: 'Cleo', image: null };
 
 beforeEach(() => {
     members.mockReset().mockResolvedValue([ada, bob]);
+    invites.mockReset().mockResolvedValue([]);
     vi.mocked(removeRoutineMember).mockReset().mockResolvedValue(undefined);
+    vi.mocked(cancelRoutineInvite).mockReset().mockResolvedValue(undefined);
 });
 
 const rows = () => MemberRows({ routineId: 'r1' });
@@ -90,6 +96,42 @@ describe('MemberRows', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Remove Ada' }));
         await declineConfirm();
 
+        expect(removeRoutineMember).not.toHaveBeenCalled();
+    });
+
+    // Asked but not answered: the same card, marked pending, after the members.
+    it('lists whoever has not answered yet as pending', async () => {
+        invites.mockResolvedValue([cleo]);
+        render(await rows());
+
+        const [, , last] = screen.getAllByRole('listitem');
+        expect(last).toHaveTextContent('Cleo');
+        expect(last).toHaveTextContent('Pending');
+        expect(screen.getAllByText('Pending')).toHaveLength(1);
+    });
+
+    it('is not empty while somebody is still to answer', async () => {
+        members.mockResolvedValue([]);
+        invites.mockResolvedValue([cleo]);
+        render(await rows());
+
+        expect(
+            screen.queryByRole('heading', { name: 'Nobody else is in' })
+        ).not.toBeInTheDocument();
+    });
+
+    // A pending row has no member to remove: its button takes the invitation back.
+    it('takes the invitation back from a pending row', async () => {
+        invites.mockResolvedValue([cleo]);
+        render(withModals(await rows()));
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove Cleo' }));
+        expect(
+            await screen.findByText('Cancel the invitation to Cleo?')
+        ).toBeInTheDocument();
+        await acceptConfirm('Delete');
+
+        expect(cancelRoutineInvite).toHaveBeenCalledWith('r1', 'cleo');
         expect(removeRoutineMember).not.toHaveBeenCalled();
     });
 });
