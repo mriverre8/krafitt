@@ -1,21 +1,36 @@
-import { Bar, FollowRowsSkeleton, Skeleton } from '@/components/ui/skeleton';
+import {
+    BackBar,
+    Bar,
+    Copy,
+    FollowRowsSkeleton,
+    Skeleton,
+} from '@/components/ui/skeleton';
+import { eyebrowLine } from '@/lib/ui';
 
 export default function Loading() {
     return (
         <Skeleton>
-            <div className="space-y-2">
-                <Bar className="h-5 w-20" />
-                <Bar className="mt-5 h-3 w-40" />
-                <Bar className="h-14 w-2/3" />
-                <Bar className="mt-2 h-4 w-56" />
-            </div>
-
-            <div className="flex gap-2">
-                <Bar className="h-11 flex-1 rounded-md" />
-                <Bar className="h-11 w-11 shrink-0 rounded-md" />
+            <div>
+                <BackBar />
+                <div className="mt-5">
+                    <Bar className={`w-40 ${eyebrowLine}`} />
+                    <Copy
+                        k="members.title"
+                        className="display mt-1 text-6xl"
+                    />
+                </div>
+                <Copy
+                    k="members.subtitle"
+                    className="text-muted mt-2 text-sm"
+                />
             </div>
 
             <FollowRowsSkeleton />
+
+            <div>
+                <Bar className={`mb-1 w-40 ${eyebrowLine}`} />
+                <Bar className="h-12 w-full rounded-md" />
+            </div>
         </Skeleton>
     );
 }

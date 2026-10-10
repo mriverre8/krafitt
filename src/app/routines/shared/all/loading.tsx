@@ -1,7 +1,8 @@
 import {
     BackBar,
     Copy,
-    RequestRowsSkeleton,
+    SearchSkeleton,
+    SharedOwnersSkeleton,
     Skeleton,
 } from '@/components/ui/skeleton';
 
@@ -11,11 +12,12 @@ export default function Loading() {
             <div>
                 <BackBar />
                 <Copy
-                    k="requests.title"
+                    k="routines.sharedTitle"
                     className="display text-6xl"
                 />
             </div>
-            <RequestRowsSkeleton />
+            <SearchSkeleton filter />
+            <SharedOwnersSkeleton />
         </Skeleton>
     );
 }
