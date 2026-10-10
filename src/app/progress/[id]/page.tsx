@@ -26,7 +26,7 @@ export default async function RoutineProgressPage({
     return (
         <div className="space-y-6">
             <header>
-                <BackButton fallback="/" />
+                <BackButton fallback={`/routines/${routine.id}`} />
                 <h1 className="mt-5">
                     <span className="eyebrow text-muted block">
                         {routine.name}

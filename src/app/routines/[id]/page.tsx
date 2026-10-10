@@ -36,6 +36,7 @@ import {
     currentWeek,
     isRoutineFinished,
     isRoutineLocked,
+    positionFromCursor,
 } from '@/lib/progress';
 import { isMember, routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
@@ -75,6 +76,14 @@ export default async function RoutinePage({
         ...routine,
         sessionCount: routine._count.sessions,
     });
+    // Someone the routine was shared with lands on the day being trained.
+    const historyDay = member
+        ? positionFromCursor(
+              routine.cursor,
+              routine.workouts.length,
+              routine.durationWeeks
+          )?.workoutIndex
+        : undefined;
 
     const addDay =
         locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
@@ -287,6 +296,7 @@ export default async function RoutinePage({
                     {(owner || member) && locked && (
                         <HistoryLink
                             routineId={routine.id}
+                            day={historyDay}
                         />
                     )}
                 </div>
