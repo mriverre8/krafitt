@@ -381,6 +381,46 @@ export async function routineMembers(routineId: string) {
     return members.map(({ user }) => user);
 }
 
+/** Everyone asked into a routine who has not answered yet, oldest first. */
+export async function routineInvites(routineId: string) {
+    const invites = await prisma.routineRequest.findMany({
+        where: { routineId, kind: 'member' },
+        orderBy: { createdAt: 'asc' },
+        select: {
+            recipient: { select: { id: true, name: true, image: true } },
+        },
+    });
+    return invites.map(({ recipient }) => recipient);
+}
+
+/** What is waiting on someone's answer, newest first. Whoever asked is the
+    routine's creator: only they may ask. */
+export function requestsOf(
+    userId: string,
+    page: { skip: number; take: number }
+) {
+    return prisma.routineRequest.findMany({
+        where: { recipientId: userId },
+        orderBy: { createdAt: 'desc' },
+        ...page,
+        select: {
+            id: true,
+            kind: true,
+            addSender: true,
+            routine: {
+                select: {
+                    name: true,
+                    creator: { select: { id: true, name: true, image: true } },
+                },
+            },
+        },
+    });
+}
+
+export function countRequests(userId: string) {
+    return prisma.routineRequest.count({ where: { recipientId: userId } });
+}
+
 export function countRoutines(userId: string) {
     return prisma.routine.count({ where: { creatorId: userId } });
 }

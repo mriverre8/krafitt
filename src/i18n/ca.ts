@@ -304,13 +304,27 @@ export const ca: Dict = {
     'members.emailPlaceholder': 'nom@exemple.com',
     'members.add': 'Afegeix',
     'members.already': '{name} ja és en aquesta rutina',
+    'members.invited': '{name} ja té una invitació pendent',
     'members.remove': 'Elimina {name}',
     'members.removeTitle': 'Eliminar persona',
     'members.removeConfirm': 'Eliminar {name} d’aquesta rutina?',
+    'members.cancelInviteConfirm': 'Cancel·lar la invitació a {name}?',
     'members.leave': 'Sortir de la rutina',
     'members.leaveTitle': 'Sortir de la rutina',
     'members.leaveConfirm':
         'Sortir de {name}? Perdràs l’accés a la rutina i al seu històric.',
+
+    'requests.title': 'Sol·licituds',
+    'requests.tab': 'Sol·licituds ({count})',
+    'requests.emptyTitle': 'Res pendent',
+    'requests.empty':
+        "Quan algú et convidi a una rutina o te n'enviï una, apareixerà aquí.",
+    'requests.member': 'Vol afegir-te a {routine} perquè en vegis el contingut',
+    'requests.send': 'Vol enviar-te {routine}',
+    'requests.sendWithMember':
+        "Vol enviar-te {routine} i unir-s'hi com a membre",
+    'requests.accept': 'Accepta',
+    'requests.decline': 'Rebutja',
 
     'exercise.namePlaceholder': 'Exercici',
     'exercise.nameLabel': "Nom de l'exercici {exercise}",
@@ -395,6 +409,7 @@ export const ca: Dict = {
     'error.memberNotFound': 'Cap compte no fa servir aquest correu',
     'error.sendSelf': 'No et pots enviar la rutina a tu mateix',
     'error.memberSelf': 'Aquesta rutina ja és teva',
+    'error.requestNotFound': 'Aquesta sol·licitud ja no existeix',
     'error.workoutNotFound': 'Entrenament no trobat',
     'error.routineName': 'Posa-li un nom a la rutina',
     'error.nameTooLong': 'Aquest nom és massa llarg (màx. 60 caràcters)',

@@ -5,7 +5,7 @@ import { RoutineTabs } from '@/components/routine/routine-tabs';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { PREVIEW_SIZE } from '@/lib/pagination';
-import { countRoutines, routinesOf } from '@/lib/queries';
+import { countRequests, countRoutines, routinesOf } from '@/lib/queries';
 import { ghostClass } from '@/lib/ui';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -14,16 +14,20 @@ export default async function RoutinesPage() {
     const user = await currentUser();
     if (!user) redirect('/');
 
-    const [total, routines, t] = await Promise.all([
+    const [total, routines, requests, t] = await Promise.all([
         countRoutines(user.id),
         routinesOf(user.id, { skip: 0, take: PREVIEW_SIZE }),
+        countRequests(user.id),
         getT(),
     ]);
 
     return (
         <div className="space-y-6">
             <h1 className="display text-6xl">{t('nav.routines')}</h1>
-            <RoutineTabs current="/routines" />
+            <RoutineTabs
+                current="/routines"
+                requests={requests}
+            />
 
             <RoutineList routines={routines} />
             {total > PREVIEW_SIZE && (

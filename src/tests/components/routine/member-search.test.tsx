@@ -1,5 +1,5 @@
 import { MemberSearch } from '@/components/routine/member-search';
-import { addRoutineMember, findRoutineMember } from '@/app/actions';
+import { findRoutineMember, inviteRoutineMember } from '@/app/actions';
 import type { MemberSearchState } from '@/lib/forms';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,11 +7,11 @@ import { renderWithLocale } from '@/tests/setup-helpers';
 
 vi.mock('@/app/actions', () => ({
     findRoutineMember: vi.fn(),
-    addRoutineMember: vi.fn(),
+    inviteRoutineMember: vi.fn(),
 }));
 
 const search = vi.mocked(findRoutineMember);
-const add = vi.mocked(addRoutineMember);
+const add = vi.mocked(inviteRoutineMember);
 
 const ada = { id: 'ada', name: 'Ada', image: null };
 
@@ -140,7 +140,7 @@ describe('MemberSearch', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('adds the person it found', async () => {
+    it('invites the person it found', async () => {
         look();
 
         fireEvent.click(await screen.findByRole('button', { name: 'Add' }));

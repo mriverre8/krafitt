@@ -304,13 +304,27 @@ export const es: Dict = {
     'members.emailPlaceholder': 'nombre@ejemplo.com',
     'members.add': 'Añadir',
     'members.already': '{name} ya está en esta rutina',
+    'members.invited': '{name} ya tiene una invitación pendiente',
     'members.remove': 'Eliminar a {name}',
     'members.removeTitle': 'Eliminar persona',
     'members.removeConfirm': '¿Eliminar a {name} de esta rutina?',
+    'members.cancelInviteConfirm': '¿Cancelar la invitación a {name}?',
     'members.leave': 'Salir de la rutina',
     'members.leaveTitle': 'Salir de la rutina',
     'members.leaveConfirm':
         '¿Salir de {name}? Perderás el acceso a la rutina y a su histórico.',
+
+    'requests.title': 'Solicitudes',
+    'requests.tab': 'Solicitudes ({count})',
+    'requests.emptyTitle': 'Nada pendiente',
+    'requests.empty':
+        'Cuando alguien te invite a una rutina o te envíe una, aparecerá aquí.',
+    'requests.member': 'Quiere añadirte a {routine} para que veas su contenido',
+    'requests.send': 'Quiere enviarte {routine}',
+    'requests.sendWithMember':
+        'Quiere enviarte {routine} y unirse como miembro',
+    'requests.accept': 'Aceptar',
+    'requests.decline': 'Rechazar',
 
     'exercise.namePlaceholder': 'Ejercicio',
     'exercise.nameLabel': 'Nombre del ejercicio {exercise}',
@@ -395,6 +409,7 @@ export const es: Dict = {
     'error.memberNotFound': 'Ninguna cuenta usa ese correo',
     'error.sendSelf': 'No puedes enviarte la rutina a ti mismo',
     'error.memberSelf': 'Esta rutina ya es tuya',
+    'error.requestNotFound': 'Esa solicitud ya no existe',
     'error.workoutNotFound': 'Entrenamiento no encontrado',
     'error.routineName': 'Ponle un nombre a la rutina',
     'error.nameTooLong': 'Ese nombre es demasiado largo (máx. 60 caracteres)',

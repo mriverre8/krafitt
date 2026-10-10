@@ -161,6 +161,7 @@ Schema (`prisma/schema.prisma`):
 - **BetterAuth**: `User`, `Session`, `Account`, `Verification`.
 - **Domain**: `Routine` (name, `durationWeeks`, `isActive`, `cursor`) → `Workout` (a training day, ordered) → `Exercise` (ordered) → `ExerciseSet` (order, `repMode`, `repMin`, `repMax`, `technique`).
 - **Sharing**: `RoutineMember`, keyed on `(routineId, userId)`. Having a row makes you a member. The creator is not a row — being the owner is not something anyone was granted.
+- **Requests**: `RoutineRequest`, unique on `(kind, routineId, recipientId)`. Inviting a member (`member`) or sending a routine (`send`, with `addSender`) only leaves a request; the recipient accepts it from `/routines/requests`, which runs the write, or declines it, which deletes the row.
 - **Training**: `WorkoutSession`, unique on `(userId, workoutId, week)`, holding `SetLog` rows unique on `(sessionId, exerciseId, setIndex)`.
 
 Everything cascades from `User`, so deleting an account removes its routines and logs.
