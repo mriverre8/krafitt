@@ -2,6 +2,7 @@ import { SendRoutineModal } from '@/components/modal/send-routine-modal';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithLocale } from '@/tests/setup-helpers';
+import { useToastStore } from '@/store/toast';
 
 const find = vi.fn();
 const send = vi.fn();
@@ -104,5 +105,23 @@ describe('SendRoutineModal', () => {
 
         await waitFor(() => expect(onClose).toHaveBeenCalled());
         expect(send).toHaveBeenCalledWith('ada', true);
+        expect(useToastStore.getState().toasts).toMatchObject([
+            { message: 'Routine sent to Ada', kind: 'success' },
+        ]);
+    });
+
+    it('stays open with the error when the send is refused', async () => {
+        send.mockResolvedValue({ error: 'That routine is not complete' });
+        const { sendButton, type, search } = setup();
+        type('ada@example.com');
+        search();
+        await screen.findByRole('img', { name: 'Person found' });
+        fireEvent.click(sendButton);
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'That routine is not complete'
+        );
+        expect(onClose).not.toHaveBeenCalled();
+        expect(useToastStore.getState().toasts).toEqual([]);
     });
 });

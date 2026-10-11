@@ -1,4 +1,5 @@
 import { ModalHost } from '@/components/modal/modal-host';
+import { ToastHost } from '@/components/toast/toast-host';
 import { BottomNav } from '@/components/chrome/bottom-nav';
 import { Footer } from '@/components/chrome/footer';
 import { NavBar } from '@/components/chrome/nav-bar';
@@ -81,6 +82,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                     <Footer />
                     {user && <BottomNav userId={user.id} />}
                     <ModalHost />
+                    <ToastHost />
                 </I18nProvider>
             </body>
         </html>

@@ -6,6 +6,7 @@ import type { FormAction } from '@/lib/forms';
 import { ghostClass, inputClass, primaryClass } from '@/lib/ui';
 import { Modal } from '@/components/modal/modal';
 import { FormError } from '@/components/ui/form-error';
+import { toast } from '@/store/toast';
 import { useActionState, useEffect, useState } from 'react';
 
 export type DurationModalProps = {
@@ -33,8 +34,10 @@ export function DurationModal({
         weeks <= WEEKS.max;
 
     useEffect(() => {
-        if (state.ok) onClose();
-    }, [state.ok, onClose]);
+        if (!state.ok) return;
+        onClose();
+        toast(t('toast.durationChanged'));
+    }, [state.ok, onClose, t]);
 
     return (
         <Modal

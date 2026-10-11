@@ -15,9 +15,10 @@ import { HistoryLink } from '@/components/ui/history-link';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { unstable_rethrow, useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { showModal } from '@/store/modal';
+import { toast } from '@/store/toast';
 import { FormError } from '@/components/ui/form-error';
 import {
     WorkoutExercise,
@@ -50,17 +51,17 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.logs, workout.id, week]);
 
-    function run(operation: () => Promise<unknown>) {
+    // An expected failure comes back as `{ error }`; a thrown message never
+    // reaches production intact, so a throw only ever reads as the generic one.
+    function run(operation: () => Promise<{ error?: string } | void>) {
         startTransition(async () => {
             setError(undefined);
             try {
-                await operation();
+                const result = await operation();
+                if (result?.error) setError(result.error);
             } catch (cause) {
-                setError(
-                    cause instanceof Error
-                        ? cause.message
-                        : t('today.genericError')
-                );
+                unstable_rethrow(cause);
+                setError(t('today.genericError'));
             }
         });
     }
@@ -87,7 +88,11 @@ export function TodayWorkout(props: TodayWorkoutProps) {
             title: t('today.skipTitle'),
             message: t('today.skipConfirm'),
             confirmLabel: t('today.skipAnyway'),
-            onConfirm: () => run(() => skipDay(routineId)),
+            onConfirm: () =>
+                run(async () => {
+                    await skipDay(routineId);
+                    toast(t('toast.skipped'));
+                }),
         });
     }
 
@@ -173,7 +178,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     }
                     onSaveSet={(setIndex, weight, reps, effort) =>
                         run(async () => {
-                            await logSet(
+                            const result = await logSet(
                                 workout.id,
                                 week,
                                 exercise.id,
@@ -182,6 +187,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                 reps,
                                 effort
                             );
+                            if (result) return result;
                             useSessionStore
                                 .getState()
                                 .save(exercise.id, setIndex, {

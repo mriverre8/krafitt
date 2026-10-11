@@ -116,10 +116,15 @@ export function MemberSearch({ routineId }: { routineId: string }) {
                     </span>
                     <ActionButton
                         action={async () => {
-                            await inviteRoutineMember(routineId, found.id);
+                            const result = await inviteRoutineMember(
+                                routineId,
+                                found.id
+                            );
+                            if (result) return result;
                             setEmail('');
                             setSearched(null);
                         }}
+                        success={t('toast.invited', { name: found.name })}
                         className={`${primaryClass} flex shrink-0 items-center gap-1 px-3! py-1! text-xs! md:gap-1.5 md:px-5! md:py-1.5! md:text-sm!`}
                     >
                         <UserPlus

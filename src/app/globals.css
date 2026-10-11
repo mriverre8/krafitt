@@ -312,6 +312,72 @@ dialog[open]::backdrop {
   animation: backdrop-in 140ms ease-out;
 }
 
+/* A toast pops in with a little overshoot — it is news, not a page change —
+   and leaves faster than it came, going soft as it goes. Only then does its
+   row close up, so the ones below never jump: the row is a one-track grid
+   that animates from 1fr to 0fr, and it clips only on the way out, so the
+   shadow and the overshoot are never cut off on the way in.
+   The timer bar is the clock itself, not a picture of one: the toast leaves
+   when it runs out, so pointing at a toast holds it there for as long as the
+   pointer stays. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.9);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.94);
+    filter: blur(3px);
+  }
+}
+@keyframes toast-collapse {
+  to {
+    grid-template-rows: 0fr;
+  }
+}
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+.toast {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.toast > div {
+  min-height: 0;
+}
+.toast-slab {
+  animation: toast-in 340ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.toast-timer {
+  animation: toast-timer var(--toast-ms) linear forwards;
+}
+.toast[data-leaving] {
+  animation: toast-collapse 200ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms forwards;
+}
+.toast[data-leaving] > div {
+  overflow: hidden;
+}
+.toast[data-leaving] .toast-slab {
+  animation: toast-out 160ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+.toast[data-leaving] .toast-timer {
+  animation-play-state: paused;
+}
+@media (hover: hover) {
+  .toast:hover .toast-timer {
+    animation-play-state: paused;
+  }
+}
+
 /* <dialog> makes the page behind it inert but still scrollable, and a modal
    whose background slides under it feels broken. One rule, no scroll-lock
    bookkeeping in JS. */
@@ -383,5 +449,10 @@ html:has(dialog[open]) {
   *::after {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
+  }
+  /* The one exception: a toast's timer bar is its clock, and at 1ms every
+     toast would be gone before it could be read. */
+  .toast-timer {
+    animation-duration: var(--toast-ms) !important;
   }
 }

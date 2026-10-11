@@ -6,6 +6,7 @@ import type { FormAction } from '@/lib/forms';
 import { ghostClass, inputClass, primaryClass } from '@/lib/ui';
 import { Modal } from '@/components/modal/modal';
 import { FormError } from '@/components/ui/form-error';
+import { toast } from '@/store/toast';
 import { useActionState, useEffect, useState } from 'react';
 
 export type RenameRoutineModalProps = {
@@ -15,6 +16,8 @@ export type RenameRoutineModalProps = {
     label: string;
     placeholder?: string;
     confirmLabel?: string;
+    /** Said once it has saved and closed. */
+    success?: string;
     onClose: () => void;
 };
 
@@ -25,6 +28,7 @@ export function RenameRoutineModal({
     label,
     placeholder,
     confirmLabel,
+    success,
     onClose,
 }: RenameRoutineModalProps) {
     const t = useT();
@@ -33,8 +37,10 @@ export function RenameRoutineModal({
     const renamed = value.trim() !== '' && value.trim() !== name;
 
     useEffect(() => {
-        if (state.ok) onClose();
-    }, [state.ok, onClose]);
+        if (!state.ok) return;
+        onClose();
+        if (success) toast(success);
+    }, [state.ok, onClose, success]);
 
     return (
         <Modal

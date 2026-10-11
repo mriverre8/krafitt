@@ -3,6 +3,7 @@ import {
     type TodayWorkoutProps,
 } from '@/components/workout/today-workout';
 import { useSessionStore } from '@/store/session';
+import { useToastStore } from '@/store/toast';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { skipDay } from '@/app/actions';
@@ -141,6 +142,11 @@ describe('TodayWorkout', () => {
         fireEvent.click(screen.getByText('Skip to next day'));
         await acceptConfirm('Skip anyway');
         await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Day skipped', kind: 'success' },
+            ])
+        );
     });
 
     // The finished day is left behind by the next fetch, so skipping it too
@@ -155,6 +161,7 @@ describe('TodayWorkout', () => {
         fireEvent.click(screen.getByText('Skip to next day'));
         expect(skipDay).not.toHaveBeenCalled();
         expect(refresh).toHaveBeenCalled();
+        expect(useToastStore.getState().toasts).toEqual([]);
     });
 
     // Coming back from the history replays the payload this page was rendered

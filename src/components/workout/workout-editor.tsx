@@ -27,7 +27,8 @@ import {
     Type,
     Undo2,
 } from 'lucide-react';
-import { startTransition, useActionState, useState } from 'react';
+import { startTransition, useActionState, useEffect, useState } from 'react';
+import { toast } from '@/store/toast';
 import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useDiscardSignal, useEditMode } from '@/components/routine/edit-mode';
@@ -96,6 +97,13 @@ export function WorkoutEditor({
         setLastState(state);
         if (state.saved) setDrafts(toDrafts(state.saved));
     }
+
+    // The save bar goes away on success and nothing else on screen says so.
+    // An effect, unlike the above: the toast lives in another component's
+    // store, and that may not be written to mid-render.
+    useEffect(() => {
+        if (state.saved) toast(t('toast.daySaved'));
+    }, [state, t]);
 
     // Leaving edit mode throws unsaved work away, having asked first — the
     // routine does the asking, since it is the whole set of days that is in
