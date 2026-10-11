@@ -49,10 +49,12 @@ const show = (props: Partial<Parameters<typeof HistoryExercise>[0]> = {}) =>
     );
 
 describe('HistoryExercise', () => {
-    it('heads each row with the set and what it asks for', () => {
+    // The plan as it stands now: a technique edited in week 5 reads on every
+    // week of the row, the same as a changed rep range does.
+    it('heads each row with the set, its technique and what it asks for', () => {
         show();
         expect(
-            screen.getByRole('rowheader', { name: 'Set 1, 4-6 reps' })
+            screen.getByRole('rowheader', { name: 'Set 1, Top set, 4-6 reps' })
         ).toBeInTheDocument();
         expect(
             screen.getByRole('rowheader', { name: 'Set 2, AMRAP' })

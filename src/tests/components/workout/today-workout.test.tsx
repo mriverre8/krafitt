@@ -6,7 +6,7 @@ import { useSessionStore } from '@/store/session';
 import { useToastStore } from '@/store/toast';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { skipDay } from '@/app/actions';
+import { logSet, skipDay } from '@/app/actions';
 import {
     acceptConfirm,
     confirmDialog,
@@ -177,6 +177,60 @@ describe('TodayWorkout', () => {
             />
         );
         expect(screen.getByLabelText('Weight set 1')).toHaveValue('80');
+    });
+
+    // The plan can change under an open screen, so a set is named by its slot
+    // rather than its place: the server refuses one the plan no longer has.
+    it('logs a set under its slot', async () => {
+        render(<TodayWorkout {...props} />);
+        fireEvent.change(screen.getByLabelText('Weight set 1'), {
+            target: { value: '80' },
+        });
+        fireEvent.change(screen.getByLabelText('Reps set 1'), {
+            target: { value: '5' },
+        });
+        fireEvent.click(screen.getByLabelText('Save set 1'));
+        fireEvent.click(screen.getByLabelText('Bank set 1'));
+        await waitFor(() =>
+            expect(logSet).toHaveBeenCalledWith(
+                'w1',
+                2,
+                'e1',
+                '1',
+                80,
+                5,
+                'normal'
+            )
+        );
+    });
+
+    // The store holds logs by place, and an edit moves sets about: a day
+    // whose plan changed is loaded afresh rather than read in the old places.
+    it('reloads the day when its plan has changed', () => {
+        const { rerender } = render(
+            <TodayWorkout
+                {...props}
+                logs={full}
+            />
+        );
+        const [top, back] = props.workout.exercises[0].sets;
+        rerender(
+            <TodayWorkout
+                {...props}
+                workout={{
+                    ...props.workout,
+                    exercises: [
+                        {
+                            ...props.workout.exercises[0],
+                            sets: [top, { ...top, kind: 'drop' }, back],
+                        },
+                    ],
+                }}
+                logs={{ e1: { 0: full.e1[0], 2: full.e1[1] } }}
+            />
+        );
+        expect(screen.getByLabelText('Weight set DS1')).toHaveValue('');
+        expect(screen.getByLabelText('Weight set 2')).toHaveValue('60');
     });
 
     // A one-day routine comes round again under the same workout id, and week 2

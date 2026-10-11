@@ -22,8 +22,25 @@ vi.mock('@/lib/db', () => ({
 const ada = { id: 'ada', name: 'Ada', image: null };
 const bob = { id: 'bob', name: 'Bob', image: null };
 
-/** Ada's routine, one day, one exercise, no sets prescribed. */
-const routine = { id: 'r1', creatorId: 'ada', workouts: [] };
+/** Ada's routine: one day, one exercise of two working sets. */
+const routine = {
+    id: 'r1',
+    creatorId: 'ada',
+    workouts: [
+        {
+            id: 'w1',
+            exercises: [
+                {
+                    id: 'e1',
+                    sets: [
+                        { kind: 'normal', repMode: 'range' },
+                        { kind: 'normal', repMode: 'range' },
+                    ],
+                },
+            ],
+        },
+    ],
+};
 
 beforeEach(() => {
     findFollows
@@ -99,16 +116,18 @@ describe('routineHistory', () => {
     });
 
     // Weeks are filed by day and then by week, so the history can draw a week
-    // nobody trained: the plan says which sets it would have been.
+    // nobody trained: the plan says which sets it would have been. A log is
+    // stored by slot and lands on wherever that set sits in the plan now.
     it('files every session under its day and week', async () => {
         findSessions.mockResolvedValue([
             {
                 workoutId: 'w1',
                 week: 2,
+                completedAt: null,
                 logs: [
                     {
                         exerciseId: 'e1',
-                        setIndex: 0,
+                        slot: '2',
                         weight: 60,
                         reps: 8,
                         effort: 'hard',
@@ -118,7 +137,31 @@ describe('routineHistory', () => {
         ]);
         const history = await routineHistory('r1');
         expect(history?.byDay).toEqual({
-            w1: { 2: { e1: { 0: { weight: 60, reps: 8, effort: 'hard' } } } },
+            w1: { 2: { e1: { 1: { weight: 60, reps: 8, effort: 'hard' } } } },
         });
+    });
+
+    // An archived exercise keeps its logs for when it is named again, but the
+    // history only draws what is being trained.
+    it('reads only the exercises in the plan', async () => {
+        await routineHistory('r1');
+        expect(findRoutine.mock.calls[0][0]).toMatchObject({
+            include: {
+                workouts: {
+                    include: { exercises: { where: { archived: false } } },
+                },
+            },
+        });
+    });
+
+    // Done is what was finished, not what the plan says now: editing the plan
+    // must not take a week back.
+    it('lists the weeks whose session was finished', async () => {
+        findSessions.mockResolvedValue([
+            { workoutId: 'w1', week: 1, completedAt: new Date(), logs: [] },
+            { workoutId: 'w1', week: 2, completedAt: null, logs: [] },
+        ]);
+        const history = await routineHistory('r1');
+        expect(history?.doneWeeks).toEqual({ w1: [1] });
     });
 });

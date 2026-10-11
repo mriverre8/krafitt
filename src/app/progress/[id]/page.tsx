@@ -19,7 +19,7 @@ export default async function RoutineProgressPage({
     if (history.routine.creatorId !== user.id && !(await isMember(id, user.id)))
         notFound();
 
-    const { routine, byDay } = history;
+    const { routine, byDay, doneWeeks } = history;
     const day = Number(query.currentDay);
     const initialDay = Number.isInteger(day) && day > 0 ? day : 0;
 
@@ -48,6 +48,7 @@ export default async function RoutineProgressPage({
                         name: workout.name,
                         exercises: workout.exercises,
                         weeks: byDay[workout.id] ?? {},
+                        doneWeeks: doneWeeks[workout.id] ?? [],
                     }))}
                     durationWeeks={routine.durationWeeks}
                     cursor={routine.cursor}

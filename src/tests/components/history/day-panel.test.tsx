@@ -13,8 +13,8 @@ const sets = [
 
 const exercise = (id: string, name: string) => ({ id, name, sets });
 
-/** Week 1 was logged in full; week 2 was started and abandoned on the second
-    set of the first exercise, so it does not count as trained. */
+/** Week 1 was logged in full and finished; week 2 was started and abandoned on
+    the second set of the first exercise, so it does not count as trained. */
 const day: HistoryDay = {
     id: 'w1',
     name: 'Push A',
@@ -26,6 +26,7 @@ const day: HistoryDay = {
         },
         2: { e1: { 0: { weight: 82.5, reps: 5 } } },
     },
+    doneWeeks: [1],
 };
 
 const rows: WeekRow[] = [
@@ -43,9 +44,24 @@ const base = {
 };
 
 describe('DayPanel', () => {
-    it('counts only the weeks where the whole day was logged', () => {
+    it('counts only the weeks whose session was finished', () => {
         render(<DayPanel {...base} />);
         expect(screen.getByText('Push A')).toBeInTheDocument();
+        expect(screen.getByText('1/3 weeks done')).toBeInTheDocument();
+    });
+
+    // The plan can grow after a week is over: the set added since has nothing
+    // logged in that week, and the week is still done.
+    it('keeps a finished week done after the plan has changed', () => {
+        render(
+            <DayPanel
+                {...base}
+                day={{
+                    ...day,
+                    exercises: [...day.exercises, exercise('e3', 'Dips')],
+                }}
+            />
+        );
         expect(screen.getByText('1/3 weeks done')).toBeInTheDocument();
     });
 

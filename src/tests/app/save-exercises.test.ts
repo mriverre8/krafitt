@@ -5,6 +5,13 @@ vi.mock('@/lib/auth', () => ({ requireUser: async () => ({ id: 'u1' }) }));
 vi.mock('@/lib/db', () => ({ prisma: {} }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
+/** The routine the day belongs to; only an active one is ever looked at here. */
+const routine = { isActive: false };
+vi.mock('@/lib/access', () => ({
+    routineIdOfWorkout: async () => 'r1',
+    requireEditableRoutine: async () => routine,
+}));
+
 // The real translator, so the messages under test are the shipped ones.
 vi.mock('@/i18n/server', async () => {
     const { createT, dictionaries } = await import('@/i18n/config');
@@ -79,5 +86,22 @@ describe('saveExercises', () => {
         expect(await errorFor([])).toBe(
             'A day holds between 1 and 30 exercises'
         );
+    });
+
+    // The active routine is the one on the home screen: an edit may not leave
+    // it with a hole the day would then have to be trained around.
+    it('keeps the active routine trainable', async () => {
+        routine.isActive = true;
+        try {
+            expect(
+                await errorFor([
+                    { id: null, name: 'Dips', sets: [set({ repMin: '' })] },
+                ])
+            ).toBe(
+                'This routine is active, so the day has to be complete. Dips, set 1: the reps are missing'
+            );
+        } finally {
+            routine.isActive = false;
+        }
     });
 });

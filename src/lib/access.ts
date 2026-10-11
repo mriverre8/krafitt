@@ -1,6 +1,6 @@
 import { getT } from '@/i18n/server';
 import { prisma } from './db';
-import { isRoutineLocked } from './progress';
+import { isRoutineFinished, isRoutineLocked } from './progress';
 
 /**
  * The single place permissions are checked: every server action goes through it.
@@ -19,11 +19,28 @@ export async function requireRoutine(routineId: string, userId: string) {
 }
 
 /**
- * The plan of a routine that is already being trained — or was, or is over — is
- * history: those sessions were logged against these very exercises. Editing
- * stops the moment it goes live. Deleting it whole is still allowed.
+ * The exercises and sets of a routine stay editable while it is being
+ * trained: what was logged is matched against the plan as it stands, never
+ * rewritten (see `lib/history.ts`). Only a routine that is over is closed —
+ * its plan is the record of what it was.
  */
 export async function requireEditableRoutine(
+    routineId: string,
+    userId: string
+) {
+    const routine = await requireRoutine(routineId, userId);
+    const workoutCount = await prisma.workout.count({ where: { routineId } });
+    if (isRoutineFinished(routine.cursor, workoutCount, routine.durationWeeks))
+        throw new Error((await getT())('error.routineFinished'));
+    return routine;
+}
+
+/**
+ * Adding or deleting a day stops the moment the routine goes live: the cursor
+ * counts days by position, so one more or one fewer would move it to another
+ * week, and a deleted day takes its sessions with it.
+ */
+export async function requireUnstartedRoutine(
     routineId: string,
     userId: string
 ) {

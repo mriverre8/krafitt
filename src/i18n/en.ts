@@ -338,6 +338,7 @@ export const en = {
     'requests.decline': 'Decline',
 
     'exercise.namePlaceholder': 'Exercise',
+    'exercise.suggestions': 'Removed exercises of this day',
     'exercise.nameLabel': 'Exercise {exercise} name',
     'exercise.repMode': 'Exercise {exercise}, reps type set {set}',
     'exercise.repMin': 'Exercise {exercise}, min reps set {set}',
@@ -429,7 +430,8 @@ export const en = {
     'error.workoutName': 'Give the day a name',
     'error.routineIncomplete': 'Finish the routine before setting it active',
     'error.routineFinished': 'This routine is already finished',
-    'error.routineStarted': 'A routine you have started cannot be edited',
+    'error.routineStarted':
+        'A routine you have started cannot gain or lose days',
     'error.planUnreadable':
         'The day could not be read. Reload the page and try again.',
     'error.exercises': 'A day holds between 1 and {max} exercises',
@@ -451,7 +453,10 @@ export const en = {
     'error.reps': 'Invalid reps',
     'error.alreadyFinished': 'This workout is already finished',
     'error.wrongExercise': 'That exercise is not part of this workout',
-    'error.setOutOfRange': 'Set out of range',
+    'error.planChanged':
+        'The routine has changed: reload to see it as it is now',
+    'error.activeDayIncomplete':
+        'This routine is active, so the day has to be complete. {where}: {what}',
     'error.fillPrevious': 'Fill in the previous sets first',
 };
 

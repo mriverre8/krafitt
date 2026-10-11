@@ -14,6 +14,8 @@ export type RoutineDay = {
     exercises: ExerciseView[];
     problems: Problem[];
     faults: Record<string, ExerciseFault>;
+    /** Exercises the day archived, by name: what its name fields offer back. */
+    retired: string[];
 };
 
 export function RoutineDays({
@@ -31,7 +33,8 @@ export function RoutineDays({
         previous: FormState,
         data: FormData
     ) => Promise<FormState>;
-    onDeleteWorkout: (workoutId: string) => Promise<void>;
+    /** Absent once the routine has started: its days are fixed from then on. */
+    onDeleteWorkout?: (workoutId: string) => Promise<void>;
 }) {
     const baseId = useId();
     const dirtyDays = useDirtyDays();
@@ -67,6 +70,7 @@ export function RoutineDays({
                         workout={day}
                         problems={day.problems}
                         faults={day.faults}
+                        retired={day.retired}
                         saveExercises={saveExercises}
                         onRenameWorkout={renameWorkout.bind(null, day.id)}
                         onDeleteWorkout={onDeleteWorkout}

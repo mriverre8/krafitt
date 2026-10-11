@@ -1,7 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { isSessionComplete, type Logs, type WeekState } from '@/lib/progress';
+import type { Logs, WeekState } from '@/lib/progress';
 import { useState } from 'react';
 import { HistoryExercise } from '@/components/history/history-exercise';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
@@ -11,6 +11,9 @@ export type HistoryDay = {
     name: string;
     exercises: ExerciseView[];
     weeks: Record<number, Logs>;
+    /** Weeks whose session was finished. Read off the sessions, not the plan:
+        a set added in week 5 must not undo weeks 1 to 4. */
+    doneWeeks: number[];
 };
 
 export type WeekRow = { week: number; state: WeekState; logs: Logs };
@@ -34,7 +37,7 @@ export function DayPanel({
     const exercise = day.exercises[position];
 
     const trained = rows.filter((row) =>
-        isSessionComplete(day.exercises, row.logs)
+        day.doneWeeks.includes(row.week)
     ).length;
 
     return (
