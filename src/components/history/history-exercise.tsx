@@ -137,7 +137,7 @@ export function HistoryExercise({
 
             <div
                 ref={box}
-                className="relative mt-3 -mb-1 overflow-x-auto pb-1"
+                className="relative mt-3 -mb-1 overflow-x-auto overscroll-x-none pb-1"
             >
                 <table className="w-full min-w-max border-separate border-spacing-0 text-center">
                     <caption className="sr-only">
