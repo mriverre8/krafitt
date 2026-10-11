@@ -83,10 +83,10 @@ describe('RoutineHistory', () => {
         // the corner the set column hangs under.
         expect(screen.getAllByRole('columnheader')).toHaveLength(4);
         expect(
-            screen.getByRole('rowheader', { name: /^Set 1, Top set, 4-6 reps/ })
+            screen.getByRole('rowheader', { name: /^Set 1, 4-6 reps/ })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('rowheader', { name: /^Set 2, Back off, AMRAP/ })
+            screen.getByRole('rowheader', { name: /^Set 2, AMRAP/ })
         ).toBeInTheDocument();
     });
 
