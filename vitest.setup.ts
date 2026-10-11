@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { useModalStore } from '@/store/modal';
+import { useToastStore } from '@/store/toast';
 import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
@@ -8,6 +9,7 @@ afterEach(cleanup);
 // The modal store outlives the render that opened one, so a test that leaves a
 // modal up would hand it to the next one.
 afterEach(() => useModalStore.setState({ open: null }));
+afterEach(() => useToastStore.setState({ toasts: [] }));
 
 // jsdom lays nothing out, so it ships no scrollIntoView. Components that keep
 // a selection on screen call it for real in a browser.

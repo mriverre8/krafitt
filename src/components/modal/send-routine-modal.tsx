@@ -18,12 +18,17 @@ import {
 import { Modal } from '@/components/modal/modal';
 import { Avatar } from '@/components/ui/avatar';
 import { FormError } from '@/components/ui/form-error';
+import { toast } from '@/store/toast';
 import { CircleCheck, Search, Send } from 'lucide-react';
+import { unstable_rethrow } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 export type SendRoutineModalProps = {
     find: (email: string) => Promise<{ found?: FoundUser; error?: string }>;
-    send: (userId: string, addMe: boolean) => Promise<unknown>;
+    send: (
+        userId: string,
+        addMe: boolean
+    ) => Promise<{ error?: string } | void>;
     onClose: () => void;
 };
 
@@ -152,8 +157,19 @@ export function SendRoutineModal({
                     disabled={!matched || pending}
                     onClick={() =>
                         start(async () => {
-                            await send(found!.user.id, addMe);
+                            try {
+                                const result = await send(
+                                    found!.user.id,
+                                    addMe
+                                );
+                                if (result?.error)
+                                    return setError(result.error);
+                            } catch (cause) {
+                                unstable_rethrow(cause);
+                                return setError(t('today.genericError'));
+                            }
                             onClose();
+                            toast(t('toast.sent', { name: found!.user.name }));
                         })
                     }
                     className={`${primaryClass} flex items-center justify-center gap-2 py-2.5 text-sm`}

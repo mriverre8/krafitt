@@ -11,6 +11,7 @@ import {
     waitFor,
     within,
 } from '@testing-library/react';
+import { useToastStore } from '@/store/toast';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -21,6 +22,9 @@ import {
     openConfirm,
     withModals,
 } from '@/tests/setup-helpers';
+
+const toasts = () =>
+    useToastStore.getState().toasts.map((item) => item.message);
 
 /** The editor lives inside a routine that is read-only until Edit is pressed,
     and every test below is about what editing can do. Read mode has its own
@@ -302,6 +306,7 @@ describe('WorkoutEditor', () => {
         fireEvent.click(save());
         await waitFor(() => expect(technique).toHaveValue(''));
         expect(noBar()).toBeNull();
+        expect(toasts()).toEqual(['Day saved']);
     });
 
     it('picks up the id a brand new exercise was given', async () => {
@@ -362,6 +367,7 @@ describe('WorkoutEditor', () => {
             'Incline press'
         );
         expect(save()).toBeEnabled();
+        expect(toasts()).toEqual([]);
     });
 
     it('lists what this day is still missing', () => {

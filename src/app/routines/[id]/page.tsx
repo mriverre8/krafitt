@@ -250,6 +250,9 @@ export default async function RoutinePage({
                                         null,
                                         routine.id
                                     )}
+                                    success={t('toast.deactivated', {
+                                        name: routine.name,
+                                    })}
                                     className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
                                 >
                                     {t('routine.deactivate')}
@@ -281,6 +284,9 @@ export default async function RoutinePage({
                                         null,
                                         routine.id
                                     )}
+                                    success={t('toast.activated', {
+                                        name: routine.name,
+                                    })}
                                     className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
                                 >
                                     {t('routines.markActive')}

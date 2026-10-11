@@ -92,6 +92,7 @@ export function RoutineOptions({
                                     rename,
                                     title: t('routine.rename'),
                                     label: t('routines.nameLabel'),
+                                    success: t('toast.renamed'),
                                 });
                             }}
                             className={menuItemClass}
@@ -169,6 +170,11 @@ export function RoutineOptions({
                                 close();
                                 await setVisibility(!isPublic);
                             }}
+                            success={t(
+                                isPublic
+                                    ? 'toast.madePrivate'
+                                    : 'toast.madePublic'
+                            )}
                             className={menuItemClass}
                         >
                             {isPublic ? (
@@ -198,6 +204,7 @@ export function RoutineOptions({
                                 confirmLabel: t('routine.save'),
                                 danger: false,
                             }}
+                            success={t('toast.saved', { name })}
                             className={menuItemClass}
                         >
                             <Bookmark
@@ -218,6 +225,7 @@ export function RoutineOptions({
                                 confirmLabel: t('routine.duplicate'),
                                 danger: false,
                             }}
+                            success={t('toast.duplicated', { name })}
                             className={menuItemClass}
                         >
                             <Copy

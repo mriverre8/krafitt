@@ -4,6 +4,7 @@ import type { MemberSearchState } from '@/lib/forms';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithLocale } from '@/tests/setup-helpers';
+import { useToastStore } from '@/store/toast';
 
 vi.mock('@/app/actions', () => ({
     findRoutineMember: vi.fn(),
@@ -146,6 +147,24 @@ describe('MemberSearch', () => {
         fireEvent.click(await screen.findByRole('button', { name: 'Add' }));
 
         await waitFor(() => expect(add).toHaveBeenCalledWith('r1', 'ada'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Request sent to Ada', kind: 'success' },
+            ])
+        );
+    });
+
+    it('raises the refusal and keeps the card when the invite fails', async () => {
+        add.mockResolvedValue({ error: 'You cannot add yourself' });
+        look();
+        fireEvent.click(await screen.findByRole('button', { name: 'Add' }));
+
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'You cannot add yourself', kind: 'error' },
+            ])
+        );
+        expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
     });
 
     // Once they are standing in the list above, the card has nothing left to

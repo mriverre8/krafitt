@@ -78,6 +78,12 @@ export async function RequestRows({
                             </ActionButton>
                             <ActionButton
                                 action={acceptRequest.bind(null, id)}
+                                success={t(
+                                    kind === 'member'
+                                        ? 'toast.joined'
+                                        : 'toast.received',
+                                    { routine: routine.name }
+                                )}
                                 className={`${primaryClass} flex items-center gap-1.5 px-3! py-1.5! text-xs!`}
                             >
                                 <Check

@@ -91,7 +91,7 @@ export async function setActiveRoutine(routineId: string) {
     const routine = await routineDetail(routineId);
 
     if (!routine || !isRoutineComplete(routine, t)) {
-        throw new Error(t('error.routineIncomplete'));
+        return { error: t('error.routineIncomplete') };
     }
 
     if (
@@ -101,7 +101,7 @@ export async function setActiveRoutine(routineId: string) {
             routine.durationWeeks
         )
     ) {
-        throw new Error(t('error.routineFinished'));
+        return { error: t('error.routineFinished') };
     }
 
     await prisma.$transaction([
@@ -272,7 +272,7 @@ export async function duplicateRoutine(routineId: string) {
     await requireRoutine(routineId, user.id);
 
     const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
-    if (!routine) throw new Error(t('error.routineNotFound'));
+    if (!routine) return { error: t('error.routineNotFound') };
 
     const room = NAME_MAX - t('routine.copyName', { name: '' }).length;
     const copy = await copyRoutine(
@@ -291,12 +291,12 @@ export async function duplicateRoutine(routineId: string) {
 export async function saveRoutine(routineId: string) {
     const user = await requireUser();
     const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
-    if (!routine) throw new Error(t('error.routineNotFound'));
+    if (!routine) return { error: t('error.routineNotFound') };
 
     const allowed =
         routine.creatorId !== user.id &&
         (routine.isPublic || (await isMember(routineId, user.id)));
-    if (!allowed) throw new Error(t('error.noAccess'));
+    if (!allowed) return { error: t('error.noAccess') };
 
     const copy = await copyRoutine(routine, user.id, routine.name);
     revalidatePath('/routines');
@@ -338,12 +338,12 @@ export async function sendRoutine(
     await requireRoutine(routineId, user.id);
     const [routine, t] = await Promise.all([routineDetail(routineId), getT()]);
 
-    if (!routine) throw new Error(t('error.routineNotFound'));
+    if (!routine) return { error: t('error.routineNotFound') };
     // The menu hides the option on an incomplete routine; this is what holds.
     if (!isRoutineComplete(routine, t)) {
-        throw new Error(t('error.routineIncomplete'));
+        return { error: t('error.routineIncomplete') };
     }
-    if (userId === user.id) throw new Error(t('error.sendSelf'));
+    if (userId === user.id) return { error: t('error.sendSelf') };
 
     await prisma.routineRequest.upsert({
         where: requestKey('send', routineId, userId),
@@ -637,9 +637,9 @@ export async function logSet(
     const t = await getT();
 
     if (!Number.isFinite(weight) || weight < WEIGHT.min || weight > WEIGHT.max)
-        throw new Error(t('error.weight'));
+        return { error: t('error.weight') };
     if (!Number.isInteger(reps) || reps < REPS.min || reps > REPS.max)
-        throw new Error(t('error.reps'));
+        return { error: t('error.reps') };
 
     const routineId = await routineIdOfWorkout(workoutId);
     await requireRoutine(routineId, user.id);
@@ -661,18 +661,18 @@ export async function logSet(
             },
         },
     });
-    if (session.completedAt) throw new Error(t('error.alreadyFinished'));
+    if (session.completedAt) return { error: t('error.alreadyFinished') };
 
     const exercise = session.workout.exercises.find(
         (item) => item.id === exerciseId
     );
-    if (!exercise) throw new Error(t('error.wrongExercise'));
+    if (!exercise) return { error: t('error.wrongExercise') };
     if (
         !Number.isInteger(setIndex) ||
         setIndex < 0 ||
         setIndex >= exercise.sets.length
     ) {
-        throw new Error(t('error.setOutOfRange'));
+        return { error: t('error.setOutOfRange') };
     }
 
     // Sequential order is enforced here, not only by disabling inputs on the client.
@@ -684,7 +684,7 @@ export async function logSet(
         };
     }
     if (!isSetEnabled(session.workout.exercises, logs, exerciseId, setIndex)) {
-        throw new Error(t('error.fillPrevious'));
+        return { error: t('error.fillPrevious') };
     }
 
     await prisma.setLog.upsert({
@@ -789,7 +789,7 @@ export async function inviteRoutineMember(routineId: string, userId: string) {
     await requireRoutine(routineId, user.id);
     const t = await getT();
 
-    if (userId === user.id) throw new Error(t('error.memberSelf'));
+    if (userId === user.id) return { error: t('error.memberSelf') };
 
     await prisma.routineRequest.upsert({
         where: requestKey('member', routineId, userId),
@@ -847,7 +847,7 @@ export async function acceptRequest(requestId: string) {
     const request = await prisma.routineRequest.findFirst({
         where: { id: requestId, recipientId: user.id },
     });
-    if (!request) throw new Error(t('error.requestNotFound'));
+    if (!request) return { error: t('error.requestNotFound') };
 
     const { routineId } = request;
     const answered = prisma.routineRequest.delete({ where: { id: requestId } });
@@ -867,10 +867,10 @@ export async function acceptRequest(requestId: string) {
         revalidatePath('/routines/shared');
     } else {
         const routine = await routineDetail(routineId);
-        if (!routine) throw new Error(t('error.routineNotFound'));
+        if (!routine) return { error: t('error.routineNotFound') };
         // It was complete when sent, but it may have been edited since.
         if (!isRoutineComplete(routine, t))
-            throw new Error(t('error.routineIncomplete'));
+            return { error: t('error.routineIncomplete') };
 
         await prisma.$transaction([
             copyRoutine(
@@ -906,7 +906,8 @@ export async function declineRequest(requestId: string) {
  */
 export async function toggleFollow(userId: string, follow: boolean) {
     const user = await requireUser();
-    if (userId === user.id) throw new Error((await getT())('error.followSelf'));
+    if (userId === user.id)
+        return { error: (await getT())('error.followSelf') };
 
     const pair = { followerId: user.id, followingId: userId };
     if (follow)
