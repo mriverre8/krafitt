@@ -26,9 +26,8 @@ export default function Loading() {
                 <DaySwitcherSkeleton />
 
                 <div className="space-y-4">
-                    <div className="flex h-8.75 justify-between gap-4">
+                    <div className="h-8.75">
                         <Bar className="h-[32.4px] w-1/2" />
-                        <Bar className="h-5 w-24 shrink-0 self-end" />
                     </div>
                     <Line
                         className="h-6"

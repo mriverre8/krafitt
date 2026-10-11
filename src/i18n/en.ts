@@ -175,7 +175,6 @@ export const en = {
     'progress.link': 'History',
     'progress.linkLabel': 'History of {name}',
     'progress.title': 'History',
-    'progress.weeksTrained': '{done}/{total} weeks done',
     'progress.week': 'W{n}',
     'progress.weekLabel': 'Week {n}',
     'progress.weekColumn': 'Week',

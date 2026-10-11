@@ -5,6 +5,7 @@ import {
     DEFAULT_EFFORT,
     SET_PARTS,
     setMove,
+    toEffort,
     type SetMove,
     type SetPart,
     type SetValue,
@@ -239,10 +240,13 @@ export function HistoryExercise({
                                         if (value) {
                                             const move =
                                                 moves[rowIndex][setIndex];
+                                            const effort = toEffort(
+                                                value.effort
+                                            );
                                             const mark =
-                                                value.effort &&
-                                                value.effort !== DEFAULT_EFFORT
-                                                    ? value.effort
+                                                effort !== DEFAULT_EFFORT ||
+                                                move?.part === 'effort'
+                                                    ? effort
                                                     : undefined;
                                             const Mark =
                                                 mark && EFFORT_ICON[mark];

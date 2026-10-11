@@ -153,15 +153,4 @@ describe('routineHistory', () => {
             },
         });
     });
-
-    // Done is what was finished, not what the plan says now: editing the plan
-    // must not take a week back.
-    it('lists the weeks whose session was finished', async () => {
-        findSessions.mockResolvedValue([
-            { workoutId: 'w1', week: 1, completedAt: new Date(), logs: [] },
-            { workoutId: 'w1', week: 2, completedAt: null, logs: [] },
-        ]);
-        const history = await routineHistory('r1');
-        expect(history?.doneWeeks).toEqual({ w1: [1] });
-    });
 });

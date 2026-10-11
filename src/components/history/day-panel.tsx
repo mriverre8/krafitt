@@ -11,9 +11,6 @@ export type HistoryDay = {
     name: string;
     exercises: ExerciseView[];
     weeks: Record<number, Logs>;
-    /** Weeks whose session was finished. Read off the sessions, not the plan:
-        a set added in week 5 must not undo weeks 1 to 4. */
-    doneWeeks: number[];
 };
 
 export type WeekRow = { week: number; state: WeekState; logs: Logs };
@@ -36,10 +33,6 @@ export function DayPanel({
     const position = Math.min(selected, Math.max(day.exercises.length - 1, 0));
     const exercise = day.exercises[position];
 
-    const trained = rows.filter((row) =>
-        day.doneWeeks.includes(row.week)
-    ).length;
-
     return (
         <div
             role="tabpanel"
@@ -48,15 +41,7 @@ export function DayPanel({
             hidden={hidden}
             className="space-y-4"
         >
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <h2 className="display min-w-0 text-4xl">{day.name}</h2>
-                <p className="figure text-muted shrink-0 text-sm">
-                    {t('progress.weeksTrained', {
-                        done: trained,
-                        total: rows.length,
-                    })}
-                </p>
-            </div>
+            <h2 className="display min-w-0 text-4xl">{day.name}</h2>
 
             {!exercise ? (
                 <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">

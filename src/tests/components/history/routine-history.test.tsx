@@ -30,14 +30,12 @@ const days: HistoryDay[] = [
             // Week 2 was started and abandoned: the second set never happened.
             2: { e1: { 0: { weight: 82.5, reps: 5 } } },
         },
-        doneWeeks: [1],
     },
     {
         id: 'w2',
         name: 'Pull A',
         exercises: [exercise('e3', 'Row')],
         weeks: {},
-        doneWeeks: [],
     },
 ];
 

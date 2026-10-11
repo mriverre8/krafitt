@@ -177,7 +177,6 @@ export const ca: Dict = {
     'progress.link': 'Històric',
     'progress.linkLabel': 'Històric de {name}',
     'progress.title': 'Històric',
-    'progress.weeksTrained': '{done}/{total} setmanes fetes',
     'progress.week': 'S{n}',
     'progress.weekLabel': 'Setmana {n}',
     'progress.weekColumn': 'Setmana',
