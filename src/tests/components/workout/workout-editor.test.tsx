@@ -398,12 +398,12 @@ describe('WorkoutEditor', () => {
         });
         fireEvent.click(save());
 
-        await screen.findByText('Nope');
+        await waitFor(() => expect(toasts()).toEqual(['Nope']));
+        expect(useToastStore.getState().toasts[0].kind).toBe('error');
         expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
             'Incline press'
         );
         expect(save()).toBeEnabled();
-        expect(toasts()).toEqual([]);
     });
 
     it('lists what this day is still missing', () => {

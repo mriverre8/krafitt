@@ -2,6 +2,7 @@
 
 import type { Translate } from '@/i18n/config';
 import { REPS, REST_SECONDS } from './constants';
+import { sameExercise } from './history';
 import { badRepFields, isTimed, type RepSpec } from './reps';
 import {
     badSetValue,
@@ -27,9 +28,23 @@ export type ExerciseFault = {
     sets: { min: boolean; max: boolean; value: boolean; technique: boolean }[];
 };
 
-function exerciseFault(exercise: ExercisePlan): ExerciseFault {
+/** Whether an earlier card of the day already has this one's name: within a
+    day an exercise is its name (see `lib/history.ts`), so a second card under
+    it would be the same exercise twice. The first one is left alone. */
+function repeatsName(exercises: readonly ExercisePlan[], index: number) {
+    const { name } = exercises[index];
+    return (
+        !!name.trim() &&
+        exercises.slice(0, index).some((e) => sameExercise(e.name, name))
+    );
+}
+
+function exerciseFault(
+    exercise: ExercisePlan,
+    repeated = false
+): ExerciseFault {
     return {
-        name: !exercise.name.trim(),
+        name: !exercise.name.trim() || repeated,
         sets: exercise.sets.map((set) => ({
             ...badRepFields(set),
             value: badSetValue(set),
@@ -111,6 +126,9 @@ export function workoutProblems(workout: WorkoutPlan, t: Translate): Problem[] {
         if (!exercise.name.trim()) {
             problems.push({ where, what: t('validate.noName') });
         }
+        if (repeatsName(exercises, index)) {
+            problems.push({ where, what: t('validate.repeatedName') });
+        }
         if (exercise.sets.length === 0) {
             problems.push({ where, what: t('validate.noSets') });
         }
@@ -134,7 +152,10 @@ export function workoutFaults(
     exercises: ({ id: string } & ExercisePlan)[]
 ): Record<string, ExerciseFault> {
     return Object.fromEntries(
-        exercises.map((exercise) => [exercise.id, exerciseFault(exercise)])
+        exercises.map((exercise, index) => [
+            exercise.id,
+            exerciseFault(exercise, repeatsName(exercises, index)),
+        ])
     );
 }
 

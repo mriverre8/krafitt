@@ -97,9 +97,7 @@ describe('saveExercises', () => {
                 await errorFor([
                     { id: null, name: 'Dips', sets: [set({ repMin: '' })] },
                 ])
-            ).toBe(
-                'This routine is active, so the day has to be complete. Dips, set 1: the reps are missing'
-            );
+            ).toBe('Dips, set 1: the reps are missing');
         } finally {
             routine.isActive = false;
         }
