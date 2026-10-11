@@ -12,7 +12,7 @@ export default function Loading() {
                             <Bar className={`w-32 ${eyebrowLine}`} />
                             <Bar className="mt-2 h-13.5 w-3/4" />
                         </div>
-                        <Bar className="h-[73.2px] w-[42px] shrink-0 rounded-md md:h-[75.6px]" />
+                        <Bar className="h-[73.2px] w-10.5 shrink-0 rounded-md md:h-[75.6px]" />
                     </div>
                     <div className="space-y-2">
                         <Bar className="h-2 w-full" />

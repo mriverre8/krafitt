@@ -1,19 +1,28 @@
-import { TOAST_MS, toast, useToastStore } from '@/store/toast';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { toast, useToastStore } from '@/store/toast';
+import { describe, expect, it } from 'vitest';
+
+const toasts = () => useToastStore.getState().toasts;
 
 describe('toast', () => {
-    afterEach(() => vi.useRealTimers());
-
-    it('raises a toast and takes it down on its own', () => {
-        vi.useFakeTimers();
+    it('raises a toast of either kind', () => {
         toast('Saved');
         toast('Failed', 'error');
-        expect(useToastStore.getState().toasts).toMatchObject([
+        expect(toasts()).toMatchObject([
             { message: 'Saved', kind: 'success' },
             { message: 'Failed', kind: 'error' },
         ]);
+    });
 
-        vi.advanceTimersByTime(TOAST_MS);
-        expect(useToastStore.getState().toasts).toEqual([]);
+    // Dismissing only starts the way out: the host takes it off once its exit
+    // has played.
+    it('marks a dismissed toast as leaving, and drops it once removed', () => {
+        toast('Saved');
+        const [{ id }] = toasts();
+
+        useToastStore.getState().dismiss(id);
+        expect(toasts()).toMatchObject([{ id, leaving: true }]);
+
+        useToastStore.getState().remove(id);
+        expect(toasts()).toEqual([]);
     });
 });

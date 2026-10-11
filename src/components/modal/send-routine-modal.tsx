@@ -57,9 +57,11 @@ export function SendRoutineModal({
                     const asked = normalEmail(email);
                     start(async () => {
                         const answer = await find(asked);
-                        setError(answer.error);
-                        if (answer.found)
-                            setFound({ email: asked, user: answer.found });
+                        start(() => {
+                            setError(answer.error);
+                            if (answer.found)
+                                setFound({ email: asked, user: answer.found });
+                        });
                     });
                 }}
             >
