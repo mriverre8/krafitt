@@ -440,9 +440,6 @@ export async function trainingDays(userId: string, from: Date) {
  * would have been is only knowable from the plan. Only the plan as it stands:
  * an archived exercise keeps its logs, which come back with it if it is named
  * again, but the history shows what is being trained.
- *
- * Which weeks count as done is read off the sessions that were completed, not
- * off the plan: a set added in week 5 must not undo weeks 1 to 4.
  */
 export async function routineHistory(routineId: string) {
     const routine = await prisma.routine.findUnique({
@@ -468,17 +465,14 @@ export async function routineHistory(routineId: string) {
         routine.workouts.map((workout) => [workout.id, workout.exercises])
     );
     const byDay: Record<string, Record<number, Logs>> = {};
-    const doneWeeks: Record<string, number[]> = {};
     for (const session of sessions) {
         (byDay[session.workoutId] ??= {})[session.week] = toLogs(
             session.logs,
             exercisesOf.get(session.workoutId) ?? []
         );
-        if (session.completedAt)
-            (doneWeeks[session.workoutId] ??= []).push(session.week);
     }
 
-    return { routine, byDay, doneWeeks };
+    return { routine, byDay };
 }
 
 /** The routine and its plan: archived exercises are left out, so whatever is

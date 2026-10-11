@@ -146,6 +146,54 @@ describe('HistoryExercise', () => {
         });
     });
 
+    // A normal set wears no mark, so a grind that came back to normal would
+    // have nowhere to show its green.
+    it('marks a normal set when feeling normal is what moved it', () => {
+        render(
+            <HistoryExercise
+                exercise={{
+                    id: 'e1',
+                    name: 'Bench press',
+                    sets: [
+                        {
+                            repMode: 'fixed',
+                            repMin: 5,
+                            repMax: null,
+                            technique: null,
+                        },
+                    ],
+                }}
+                rows={[
+                    {
+                        week: 1,
+                        state: 'past',
+                        sets: { 0: { weight: 80, reps: 5, effort: 'hard' } },
+                    },
+                    {
+                        week: 2,
+                        state: 'past',
+                        sets: { 0: { weight: 80, reps: 5, effort: 'normal' } },
+                    },
+                    {
+                        week: 3,
+                        state: 'current',
+                        sets: { 0: { weight: 80, reps: 6, effort: 'normal' } },
+                    },
+                ]}
+                position={0}
+                total={1}
+                onSelect={vi.fn()}
+            />
+        );
+
+        const [, back, more] = screen.getAllByRole('cell');
+        expect(back.querySelector('svg')!.getAttribute('class')).toContain(
+            'text-surge-ink'
+        );
+        // The reps carried that one: no mark needed.
+        expect(more.querySelector('svg')).toBeNull();
+    });
+
     // The comparison is against the last week that set was logged in, not the
     // row above — week 2 never touched the back-off, so week 3 answers week 1.
     it('marks a set against the last time it was trained', () => {
