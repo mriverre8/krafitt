@@ -161,6 +161,28 @@ describe('workoutFaults', () => {
     });
 });
 
+describe('repeated names', () => {
+    it('flags every card after the first that shares a name in the day', () => {
+        const exercises = [
+            { id: 'e1', name: 'Bench', sets: [set] },
+            { id: 'e2', name: ' bench ', sets: [set] },
+            { id: 'e3', name: 'Dips', sets: [set] },
+        ];
+        expect(workoutProblems({ exercises }, t)).toEqual([
+            {
+                where: 'bench',
+                what: 'another exercise this day already has this name',
+            },
+        ]);
+        const faults = workoutFaults(exercises);
+        expect([faults.e1.name, faults.e2.name, faults.e3.name]).toEqual([
+            false,
+            true,
+            false,
+        ]);
+    });
+});
+
 describe('isRoutineComplete', () => {
     it('needs at least one day', () => {
         expect(isRoutineComplete({ workouts: [] }, t)).toBe(false);

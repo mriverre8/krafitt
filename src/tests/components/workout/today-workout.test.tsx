@@ -17,7 +17,10 @@ import {
 
 vi.mock('@/app/actions', () => ({ logSet: vi.fn(), skipDay: vi.fn() }));
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ refresh }),
+    unstable_rethrow: () => {},
+}));
 
 const props: TodayWorkoutProps = {
     routineId: 'r1',
@@ -145,6 +148,19 @@ describe('TodayWorkout', () => {
         await waitFor(() =>
             expect(useToastStore.getState().toasts).toMatchObject([
                 { message: 'Day skipped', kind: 'success' },
+            ])
+        );
+    });
+
+    it('raises an error toast when the skip fails', async () => {
+        vi.mocked(skipDay).mockRejectedValueOnce(new Error('boom'));
+        useToastStore.setState({ toasts: [] });
+        render(withModals(<TodayWorkout {...props} />));
+        fireEvent.click(screen.getByText('Skip to next day'));
+        await acceptConfirm('Skip anyway');
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Something went wrong', kind: 'error' },
             ])
         );
     });

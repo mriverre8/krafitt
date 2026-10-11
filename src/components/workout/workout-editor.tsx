@@ -39,7 +39,6 @@ import {
     blankExercise,
     ExercisePreview,
 } from '@/components/workout/exercise-preview';
-import { FormError } from '@/components/ui/form-error';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 /**
@@ -109,11 +108,13 @@ export function WorkoutEditor({
         if (state.saved) setDrafts(toDrafts(state.saved));
     }
 
-    // The save bar goes away on success and nothing else on screen says so.
+    // The save bar goes away on success and nothing else on screen says so;
+    // a refused save is the server's word on the whole day, not one field's.
     // An effect, unlike the above: the toast lives in another component's
     // store, and that may not be written to mid-render.
     useEffect(() => {
         if (state.saved) toast(t('toast.daySaved'));
+        if (state.error) toast(state.error, 'error');
     }, [state, t]);
 
     // Leaving edit mode throws unsaved work away, having asked first — the
@@ -313,8 +314,6 @@ export function WorkoutEditor({
                     </button>
                 )}
             </div>
-
-            <FormError message={state.error} />
 
             {editing && dirty && (
                 <div className="border-line bg-bg/85 sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t px-4 py-3 backdrop-blur-md">

@@ -17,10 +17,9 @@ import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
 import { unstable_rethrow, useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { showModal } from '@/store/modal';
 import { toast } from '@/store/toast';
-import { FormError } from '@/components/ui/form-error';
 import {
     WorkoutExercise,
     type ExerciseView,
@@ -45,7 +44,6 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     const router = useRouter();
     const { logs, hydrate } = useSessionStore();
     const [pending, startTransition] = useTransition();
-    const [error, setError] = useState<string | undefined>();
 
     // The store holds logs by position, and an edit to the plan moves sets
     // about: a day whose plan changed is a different day to the store, and is
@@ -62,13 +60,12 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     // reaches production intact, so a throw only ever reads as the generic one.
     function run(operation: () => Promise<{ error?: string } | void>) {
         startTransition(async () => {
-            setError(undefined);
             try {
                 const result = await operation();
-                if (result?.error) setError(result.error);
+                if (result?.error) toast(result.error, 'error');
             } catch (cause) {
                 unstable_rethrow(cause);
-                setError(t('today.genericError'));
+                toast(t('today.genericError'), 'error');
             }
         });
     }
@@ -159,8 +156,6 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     </div>
                 </div>
             </header>
-
-            <FormError message={error} />
 
             {workout.exercises.length === 0 && (
                 <p className="border-line text-muted rounded-md border-2 border-dashed p-6 text-center text-sm">

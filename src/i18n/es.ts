@@ -394,6 +394,7 @@ export const es: Dict = {
     'validate.ok': 'La rutina está completa. Ya puedes marcarla como activa.',
     'validate.exerciseN': 'Ejercicio {n}',
     'validate.noName': 'ponle un nombre',
+    'validate.repeatedName': 'ya hay otro ejercicio con este nombre este día',
     'validate.noSets': 'añade al menos una serie',
     'validate.setAt': '{where}, serie {set}',
     'validate.noReps': 'faltan las repeticiones',
@@ -461,7 +462,6 @@ export const es: Dict = {
     'error.wrongExercise': 'Ese ejercicio no es de este entrenamiento',
     'error.planChanged':
         'La rutina ha cambiado: recarga para verla como está ahora',
-    'error.activeDayIncomplete':
-        'Esta rutina está activa, así que el día tiene que quedar completo. {where}: {what}',
+    'error.activeDayIncomplete': '{where}: {what}',
     'error.fillPrevious': 'Rellena antes las series anteriores',
 };

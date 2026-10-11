@@ -390,6 +390,7 @@ export const en = {
     'validate.ok': 'The routine is complete. You can set it as active.',
     'validate.exerciseN': 'Exercise {n}',
     'validate.noName': 'give it a name',
+    'validate.repeatedName': 'another exercise this day already has this name',
     'validate.noSets': 'add at least one set',
     'validate.setAt': '{where}, set {set}',
     'validate.noReps': 'the reps are missing',
@@ -454,8 +455,7 @@ export const en = {
     'error.wrongExercise': 'That exercise is not part of this workout',
     'error.planChanged':
         'The routine has changed: reload to see it as it is now',
-    'error.activeDayIncomplete':
-        'This routine is active, so the day has to be complete. {where}: {what}',
+    'error.activeDayIncomplete': '{where}: {what}',
     'error.fillPrevious': 'Fill in the previous sets first',
 };
 
