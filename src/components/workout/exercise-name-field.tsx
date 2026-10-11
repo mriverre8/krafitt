@@ -117,7 +117,7 @@ export function ExerciseNameField({
                             aria-selected={index === active}
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={() => pick(name)}
-                            className='display text-muted hover:bg-surface2 hover:text-pulse aria-selected:bg-surface2 aria-selected:text-pulse cursor-pointer rounded-md px-2 py-2.5 text-xl transition-colors'
+                            className="display text-muted hover:bg-surface2 hover:text-pulse aria-selected:bg-surface2 aria-selected:text-pulse cursor-pointer rounded-md px-2 py-2.5 text-xl transition-colors"
                         >
                             {name}
                         </li>
