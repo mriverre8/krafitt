@@ -5,6 +5,7 @@ import { getT } from '@/i18n/server';
 import {
     requireEditableRoutine,
     requireRoutine,
+    requireUnstartedRoutine,
     routineIdOfWorkout,
 } from '@/lib/access';
 import { requireUser } from '@/lib/auth';
@@ -34,6 +35,7 @@ import type {
     FoundUser,
     MemberSearchState,
 } from '@/lib/forms';
+import { matchExercises, setSlots, toLogs } from '@/lib/history';
 import {
     currentWeek,
     isRoutineFinished,
@@ -41,10 +43,9 @@ import {
     isSetEnabled,
     toEffort,
     type Effort,
-    type Logs,
 } from '@/lib/progress';
-import { isMember, routineDetail } from '@/lib/queries';
-import { isRoutineComplete } from '@/lib/validate';
+import { isMember, planExercises, routineDetail } from '@/lib/queries';
+import { isRoutineComplete, workoutProblems } from '@/lib/validate';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -375,7 +376,7 @@ export async function addWorkout(
     const t = await getT();
     if (!name) return { error: t('error.workoutName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    await requireEditableRoutine(routineId, user.id);
+    await requireUnstartedRoutine(routineId, user.id);
 
     const order = await prisma.workout.count({ where: { routineId } });
     await prisma.workout.create({ data: { routineId, name, order } });
@@ -516,6 +517,14 @@ function readPlan(raw: string, t: Translate) {
     return { exercises };
 }
 
+/**
+ * Saves a whole day, while it is being trained too. What was logged is never
+ * rewritten: the plan is, and the history matches the logs against it (see
+ * `lib/history.ts`). So the sets are simply written out again, and the only
+ * thing to settle is which exercise every card is — the one it was, one the
+ * day archived and now gets back, or a new one. An exercise no card claims is
+ * archived if anything was logged against it, and deleted if not.
+ */
 export async function saveExercises(
     _previous: DayState,
     data: FormData
@@ -527,52 +536,69 @@ export async function saveExercises(
     if ('error' in parsed) return parsed;
 
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireEditableRoutine(routineId, user.id);
+    const routine = await requireEditableRoutine(routineId, user.id);
+
+    // The active routine is the one on the home screen, so it has to stay
+    // trainable — the same bar `setActiveRoutine` sets to get there. Any other
+    // can still be saved half-written.
+    if (routine.isActive) {
+        const [problem] = workoutProblems({ exercises: parsed.exercises }, t);
+        if (problem) return { error: t('error.activeDayIncomplete', problem) };
+    }
 
     const existing = await prisma.exercise.findMany({
         where: { workoutId },
-        select: { id: true },
+        // The plan before the archive: a name both hold resolves to the plan's.
+        orderBy: [{ archived: 'asc' }, { order: 'asc' }],
+        select: {
+            id: true,
+            name: true,
+            archived: true,
+            _count: { select: { logs: true } },
+        },
     });
-    const own = new Set(existing.map((exercise) => exercise.id));
-    const kept = new Set(
+    const { ids, archive, remove } = matchExercises(
+        existing.map(({ _count, ...exercise }) => ({
+            ...exercise,
+            logged: _count.logs > 0,
+        })),
         parsed.exercises
-            .map((exercise) => exercise.id)
-            .filter((id): id is string => !!id && own.has(id))
     );
 
     await prisma.$transaction([
-        prisma.exercise.deleteMany({
-            where: {
-                workoutId,
-                id: { notIn: [...kept] },
-            },
+        prisma.exercise.deleteMany({ where: { id: { in: remove } } }),
+        // With the sets it had: the history reads its logs against them.
+        prisma.exercise.updateMany({
+            where: { id: { in: archive } },
+            data: { archived: true },
         }),
-        ...parsed.exercises.map((exercise, order) =>
-            exercise.id && kept.has(exercise.id)
+        ...parsed.exercises.map((exercise, order) => {
+            const id = ids[order];
+            const fields = { name: exercise.name, order, archived: false };
+            return id
                 ? prisma.exercise.update({
-                      where: { id: exercise.id },
+                      where: { id },
                       data: {
-                          name: exercise.name,
-                          order,
+                          ...fields,
                           sets: { deleteMany: {}, create: exercise.sets },
                       },
                   })
                 : prisma.exercise.create({
                       data: {
+                          ...fields,
                           workoutId,
-                          name: exercise.name,
-                          order,
                           sets: { create: exercise.sets },
                       },
-                  })
-        ),
+                  });
+        }),
     ]);
 
     revalidatePath(`/routines/${routineId}`);
+    revalidatePath(`/progress/${routineId}`);
     revalidatePath('/');
 
     const saved = await prisma.exercise.findMany({
-        where: { workoutId },
+        where: { workoutId, archived: false },
         orderBy: { order: 'asc' },
         select: {
             id: true,
@@ -615,7 +641,7 @@ export async function renameWorkout(
 export async function deleteWorkout(workoutId: string) {
     const user = await requireUser();
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireEditableRoutine(routineId, user.id);
+    await requireUnstartedRoutine(routineId, user.id);
     await prisma.workout.delete({ where: { id: workoutId } });
     revalidatePath(`/routines/${routineId}`);
     revalidatePath('/');
@@ -623,11 +649,16 @@ export async function deleteWorkout(workoutId: string) {
 
 // ---------- training ----------
 
+/**
+ * The set is named by its slot (`lib/history.ts`), not by its place in the
+ * list: the plan can be edited while a screen is open on it, and a place sent
+ * from before an edit could point at whichever set has moved into it since.
+ */
 export async function logSet(
     workoutId: string,
     week: number,
     exerciseId: string,
-    setIndex: number,
+    slot: string,
     weight: number,
     reps: number,
     rawEffort?: string
@@ -651,14 +682,7 @@ export async function logSet(
         update: {},
         include: {
             logs: true,
-            workout: {
-                include: {
-                    exercises: {
-                        orderBy: { order: 'asc' },
-                        include: { sets: true },
-                    },
-                },
-            },
+            workout: { include: { exercises: planExercises } },
         },
     });
     if (session.completedAt) return { error: t('error.alreadyFinished') };
@@ -667,38 +691,27 @@ export async function logSet(
         (item) => item.id === exerciseId
     );
     if (!exercise) return { error: t('error.wrongExercise') };
-    if (
-        !Number.isInteger(setIndex) ||
-        setIndex < 0 ||
-        setIndex >= exercise.sets.length
-    ) {
-        return { error: t('error.setOutOfRange') };
-    }
+    const setIndex = setSlots(exercise.sets).indexOf(slot);
+    if (setIndex < 0) return { error: t('error.planChanged') };
 
     // Sequential order is enforced here, not only by disabling inputs on the client.
-    const logs: Logs = {};
-    for (const log of session.logs) {
-        (logs[log.exerciseId] ??= {})[log.setIndex] = {
-            weight: log.weight,
-            reps: log.reps,
-        };
-    }
+    const logs = toLogs(session.logs, session.workout.exercises);
     if (!isSetEnabled(session.workout.exercises, logs, exerciseId, setIndex)) {
         return { error: t('error.fillPrevious') };
     }
 
     await prisma.setLog.upsert({
         where: {
-            sessionId_exerciseId_setIndex: {
+            sessionId_exerciseId_slot: {
                 sessionId: session.id,
                 exerciseId,
-                setIndex,
+                slot,
             },
         },
         create: {
             sessionId: session.id,
             exerciseId,
-            setIndex,
+            slot,
             weight,
             reps,
             effort,

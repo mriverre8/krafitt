@@ -29,6 +29,7 @@ import {
 } from '@/lib/ui';
 import { Plus, Trash } from 'lucide-react';
 import { DropPercentMenu } from '@/components/workout/drop-percent-menu';
+import { ExerciseNameField } from '@/components/workout/exercise-name-field';
 import { RepModeSelect } from '@/components/workout/rep-mode-select';
 import { RepsFields } from '@/components/workout/reps-fields';
 import { RemoveSubButton } from '@/components/workout/remove-sub-button';
@@ -66,9 +67,13 @@ export function ExerciseFields({
     onChange,
     onRemove,
     canRemove,
+    suggestions = [],
 }: {
     exercise: ExerciseDraft;
     index: number;
+    /** What the name field offers: exercises the day archived, which come back
+        with their history when a card is named after one. */
+    suggestions?: readonly string[];
     /** The fields to paint red, or nothing while the eye is off. Comes from the
         day's own errors, so it never flags something only the draft knows. */
     fault?: ExerciseFault;
@@ -139,9 +144,10 @@ export function ExerciseFields({
             className={`${cardClass} ${wrongAnywhere ? 'border-l-danger' : ''}`}
         >
             <div className="relative mb-4">
-                <input
+                <ExerciseNameField
                     value={exercise.name}
-                    onChange={(event) => onChange({ name: event.target.value })}
+                    onChange={(name) => onChange({ name })}
+                    suggestions={suggestions}
                     aria-label={t('exercise.nameLabel', {
                         exercise: exerciseNumber,
                     })}
@@ -149,7 +155,7 @@ export function ExerciseFields({
                     maxLength={NAME_MAX}
                     className={`${
                         fault?.name ? wrongTitleInputClass : titleInputClass
-                    } display pr-12 text-2xl md:pr-10`}
+                    } display pr-12 text-2xl md:pr-10 [&::-webkit-search-cancel-button]:appearance-none`}
                 />
                 <button
                     type="button"

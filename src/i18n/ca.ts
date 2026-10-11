@@ -342,6 +342,7 @@ export const ca: Dict = {
     'requests.decline': 'Rebutja',
 
     'exercise.namePlaceholder': 'Exercici',
+    'exercise.suggestions': "Exercicis retirats d'aquest dia",
     'exercise.nameLabel': "Nom de l'exercici {exercise}",
     'exercise.repMode': 'Exercici {exercise}, tipus de reps sèrie {set}',
     'exercise.repMin': 'Exercici {exercise}, reps mín. sèrie {set}',
@@ -434,7 +435,8 @@ export const ca: Dict = {
     'error.workoutName': 'Posa-li un nom al dia',
     'error.routineIncomplete': 'Completa la rutina abans de marcar-la activa',
     'error.routineFinished': 'Aquesta rutina ja està acabada',
-    'error.routineStarted': 'Una rutina ja començada no es pot editar',
+    'error.routineStarted':
+        'Una rutina ja començada no pot guanyar ni perdre dies',
     'error.planUnreadable':
         "No s'ha pogut llegir el dia. Torna a carregar la pàgina i torna-ho a provar.",
     'error.exercises': 'Un dia porta entre 1 i {max} exercicis',
@@ -457,6 +459,9 @@ export const ca: Dict = {
     'error.reps': 'Repeticions no vàlides',
     'error.alreadyFinished': 'Aquest entrenament ja està finalitzat',
     'error.wrongExercise': "Aquest exercici no és d'aquest entrenament",
-    'error.setOutOfRange': 'Sèrie fora de rang',
+    'error.planChanged':
+        'La rutina ha canviat: torna a carregar per veure-la com és ara',
+    'error.activeDayIncomplete':
+        'Aquesta rutina està activa, així que el dia ha de quedar complet. {where}: {what}',
     'error.fillPrevious': 'Omple abans les sèries anteriors',
 };

@@ -38,7 +38,7 @@ import {
     isRoutineLocked,
     positionFromCursor,
 } from '@/lib/progress';
-import { isMember, routineDetail } from '@/lib/queries';
+import { isMember, retiredExerciseNames, routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
 import {
     isRoutineComplete,
@@ -85,8 +85,12 @@ export default async function RoutinePage({
           )?.workoutIndex
         : undefined;
 
+    // Exercises and sets stay open until the routine is over; days only until
+    // it starts, since the cursor counts them by position.
+    const editable = owner && !finished;
     const addDay =
         locked || !owner ? undefined : addWorkoutTo.bind(null, routine.id);
+    const retired = editable ? await retiredExerciseNames(routine.id) : {};
 
     const durationFloor = currentWeek(routine.cursor, routine.workouts.length);
     const duration =
@@ -182,7 +186,7 @@ export default async function RoutinePage({
                                               )
                                             : undefined
                                     }
-                                    editable={owner && !locked}
+                                    editable={editable}
                                     isPublic={routine.isPublic}
                                     setVisibility={
                                         owner
@@ -267,7 +271,7 @@ export default async function RoutinePage({
                         </p>
                     ) : (
                         <>
-                            {!locked && (
+                            {editable && (
                                 <WhenEditing>
                                     <p className="text-pulse flex items-center gap-2 text-sm font-semibold">
                                         <CircleCheck
@@ -300,10 +304,12 @@ export default async function RoutinePage({
                         </WhenNotEditing>
                     )}
                     {(owner || member) && locked && (
-                        <HistoryLink
-                            routineId={routine.id}
-                            day={historyDay}
-                        />
+                        <WhenNotEditing>
+                            <HistoryLink
+                                routineId={routine.id}
+                                day={historyDay}
+                            />
+                        </WhenNotEditing>
                     )}
                 </div>
                 {routine.workouts.length === 0 && (
@@ -318,10 +324,11 @@ export default async function RoutinePage({
                         exercises: workout.exercises,
                         problems: workoutProblems(workout, t),
                         faults: workoutFaults(workout.exercises),
+                        retired: retired[workout.id] ?? [],
                     }))}
                     saveExercises={saveExercises}
                     renameWorkout={renameWorkout}
-                    onDeleteWorkout={deleteWorkout}
+                    onDeleteWorkout={locked ? undefined : deleteWorkout}
                 />
             </div>
         </EditModeProvider>

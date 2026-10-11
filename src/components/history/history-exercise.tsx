@@ -204,6 +204,9 @@ export function HistoryExercise({
                                     ? ''
                                     : 'border-b border-b-line';
                             const sub = places[setIndex].kind !== 'normal';
+                            const technique = sub
+                                ? undefined
+                                : set.technique?.trim();
 
                             return (
                                 <tr key={setIndex}>
@@ -212,9 +215,15 @@ export function HistoryExercise({
                                         className={`border-line bg-surface sticky left-0 z-10 border-r py-2.5 pr-3 text-left font-normal ${rule}`}
                                     >
                                         <span className="sr-only">
-                                            {`${t('progress.setLabel', {
-                                                n: names[setIndex],
-                                            })}, ${formatReps(set, t)}`}
+                                            {[
+                                                t('progress.setLabel', {
+                                                    n: names[setIndex],
+                                                }),
+                                                technique,
+                                                formatReps(set, t),
+                                            ]
+                                                .filter(Boolean)
+                                                .join(', ')}
                                         </span>
                                         <span aria-hidden>
                                             <span
@@ -226,6 +235,11 @@ export function HistoryExercise({
                                             >
                                                 {labels[setIndex]}
                                             </span>
+                                            {technique && (
+                                                <span className="text-pulse mt-1 block max-w-32 truncate text-[11px] font-semibold">
+                                                    {technique}
+                                                </span>
+                                            )}
                                             <span className="text-muted mt-1 block text-[11px] whitespace-nowrap">
                                                 {formatReps(set, t)}
                                             </span>

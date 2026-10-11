@@ -2,6 +2,7 @@
 
 import { logSet, skipDay } from '@/app/actions';
 import { useT } from '@/i18n/use-t';
+import { setSlots } from '@/lib/history';
 import {
     flatSets,
     isSetEnabled,
@@ -46,10 +47,16 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | undefined>();
 
+    // The store holds logs by position, and an edit to the plan moves sets
+    // about: a day whose plan changed is a different day to the store, and is
+    // loaded afresh rather than read in the old places.
+    const plan = workout.exercises
+        .map((exercise) => [exercise.id, ...setSlots(exercise.sets)].join(','))
+        .join(';');
     useEffect(() => {
-        hydrate(`${workout.id}:${week}`, props.logs);
+        hydrate(`${workout.id}:${week}:${plan}`, props.logs);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.logs, workout.id, week]);
+    }, [props.logs, workout.id, week, plan]);
 
     // An expected failure comes back as `{ error }`; a thrown message never
     // reaches production intact, so a throw only ever reads as the generic one.
@@ -182,7 +189,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                 workout.id,
                                 week,
                                 exercise.id,
-                                setIndex,
+                                setSlots(exercise.sets)[setIndex],
                                 weight,
                                 reps,
                                 effort

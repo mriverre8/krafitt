@@ -25,6 +25,7 @@ const day = (
     exercises: [{ id: `${id}-e1`, name: `${name} press`, sets }],
     problems,
     faults: {},
+    retired: [],
 });
 
 const days = [

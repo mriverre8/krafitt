@@ -149,6 +149,7 @@ model Exercise {
   workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   name      String
   order     Int
+  archived  Boolean @default(false)
 
   sets ExerciseSet[]
   logs SetLog[]
@@ -199,10 +200,10 @@ model SetLog {
   session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-  setIndex   Int
+  slot       String
   weight     Float
   reps       Int
   effort     String   @default("normal")
 
-  @@unique([sessionId, exerciseId, setIndex])
+  @@unique([sessionId, exerciseId, slot])
 }

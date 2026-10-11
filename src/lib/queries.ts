@@ -1,62 +1,20 @@
 import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from './db';
+import { toLogs, toPrevious } from './history';
 import { OWNER_PREVIEW_SIZE } from './pagination';
-import {
-    positionFromCursor,
-    toEffort,
-    type Logs,
-    type PreviousLogs,
-} from './progress';
+import { isSessionComplete, positionFromCursor, type Logs } from './progress';
 import { dayKey } from './training-year';
 
-function toLogs(
-    logs: {
-        exerciseId: string;
-        setIndex: number;
-        weight: number;
-        reps: number;
-        effort: string;
-    }[]
-): Logs {
-    const out: Logs = {};
-    for (const l of logs)
-        (out[l.exerciseId] ??= {})[l.setIndex] = {
-            weight: l.weight,
-            reps: l.reps,
-            effort: toEffort(l.effort),
-        };
-    return out;
-}
-
 /**
- * The last value every set was given, week by week. Sessions come in oldest
- * first so the newest week wins, and unfinished ones count too: a day skipped
- * half-done still leaves its numbers behind for the sets that were logged, and
- * the sets that were not keep whatever the week before them left.
+ * A day's plan: its exercises in order, with their sets. Archived exercises
+ * are left out — they are only kept so their logs come back with them — and
+ * this is written once, so that no query that reads the plan can forget to.
  */
-function toPrevious(
-    sessions: {
-        week: number;
-        logs: {
-            exerciseId: string;
-            setIndex: number;
-            weight: number;
-            reps: number;
-            effort: string;
-        }[];
-    }[]
-): PreviousLogs {
-    const out: PreviousLogs = {};
-    for (const session of sessions)
-        for (const l of session.logs)
-            (out[l.exerciseId] ??= {})[l.setIndex] = {
-                weight: l.weight,
-                reps: l.reps,
-                effort: toEffort(l.effort),
-                week: session.week,
-            };
-    return out;
-}
+export const planExercises = {
+    where: { archived: false },
+    orderBy: { order: 'asc' },
+    include: { sets: { orderBy: { order: 'asc' } } },
+} satisfies Prisma.Workout$exercisesArgs;
 
 /** Today's workout from the user's active routine. */
 export async function todayWorkout(userId: string) {
@@ -65,12 +23,7 @@ export async function todayWorkout(userId: string) {
         include: {
             workouts: {
                 orderBy: { order: 'asc' },
-                include: {
-                    exercises: {
-                        orderBy: { order: 'asc' },
-                        include: { sets: { orderBy: { order: 'asc' } } },
-                    },
-                },
+                include: { exercises: planExercises },
             },
         },
     });
@@ -100,14 +53,28 @@ export async function todayWorkout(userId: string) {
         }),
     ]);
 
+    const logs = toLogs(session?.logs ?? [], workout.exercises);
+
     // The day the user finished stays on screen until the next fetch: this is
-    // where it is left behind, not in `logSet`. Guarded on the cursor we read, so
-    // a concurrent skip cannot make it jump two days.
-    if (session?.completedAt) {
-        await prisma.routine.updateMany({
-            where: { id: routine.id, cursor: routine.cursor },
-            data: { cursor: { increment: 1 } },
-        });
+    // where it is left behind, not in `logSet`. Finished means every set of the
+    // plan as it stands now: taking the one set still waiting out of the day
+    // closes it too, and no log would ever arrive to close it otherwise.
+    // Guarded on the cursor we read, so a concurrent skip cannot make it jump
+    // two days.
+    if (
+        session &&
+        (session.completedAt || isSessionComplete(workout.exercises, logs))
+    ) {
+        await prisma.$transaction([
+            prisma.workoutSession.updateMany({
+                where: { id: session.id, completedAt: null },
+                data: { completedAt: new Date() },
+            }),
+            prisma.routine.updateMany({
+                where: { id: routine.id, cursor: routine.cursor },
+                data: { cursor: { increment: 1 } },
+            }),
+        ]);
         return todayWorkout(userId);
     }
 
@@ -117,8 +84,8 @@ export async function todayWorkout(userId: string) {
         workout,
         day: position.workoutIndex,
         week,
-        logs: toLogs(session?.logs ?? []),
-        previous: toPrevious(previousSessions),
+        logs,
+        previous: toPrevious(previousSessions, workout.exercises),
     };
 }
 
@@ -204,6 +171,7 @@ const withPlan = {
         select: {
             name: true,
             exercises: {
+                where: planExercises.where,
                 select: {
                     name: true,
                     sets: {
@@ -469,7 +437,12 @@ export async function trainingDays(userId: string, from: Date) {
  *
  * The plan comes along with it: a week nobody trained leaves no session behind,
  * and the history page still has to draw that week's blanks — which sets they
- * would have been is only knowable from the plan.
+ * would have been is only knowable from the plan. Only the plan as it stands:
+ * an archived exercise keeps its logs, which come back with it if it is named
+ * again, but the history shows what is being trained.
+ *
+ * Which weeks count as done is read off the sessions that were completed, not
+ * off the plan: a set added in week 5 must not undo weeks 1 to 4.
  */
 export async function routineHistory(routineId: string) {
     const routine = await prisma.routine.findUnique({
@@ -477,12 +450,7 @@ export async function routineHistory(routineId: string) {
         include: {
             workouts: {
                 orderBy: { order: 'asc' },
-                include: {
-                    exercises: {
-                        orderBy: { order: 'asc' },
-                        include: { sets: { orderBy: { order: 'asc' } } },
-                    },
-                },
+                include: { exercises: planExercises },
             },
         },
     });
@@ -496,13 +464,26 @@ export async function routineHistory(routineId: string) {
         include: { logs: true },
     });
 
+    const exercisesOf = new Map(
+        routine.workouts.map((workout) => [workout.id, workout.exercises])
+    );
     const byDay: Record<string, Record<number, Logs>> = {};
-    for (const session of sessions)
-        (byDay[session.workoutId] ??= {})[session.week] = toLogs(session.logs);
+    const doneWeeks: Record<string, number[]> = {};
+    for (const session of sessions) {
+        (byDay[session.workoutId] ??= {})[session.week] = toLogs(
+            session.logs,
+            exercisesOf.get(session.workoutId) ?? []
+        );
+        if (session.completedAt)
+            (doneWeeks[session.workoutId] ??= []).push(session.week);
+    }
 
-    return { routine, byDay };
+    return { routine, byDay, doneWeeks };
 }
 
+/** The routine and its plan: archived exercises are left out, so whatever is
+    built on this — the editor, validating, activating, copying — never sees
+    them. */
 export async function routineDetail(routineId: string) {
     return prisma.routine.findUnique({
         where: { id: routineId },
@@ -512,13 +493,27 @@ export async function routineDetail(routineId: string) {
             _count: { select: { sessions: true, members: true } },
             workouts: {
                 orderBy: { order: 'asc' },
-                include: {
-                    exercises: {
-                        orderBy: { order: 'asc' },
-                        include: { sets: { orderBy: { order: 'asc' } } },
-                    },
-                },
+                include: { exercises: planExercises },
             },
         },
     });
+}
+
+/**
+ * The archived exercises of every day of a routine, by name: what the editor's
+ * name field offers back. Picking one brings that exercise back with its
+ * history, which only ever lives in its own day — so the list is per day.
+ */
+export async function retiredExerciseNames(routineId: string) {
+    const exercises = await prisma.exercise.findMany({
+        where: { archived: true, workout: { routineId } },
+        distinct: ['workoutId', 'name'],
+        orderBy: { name: 'asc' },
+        select: { workoutId: true, name: true },
+    });
+
+    const byDay: Record<string, string[]> = {};
+    for (const exercise of exercises)
+        (byDay[exercise.workoutId] ??= []).push(exercise.name);
+    return byDay;
 }

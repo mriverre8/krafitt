@@ -342,6 +342,7 @@ export const es: Dict = {
     'requests.decline': 'Rechazar',
 
     'exercise.namePlaceholder': 'Ejercicio',
+    'exercise.suggestions': 'Ejercicios retirados de este día',
     'exercise.nameLabel': 'Nombre del ejercicio {exercise}',
     'exercise.repMode': 'Ejercicio {exercise}, tipo de reps serie {set}',
     'exercise.repMin': 'Ejercicio {exercise}, reps mín. serie {set}',
@@ -434,7 +435,8 @@ export const es: Dict = {
     'error.workoutName': 'Ponle un nombre al día',
     'error.routineIncomplete': 'Completa la rutina antes de marcarla activa',
     'error.routineFinished': 'Esta rutina ya está terminada',
-    'error.routineStarted': 'Una rutina ya empezada no se puede editar',
+    'error.routineStarted':
+        'Una rutina ya empezada no puede ganar ni perder días',
     'error.planUnreadable':
         'No se ha podido leer el día. Recarga la página y vuelve a intentarlo.',
     'error.exercises': 'Un día lleva entre 1 y {max} ejercicios',
@@ -458,6 +460,9 @@ export const es: Dict = {
     'error.reps': 'Repeticiones no válidas',
     'error.alreadyFinished': 'Este entrenamiento ya está finalizado',
     'error.wrongExercise': 'Ese ejercicio no es de este entrenamiento',
-    'error.setOutOfRange': 'Serie fuera de rango',
+    'error.planChanged':
+        'La rutina ha cambiado: recarga para verla como está ahora',
+    'error.activeDayIncomplete':
+        'Esta rutina está activa, así que el día tiene que quedar completo. {where}: {what}',
     'error.fillPrevious': 'Rellena antes las series anteriores',
 };

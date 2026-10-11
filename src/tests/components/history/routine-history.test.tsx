@@ -30,12 +30,14 @@ const days: HistoryDay[] = [
             // Week 2 was started and abandoned: the second set never happened.
             2: { e1: { 0: { weight: 82.5, reps: 5 } } },
         },
+        doneWeeks: [1],
     },
     {
         id: 'w2',
         name: 'Pull A',
         exercises: [exercise('e3', 'Row')],
         weeks: {},
+        doneWeeks: [],
     },
 ];
 
@@ -81,10 +83,10 @@ describe('RoutineHistory', () => {
         // the corner the set column hangs under.
         expect(screen.getAllByRole('columnheader')).toHaveLength(4);
         expect(
-            screen.getByRole('rowheader', { name: /^Set 1, 4-6 reps/ })
+            screen.getByRole('rowheader', { name: /^Set 1, Top set, 4-6 reps/ })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('rowheader', { name: /^Set 2, AMRAP/ })
+            screen.getByRole('rowheader', { name: /^Set 2, Back off, AMRAP/ })
         ).toBeInTheDocument();
     });
 

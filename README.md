@@ -12,7 +12,7 @@ Next.js App Router, server actions for every mutation, Prisma 7 on PostgreSQL, B
 - **Progression feedback** — each set shows what it was given the last time it came round, and whether the new entry went up, down or stayed level.
 - **Routine history** — per routine, a day-by-day and week-by-week grid of everything logged, including the weeks that were skipped.
 - **People on a routine** — the owner adds others by email. Everyone added can read the plan and the history, can save their own copy, and can walk out on their own. Editing, deleting, publishing, activating and training stay with the owner.
-- **Edit locking** — a routine that has been activated, advanced or trained is frozen: its plan is what the logged sessions were recorded against. It can still be deleted.
+- **Editing while training** — exercises and sets stay editable until the routine is finished; the days themselves are fixed once it starts, since the cursor counts them by position. Nothing logged is ever rewritten: within a day an exercise is its name, so swapping one for another archives the old one — gone from the plan and the history page, its logs kept — and starts the new one blank, and naming a card after an archived exercise (the name field searches them) brings it back. A set is logged under its *slot* — `2`, `2.DS1`, `2.t` — rather than its position, so adding a drop set shifts nothing, a removed set finds its numbers again when it is put back, and turning a set timed starts it over (`src/lib/history.ts`). The active routine only saves complete days.
 - **Profile** — active routine, finished routines, and completed-workout count.
 - **i18n** — English, Spanish and Catalan. English is the source dictionary and the other two are typed against it, so a missing key is a compile error.
 - **Themes** — light/dark resolved on the server from a cookie, so the first paint is already correct: no flash, no blocking script.
@@ -42,7 +42,7 @@ Server components own data fetching and authorization; client components own int
 
 - **Data access** lives in `src/lib/queries.ts`. Pages call it directly; nothing fetches over HTTP.
 - **Mutations** live in `src/app/actions.ts` (`'use server'`). Forms consume them through `useActionState`, and non-form actions are bound server-side and passed down as props.
-- **Authorization** is centralised in `src/lib/access.ts`. `requireRoutine(routineId, userId)` refuses anyone but the creator; `requireEditableRoutine` additionally refuses a routine that has gone live. Every action goes through one of them after `requireUser`. The pages that only read check `isMember` from `queries.ts` themselves.
+- **Authorization** is centralised in `src/lib/access.ts`. `requireRoutine(routineId, userId)` refuses anyone but the creator; `requireEditableRoutine` additionally refuses a routine that is finished, and `requireUnstartedRoutine` one that has gone live (adding and deleting days). Every action goes through one of them after `requireUser`. The pages that only read check `isMember` from `queries.ts` themselves.
 - **Pure logic** — progression (`lib/progress.ts`), rep prescriptions (`lib/reps.ts`) and plan validation (`lib/validate.ts`) are free of Prisma and React, and are the parts covered by unit tests. The same functions run on the server (enforcement) and on the client (enabling/disabling fields), so the UI and the action never disagree.
 - **Ordering is enforced server-side**: `logSet` re-derives the session's logs and rejects a set whose predecessors are missing, regardless of what the client sent.
 - **Client state** is limited to two Zustand stores: the modal host and the optimistic copy of the current day's logs.
@@ -159,10 +159,10 @@ PostgreSQL through Prisma 7 with the `@prisma/adapter-pg` driver adapter (`src/l
 Schema (`prisma/schema.prisma`):
 
 - **BetterAuth**: `User`, `Session`, `Account`, `Verification`.
-- **Domain**: `Routine` (name, `durationWeeks`, `isActive`, `cursor`) → `Workout` (a training day, ordered) → `Exercise` (ordered) → `ExerciseSet` (order, `repMode`, `repMin`, `repMax`, `technique`).
+- **Domain**: `Routine` (name, `durationWeeks`, `isActive`, `cursor`) → `Workout` (a training day, ordered) → `Exercise` (ordered; `archived` once taken out of the plan with something logged) → `ExerciseSet` (order, `repMode`, `repMin`, `repMax`, `technique`).
 - **Sharing**: `RoutineMember`, keyed on `(routineId, userId)`. Having a row makes you a member. The creator is not a row — being the owner is not something anyone was granted.
 - **Requests**: `RoutineRequest`, unique on `(kind, routineId, recipientId)`. Inviting a member (`member`) or sending a routine (`send`, with `addSender`) only leaves a request; the recipient accepts it from `/routines/requests`, which runs the write, or declines it, which deletes the row.
-- **Training**: `WorkoutSession`, unique on `(userId, workoutId, week)`, holding `SetLog` rows unique on `(sessionId, exerciseId, setIndex)`.
+- **Training**: `WorkoutSession`, unique on `(userId, workoutId, week)`, holding `SetLog` rows unique on `(sessionId, exerciseId, slot)`. The slot names the set as the plan reads it, not its position; `prisma/backfill-set-slots.sql` converts logs written before slots existed, and explains the three steps to apply it.
 
 Everything cascades from `User`, so deleting an account removes its routines and logs.
 
@@ -185,9 +185,9 @@ Everything else is a server action in `src/app/actions.ts`:
 | `setActiveRoutine(routineId)`                                 | Deactivates the user's other routines and activates this one. Refuses an incomplete or finished plan |
 | `deleteRoutine(routineId)`                                    | Deletes the routine and everything under it                                 |
 | `addWorkout(prev, formData)`                                  | Adds a training day to an editable routine                                  |
-| `saveExercises(prev, formData)`                               | Saves a whole day at once from a JSON payload. Kept exercises retain their ids, so logged sessions survive an edit; returns the stored day back to the editor |
+| `saveExercises(prev, formData)`                               | Saves a whole day at once from a JSON payload, also while the routine is trained. Exercises are matched by name within the day: one no card claims is archived if it was logged and deleted if not. Returns the stored day back to the editor |
 | `deleteWorkout(workoutId)`                                    | Deletes a training day from an editable routine                             |
-| `logSet(workoutId, week, exerciseId, setIndex, weight, reps)` | Opens the week's session on the first set, validates ranges and ordering, upserts the log, and closes the session when the last set lands |
+| `logSet(workoutId, week, exerciseId, slot, weight, reps)`     | Opens the week's session on the first set, validates ranges and ordering, upserts the log, and closes the session when the last set lands. Refuses a slot the plan no longer has |
 | `skipDay(routineId)`                                          | Advances the cursor without training                                        |
 | `findRoutineMember(routineId, prev, formData)`                | Looks someone up by email to add them. Answers with the person, `error` if no account uses that address, or `notice` if they are already in. Owner-only, so it is not a general user lookup |
 | `addRoutineMember(routineId, userId)`                         | Lets someone in: one idempotent upsert                                       |

@@ -110,6 +110,42 @@ describe('WorkoutEditor', () => {
         ).not.toBeInTheDocument();
     });
 
+    // The name field searches the exercises the day archived: naming a card
+    // after one brings it back with its history. One already on a card is not
+    // offered — the day would hold it twice.
+    it('offers back the archived exercises not already on a card', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                retired={['Dips', 'bench press']}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.focus(screen.getByLabelText('Exercise 2 name'));
+        expect(
+            within(screen.getByRole('listbox'))
+                .getAllByRole('option')
+                .map((option) => option.textContent)
+        ).toEqual(['Dips']);
+    });
+
+    // A started routine has its days fixed: the cursor counts them.
+    it('leaves delete out of the day menu once the days are fixed', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                onDeleteWorkout={undefined}
+            />
+        );
+        openDayOptions();
+        expect(
+            screen.queryByRole('button', { name: 'Delete day' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Rename day' })
+        ).toBeInTheDocument();
+    });
+
     it('starts an empty day on a single blank exercise', () => {
         render(
             <WorkoutEditor

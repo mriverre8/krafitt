@@ -1,9 +1,9 @@
 /**
  * Drop and rest-pause sets. They are not a nested structure: a set of either
  * kind is an ordinary row of the exercise, sitting directly behind the working
- * set it hangs off. That is what keeps `SetLog.setIndex` — a position in this
- * very list — pointing at the same set it always did, and what lets the whole of
- * `progress.ts` stay as it is.
+ * set it hangs off, which is what lets the whole of `progress.ts` stay as it
+ * is. What a log is filed under is not its position in this list, which an
+ * edit can shift, but its slot (`lib/history.ts`), worded from these places.
  *
  * Which set a drop belongs to is therefore not stored: it is the last working
  * set before it, and a run of them is the group. Pure, no Prisma, no React.

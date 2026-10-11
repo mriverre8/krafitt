@@ -189,10 +189,11 @@ export function routineStatus(routine: {
 }
 
 /**
- * A routine that has been lived in is frozen: its plan is what the sessions
- * were logged against, and what the cursor is counting. Being active is enough
- * on its own — training starts the moment it goes live. Only a routine still on
- * the shelf, untouched, can be rewritten.
+ * A routine that has been lived in has its days frozen: the cursor counts them
+ * by position, and the sessions were logged against them. Being active is
+ * enough on its own — training starts the moment it goes live. Its exercises
+ * and sets stay editable; only a routine still on the shelf, untouched, can
+ * gain or lose a day.
  */
 export function isRoutineLocked(routine: {
     isActive: boolean;

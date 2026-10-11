@@ -28,6 +28,7 @@ import {
     Undo2,
 } from 'lucide-react';
 import { startTransition, useActionState, useEffect, useState } from 'react';
+import { sameExercise } from '@/lib/history';
 import { toast } from '@/store/toast';
 import { ActionButton } from '@/components/ui/action-button';
 import { Dropdown } from '@/components/ui/dropdown';
@@ -57,6 +58,7 @@ export function WorkoutEditor({
     saveExercises,
     onRenameWorkout,
     onDeleteWorkout,
+    retired = [],
 }: {
     workout: { id: string; name: string; exercises: ExerciseView[] };
     /** What this day is still missing, as last saved. */
@@ -66,13 +68,22 @@ export function WorkoutEditor({
     saveExercises: DayAction;
     /** Already bound to this day. */
     onRenameWorkout: FormAction;
-    onDeleteWorkout: (workoutId: string) => Promise<void>;
+    /** Absent once the routine has started: its days are fixed from then on. */
+    onDeleteWorkout?: (workoutId: string) => Promise<void>;
+    /** Exercises the day archived, by name. Naming a card after one brings it
+        back with its history — the server matches exercises by name. */
+    retired?: string[];
 }) {
     const t = useT();
     const editing = useEditMode();
     const [state, formAction, pending] = useActionState(saveExercises, {});
     const [drafts, setDrafts] = useState<ExerciseDraft[]>(() =>
         toDrafts(workout.exercises)
+    );
+    // Only what is not on a card already: one exercise is never in a day twice
+    // by being brought back.
+    const suggestions = retired.filter(
+        (name) => !drafts.some((draft) => sameExercise(draft.name, name))
     );
     const [highlight, setHighlight] = useState(false);
     const toggleLabel = t(
@@ -192,22 +203,27 @@ export function WorkoutEditor({
                                     />
                                     {t('routine.renameDay')}
                                 </button>
-                                <ActionButton
-                                    action={() => onDeleteWorkout(workout.id)}
-                                    confirm={{
-                                        title: t('routine.deleteDay'),
-                                        message: t('routine.deleteDayConfirm', {
-                                            name: workout.name,
-                                        }),
-                                    }}
-                                    className={menuDangerClass}
-                                >
-                                    <Trash
-                                        size={14}
-                                        aria-hidden
-                                    />
-                                    {t('routine.deleteDay')}
-                                </ActionButton>
+                                {onDeleteWorkout && (
+                                    <ActionButton
+                                        action={() =>
+                                            onDeleteWorkout(workout.id)
+                                        }
+                                        confirm={{
+                                            title: t('routine.deleteDay'),
+                                            message: t(
+                                                'routine.deleteDayConfirm',
+                                                { name: workout.name }
+                                            ),
+                                        }}
+                                        className={menuDangerClass}
+                                    >
+                                        <Trash
+                                            size={14}
+                                            aria-hidden
+                                        />
+                                        {t('routine.deleteDay')}
+                                    </ActionButton>
+                                )}
                             </>
                         )}
                     </Dropdown>
@@ -258,6 +274,7 @@ export function WorkoutEditor({
                               key={index}
                               exercise={draft}
                               index={index}
+                              suggestions={suggestions}
                               fault={faultOf(draft, index)}
                               onChange={(patch) => update(index, patch)}
                               onRemove={() =>
