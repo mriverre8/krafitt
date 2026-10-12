@@ -14,6 +14,7 @@ import {
     CalendarRange,
     Copy,
     Ellipsis,
+    FileSpreadsheet,
     Globe,
     Lock,
     LogOut,
@@ -38,6 +39,7 @@ export function RoutineOptions({
     onDuplicate,
     onSave,
     send,
+    exportHref,
     editable,
     isPublic,
     setVisibility,
@@ -60,6 +62,8 @@ export function RoutineOptions({
     onSave?: () => Promise<unknown>;
     /** The owner's, once the plan is complete: a copy handed to someone else. */
     send?: Omit<SendRoutineModalProps, 'onClose'>;
+    /** Where the plan downloads as a spreadsheet, once it is complete. */
+    exportHref?: string;
     editable: boolean;
     isPublic?: boolean;
     setVisibility?: (isPublic: boolean) => Promise<unknown>;
@@ -194,6 +198,20 @@ export function RoutineOptions({
                                     : 'routine.makePublic'
                             )}
                         </ActionButton>
+                    )}
+                    {exportHref && (
+                        <a
+                            href={exportHref}
+                            download
+                            onClick={close}
+                            className={menuItemClass}
+                        >
+                            <FileSpreadsheet
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('routine.export')}
+                        </a>
                     )}
                     {onSave && (
                         <ActionButton

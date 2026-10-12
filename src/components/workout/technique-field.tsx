@@ -2,7 +2,7 @@
 
 import { Dropdown } from '@/components/ui/dropdown';
 import { useT } from '@/i18n/use-t';
-import { USER_NAME_MAX } from '@/lib/constants';
+import { TECHNIQUES, USER_NAME_MAX } from '@/lib/constants';
 import {
     dashedActionClass,
     fieldClass,
@@ -11,8 +11,6 @@ import {
     wrongFieldClass,
 } from '@/lib/ui';
 import { Plus, Type, X } from 'lucide-react';
-
-const TECHNIQUES = ['warmup', 'linear', 'topset', 'backoff'] as const;
 
 const techniqueSlotClass =
     'relative mt-1.5 min-w-40 basis-full md:mt-0 md:min-w-0 md:flex-1 md:basis-auto';

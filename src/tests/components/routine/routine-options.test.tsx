@@ -35,6 +35,8 @@ function setup({
         { href: string; count: number } | undefined,
     onLeave = vi.fn(async () => {}),
     owner = true,
+    /** As the page passes it: absent while the plan is incomplete. */
+    exportHref = '/routines/r1/export' as string | null,
 } = {}) {
     renderWithLocale(
         withModals(
@@ -54,6 +56,7 @@ function setup({
                         onDuplicate={owner ? onDuplicate : undefined}
                         onSave={owner ? undefined : onSave}
                         editable={owner && editable}
+                        exportHref={exportHref ?? undefined}
                         isPublic={isPublic}
                         setVisibility={owner ? setVisibility : undefined}
                     />
@@ -172,6 +175,20 @@ describe('RoutineOptions', () => {
         setup();
         fireEvent.click(options());
         expect(screen.queryByText('Save routine')).not.toBeInTheDocument();
+    });
+
+    it('downloads the routine as a spreadsheet', () => {
+        setup({ owner: false });
+        fireEvent.click(options());
+        const link = screen.getByRole('link', { name: 'Export to Excel' });
+        expect(link).toHaveAttribute('href', '/routines/r1/export');
+        expect(link).toHaveAttribute('download');
+    });
+
+    it('offers no export of an incomplete routine', () => {
+        setup({ exportHref: null });
+        fireEvent.click(options());
+        expect(screen.queryByText('Export to Excel')).not.toBeInTheDocument();
     });
 
     it('leaves the duration out when there is none to move', () => {
