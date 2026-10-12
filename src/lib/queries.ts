@@ -445,6 +445,8 @@ export async function routineHistory(routineId: string) {
     const routine = await prisma.routine.findUnique({
         where: { id: routineId },
         include: {
+            // The export names whose routine it is to anyone else.
+            creator: { select: { name: true } },
             workouts: {
                 orderBy: { order: 'asc' },
                 include: { exercises: planExercises },
@@ -465,14 +467,17 @@ export async function routineHistory(routineId: string) {
         routine.workouts.map((workout) => [workout.id, workout.exercises])
     );
     const byDay: Record<string, Record<number, Logs>> = {};
+    // When each day of each week was started: what the export dates it by.
+    const startedOn: Record<string, Record<number, Date>> = {};
     for (const session of sessions) {
         (byDay[session.workoutId] ??= {})[session.week] = toLogs(
             session.logs,
             exercisesOf.get(session.workoutId) ?? []
         );
+        (startedOn[session.workoutId] ??= {})[session.week] = session.startedAt;
     }
 
-    return { routine, byDay };
+    return { routine, byDay, startedOn };
 }
 
 /** The routine and its plan: archived exercises are left out, so whatever is

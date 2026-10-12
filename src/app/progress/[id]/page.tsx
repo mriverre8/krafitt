@@ -3,6 +3,8 @@ import { RoutineHistory } from '@/components/history/routine-history';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { isMember, routineHistory } from '@/lib/queries';
+import { badgeClass } from '@/lib/ui';
+import { FileSpreadsheet } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function RoutineProgressPage({
@@ -35,6 +37,19 @@ export default async function RoutineProgressPage({
                         {t('progress.title')}
                     </span>
                 </h1>
+                <div className="mt-4 flex">
+                    <a
+                        href={`/progress/${routine.id}/export`}
+                        download
+                        className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
+                    >
+                        <FileSpreadsheet
+                            size={13}
+                            aria-hidden
+                        />
+                        {t('routine.export')}
+                    </a>
+                </div>
             </header>
 
             {routine.workouts.length === 0 ? (
