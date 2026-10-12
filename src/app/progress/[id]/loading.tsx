@@ -6,7 +6,7 @@ import {
     Line,
     Skeleton,
 } from '@/components/ui/skeleton';
-import { cardClass, eyebrowLine } from '@/lib/ui';
+import { badgeLine, cardClass, eyebrowLine } from '@/lib/ui';
 
 export default function Loading() {
     return (
@@ -20,6 +20,7 @@ export default function Loading() {
                         className="display mt-1 text-6xl"
                     />
                 </div>
+                <Bar className={`mt-4 w-36 ${badgeLine}`} />
             </div>
 
             <div className="space-y-8">

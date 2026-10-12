@@ -1,12 +1,14 @@
 /**
  * A routine as a workbook to train from on paper: a sheet per day, a row per
- * set, and a blank weight/reps column for every week. Pure: no Prisma.
+ * set, and a weight/reps column for every week — blank to fill in, or filled
+ * with what has been trained so far. Pure: no Prisma.
  */
 
 import { dictionaries, type Translate } from '@/i18n/config';
 import ExcelJS from 'exceljs';
 import { TECHNIQUES, type Technique } from './constants';
-import { formatReps, type RepSpec } from './reps';
+import type { Effort, Logs, SetValue } from './progress';
+import { formatReps, isSetComplete, isTimed, type RepSpec } from './reps';
 import { setKind, setPlaces } from './sets';
 import type { PlannedSet } from './validate';
 
@@ -15,9 +17,13 @@ export type ExportRoutine = {
     durationWeeks: number | null;
     workouts: {
         name: string;
-        exercises: { name: string; sets: PlannedSet[] }[];
+        exercises: { id: string; name: string; sets: PlannedSet[] }[];
+        /** What was trained, by week: fills the log columns and the dates. */
+        weeks?: Record<number, TrainedWeek | undefined>;
     }[];
 };
+
+export type TrainedWeek = { startedAt: Date; logs: Logs };
 
 /** Columns an open-ended routine gets: it has no last week to stop at. */
 const OPEN_WEEKS = 10;
@@ -75,7 +81,14 @@ export async function routineWorkbook(
     t: Translate
 ): Promise<Uint8Array<ArrayBuffer>> {
     const book = new ExcelJS.Workbook();
-    const weeks = routine.durationWeeks ?? OPEN_WEEKS;
+    // An open-ended routine trained past its default columns gets as many as
+    // it has weeks to show.
+    const weeks = Math.max(
+        routine.durationWeeks ?? OPEN_WEEKS,
+        ...routine.workouts.flatMap((w) =>
+            Object.keys(w.weeks ?? {}).map(Number)
+        )
+    );
     const width = PLAN_COLUMNS + weeks;
     const names = sheetNames(routine.workouts.map((w) => w.name));
 
@@ -116,6 +129,11 @@ export async function routineWorkbook(
         sheet.getRow(3).font = { bold: true, size: 12 };
         sheet.getCell('A3').font = { bold: true, size: 16 };
         sheet.getCell('D4').value = t('export.date');
+        for (const week of weekColumns) {
+            const started = workout.weeks?.[week]?.startedAt;
+            if (started)
+                sheet.getCell(4, PLAN_COLUMNS + week).value = dayOf(started);
+        }
 
         const header = sheet.getRow(6);
         header.values = [
@@ -142,6 +160,11 @@ export async function routineWorkbook(
                     i === 0 ? working : '',
                     repRange(set, t),
                     technique(set),
+                    ...weekColumns.map((week) => {
+                        const value =
+                            workout.weeks?.[week]?.logs[exercise.id]?.[i];
+                        return value ? logged(value, set.repMode) : null;
+                    }),
                 ]);
                 if (i === 0) row.getCell(1).font = { bold: true };
                 if (i === exercise.sets.length - 1) underline(row, width);
@@ -165,8 +188,9 @@ export async function routineWorkbook(
 }
 
 /** The bare numbers: the column header already says reps, and seconds carry
-    the sheet's own `"`. Only a complete routine is exported, so they are set. */
+    the sheet's own `"`. A set left unfinished says so, as the app does. */
 function repRange(set: RepSpec, t: Translate): string {
+    if (!isSetComplete(set)) return formatReps(set, t);
     switch (set.repMode) {
         case 'range':
             return `${set.repMin}-${set.repMax}`;
@@ -191,6 +215,40 @@ function technique(set: PlannedSet): string {
             return SHORT.get(written.toLowerCase()) ?? written;
         }
     }
+}
+
+/** DD/MM/YYYY, in UTC as the training calendar reads days
+    (`lib/training-year.ts`). */
+export function dayOf(date: Date): string {
+    const [year, month, day] = date.toISOString().slice(0, 10).split('-');
+    return `${day}/${month}/${year}`;
+}
+
+/** How a set felt, as a mark raised over its reps. A normal set has none, as
+    in the app. Superscript characters rather than a superscript font: Google
+    Sheets drops the font on import, the characters survive anywhere. */
+const EFFORT_MARK: Partial<Record<Effort, string>> = {
+    fail: 'ˣ',
+    hard: '⁻',
+    easy: '⁺',
+};
+
+/** `82.5/8`, seconds as `45"`, and the effort raised after: `82.5/8ˣ`. */
+function logged(value: SetValue, repMode: string): string {
+    const reps = isTimed(repMode) ? `${value.reps}"` : value.reps;
+    const mark = (value.effort && EFFORT_MARK[value.effort]) ?? '';
+    return `${value.weight}/${reps}${mark}`;
+}
+
+/** The workbook as a download named after the routine. */
+export function xlsxResponse(bytes: Uint8Array<ArrayBuffer>, name: string) {
+    return new Response(bytes, {
+        headers: {
+            'Content-Type':
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(name)}.xlsx`,
+        },
+    });
 }
 
 function underline(row: ExcelJS.Row, width: number) {

@@ -37,6 +37,7 @@ describe('routineWorkbook', () => {
                             name: 'Day 5',
                             exercises: [
                                 {
+                                    id: 'e1',
                                     name: 'Curl',
                                     sets: [
                                         { ...range, technique: 'S.S.' },
@@ -156,6 +157,7 @@ describe('routineWorkbook', () => {
                             name: 'A',
                             exercises: [
                                 {
+                                    id: 'e1',
                                     name: 'Squat',
                                     sets: techniques.map((technique) => ({
                                         ...range,
@@ -180,5 +182,82 @@ describe('routineWorkbook', () => {
             'WUP.',
             'Pausa 3"',
         ]);
+    });
+
+    // A finished routine exports with what was trained: each week's numbers
+    // in its column, the day it was started above them.
+    it('fills in what was trained and when', async () => {
+        const book = await read(
+            await routineWorkbook(
+                {
+                    name: 'PPL',
+                    durationWeeks: 2,
+                    workouts: [
+                        {
+                            name: 'A',
+                            exercises: [
+                                {
+                                    id: 'e1',
+                                    name: 'Plank',
+                                    sets: [
+                                        range,
+                                        {
+                                            repMode: 'time',
+                                            repMin: 40,
+                                            repMax: null,
+                                        },
+                                    ],
+                                },
+                            ],
+                            weeks: {
+                                1: {
+                                    startedAt: new Date('2026-10-12T22:30Z'),
+                                    logs: {
+                                        e1: {
+                                            0: {
+                                                weight: 82.5,
+                                                reps: 8,
+                                                effort: 'fail',
+                                            },
+                                            1: { weight: 0, reps: 45 },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                },
+                t
+            )
+        );
+        const sheet = book.worksheets[0];
+        // The 12th in UTC, as the training calendar counts days.
+        expect(sheet.getCell('E4').value).toBe('12/10/2026');
+        expect(sheet.getCell('F4').value).toBeNull();
+        // How it felt, raised over the reps; a normal set has no mark.
+        expect(sheet.getCell('E8').value).toBe('82.5/8ˣ');
+        expect(cells(sheet, 9).slice(4)).toEqual(['0/45"']);
+    });
+
+    it('gives an open-ended routine as many weeks as it has trained', async () => {
+        const book = await read(
+            await routineWorkbook(
+                {
+                    name: 'PPL',
+                    durationWeeks: null,
+                    workouts: [
+                        {
+                            name: 'A',
+                            exercises: [],
+                            weeks: {
+                                12: { startedAt: new Date(), logs: {} },
+                            },
+                        },
+                    ],
+                },
+                t
+            )
+        );
+        expect(book.worksheets[0].getCell('P3').value).toBe('DAY 12');
     });
 });

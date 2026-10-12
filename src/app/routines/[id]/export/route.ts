@@ -1,6 +1,6 @@
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { routineWorkbook } from '@/lib/export';
+import { routineWorkbook, xlsxResponse } from '@/lib/export';
 import { isMember, routineDetail } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import type { NextRequest } from 'next/server';
@@ -25,11 +25,5 @@ export async function GET(
     if (!isRoutineComplete(routine, t))
         return new Response(t('error.routineIncomplete'), { status: 409 });
 
-    return new Response(await routineWorkbook(routine, t), {
-        headers: {
-            'Content-Type':
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(routine.name)}.xlsx`,
-        },
-    });
+    return xlsxResponse(await routineWorkbook(routine, t), routine.name);
 }
