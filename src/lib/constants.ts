@@ -29,3 +29,8 @@ export const WEIGHT = { min: 0, max: 1000, step: 0.5, digits: 3, decimals: 3 };
  * this, no form could have produced it.
  */
 export const maxDigits = (digits: number) => 10 ** digits - 1;
+
+/** The techniques the set menu offers ready-made, as `technique.*` keys. What a
+    set stores is the label, in the language it was picked in. */
+export const TECHNIQUES = ['warmup', 'linear', 'topset', 'backoff'] as const;
+export type Technique = (typeof TECHNIQUES)[number];

@@ -177,6 +177,11 @@ export default async function RoutinePage({
                                               }
                                             : undefined
                                     }
+                                    exportHref={
+                                        complete
+                                            ? `/routines/${routine.id}/export`
+                                            : undefined
+                                    }
                                     onLeave={
                                         member
                                             ? removeRoutineMember.bind(
