@@ -445,6 +445,8 @@ export async function routineHistory(routineId: string) {
     const routine = await prisma.routine.findUnique({
         where: { id: routineId },
         include: {
+            // The export names whose routine it is to anyone else.
+            creator: { select: { name: true } },
             workouts: {
                 orderBy: { order: 'asc' },
                 include: { exercises: planExercises },

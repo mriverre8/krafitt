@@ -1,6 +1,6 @@
 import { createT } from '@/i18n/config';
 import { en } from '@/i18n/en';
-import { routineWorkbook, sheetNames } from '@/lib/export';
+import { fileName, routineWorkbook, sheetNames } from '@/lib/export';
 import ExcelJS from 'exceljs';
 import { describe, expect, it } from 'vitest';
 
@@ -259,5 +259,14 @@ describe('routineWorkbook', () => {
             )
         );
         expect(book.worksheets[0].getCell('P3').value).toBe('DAY 12');
+    });
+});
+
+describe('fileName', () => {
+    const routine = { name: 'PPL', creatorId: 'u1', creator: { name: 'Ana' } };
+
+    it("names whose routine it is when it is someone else's", () => {
+        expect(fileName(routine, 'u1')).toBe('PPL');
+        expect(fileName(routine, 'u2')).toBe('PPL - Ana');
     });
 });

@@ -1,6 +1,6 @@
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { routineWorkbook, xlsxResponse } from '@/lib/export';
+import { fileName, routineWorkbook, xlsxResponse } from '@/lib/export';
 import { isMember, routineHistory } from '@/lib/queries';
 import type { NextRequest } from 'next/server';
 
@@ -34,6 +34,6 @@ export async function GET(
 
     return xlsxResponse(
         await routineWorkbook({ ...routine, workouts }, t),
-        `${routine.name} - ${t('progress.title')}`
+        `${fileName(routine, user.id)} - ${t('progress.title')}`
     );
 }

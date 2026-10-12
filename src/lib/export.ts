@@ -240,6 +240,17 @@ function logged(value: SetValue, repMode: string): string {
     return `${value.weight}/${reps}${mark}`;
 }
 
+/** What the download is called: the routine, and whose it is when it is
+    someone else's — a copy of theirs should not pass for one of your own. */
+export function fileName(
+    routine: { name: string; creatorId: string; creator: { name: string } },
+    userId: string
+): string {
+    return routine.creatorId === userId
+        ? routine.name
+        : `${routine.name} - ${routine.creator.name}`;
+}
+
 /** The workbook as a download named after the routine. */
 export function xlsxResponse(bytes: Uint8Array<ArrayBuffer>, name: string) {
     return new Response(bytes, {

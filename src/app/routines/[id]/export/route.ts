@@ -1,6 +1,6 @@
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { routineWorkbook, xlsxResponse } from '@/lib/export';
+import { fileName, routineWorkbook, xlsxResponse } from '@/lib/export';
 import { isMember, routineDetail } from '@/lib/queries';
 import { isRoutineComplete } from '@/lib/validate';
 import type { NextRequest } from 'next/server';
@@ -25,5 +25,8 @@ export async function GET(
     if (!isRoutineComplete(routine, t))
         return new Response(t('error.routineIncomplete'), { status: 409 });
 
-    return xlsxResponse(await routineWorkbook(routine, t), routine.name);
+    return xlsxResponse(
+        await routineWorkbook(routine, t),
+        fileName(routine, user.id)
+    );
 }
