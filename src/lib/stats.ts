@@ -35,7 +35,8 @@ export const e1rm = (weight: number, reps: number) =>
 
 export type ExerciseStats = {
     /** The set with the highest estimated max: what the lifter could do best.
-        Failed sets are left out of it and of the change below. */
+        A failed set counts the reps before the one that failed; the change
+        below leaves failed sets out. */
     best: (SetValue & { week: number; e1rm: number }) | null;
     /** Estimated max of the last week against the first, as a fraction. */
     change: number | null;
@@ -114,10 +115,25 @@ export function exerciseStats(
             if (!failed) carried[setIndex] = value;
             if (isTimed(set.repMode)) return;
 
-            // The kilos were moved all the same; but a failed set is not what
-            // the lifter can do, so it sets no best, max or record, nor stands
-            // as the one to beat.
             kg += value.weight * value.reps;
+
+            // The last rep of a failed set did not go up: the best set reads
+            // it as the reps before it, so 20×9 at failure matches a clean
+            // 20×8 — and, being later, takes the week.
+            const done = failed ? value.reps - 1 : value.reps;
+            const estimate = e1rm(value.weight, done);
+            const best = stats.best;
+            if (
+                done > 0 &&
+                (!best ||
+                    estimate > best.e1rm ||
+                    // A tie goes to the latest: the week it was last matched.
+                    (estimate === best.e1rm && done >= best.reps))
+            )
+                stats.best = { ...value, reps: done, week, e1rm: estimate };
+
+            // The kilos were moved all the same; but a failed set sets no
+            // max or record, nor stands as the one to beat.
             if (failed) return;
 
             const most = repsAt.get(value.weight);
@@ -126,16 +142,7 @@ export function exerciseStats(
                 value.weight,
                 Math.max(repsNow.get(value.weight) ?? 0, value.reps)
             );
-            const estimate = e1rm(value.weight, value.reps);
             weekTop = Math.max(weekTop, estimate);
-            const best = stats.best;
-            if (
-                !best ||
-                estimate > best.e1rm ||
-                // A tie goes to the latest: the week it was last matched.
-                (estimate === best.e1rm && value.reps >= best.reps)
-            )
-                stats.best = { ...value, week, e1rm: estimate };
         });
 
         if (compared) stats.stalled = up ? 0 : stats.stalled + 1;
