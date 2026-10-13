@@ -47,18 +47,27 @@ describe('exerciseStats', () => {
         ).toMatchObject({ weight: 100, reps: 5, week: 3 });
     });
 
-    // 110×5 at failure is heavier, but was not done: 100×5 stays the best,
-    // and the max has not moved since week one.
-    it('leaves failed sets out of the best set and the max', () => {
+    // 110×5 at failure is four clean reps on 110: that beats 100×5 as the
+    // best set, but the max since week one leaves failed sets out.
+    it('reads a failed set as the reps before the one that failed', () => {
         const stats = exerciseStats(bench, {
             1: { e1: { 0: { weight: 100, reps: 5 } } },
             2: { e1: { 0: { weight: 110, reps: 5, effort: 'fail' } } },
             3: { e1: { 0: { weight: 100, reps: 5 } } },
         });
-        expect(stats.best).toMatchObject({ weight: 100, week: 3 });
+        expect(stats.best).toMatchObject({ weight: 110, reps: 4, week: 2 });
         expect(stats.change).toBe(0);
         // The kilos were still moved.
         expect(stats.volume.map((row) => row.kg)).toEqual([500, 550, 500]);
+    });
+
+    // 20×9 at failure is 20×8 done: a tie, so the later week takes it.
+    it('dates a best set matched by a failed one with a rep more', () => {
+        const stats = exerciseStats(bench, {
+            1: { e1: { 0: { weight: 20, reps: 8 } } },
+            2: { e1: { 0: { weight: 20, reps: 9, effort: 'fail' } } },
+        });
+        expect(stats.best).toMatchObject({ weight: 20, reps: 8, week: 2 });
     });
 
     it('measures the estimated max against the first week', () => {
