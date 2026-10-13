@@ -193,6 +193,31 @@ export const es: Dict = {
     'progress.missed': 'Sin registrar',
     'progress.upcoming': 'Aún sin entrenar',
     'progress.tableCaption': '{exercise}: cada serie, semana a semana',
+    'progress.stats.title': 'Resumen',
+    'progress.stats.adherence': 'Constancia',
+    'progress.stats.adherenceDetail':
+        '{sets} de {total} series · {done} de {due} días enteros',
+    'progress.stats.stalledCount': 'Estancados',
+    'progress.stats.stalledCountDetail':
+        'Ejercicios sin mejorar en {n}+ semanas',
+    'progress.stats.week': 'Semana',
+    'progress.stats.weekOf': 'Semana {n} de {total}',
+    'progress.stats.volume': 'Volumen',
+    'progress.stats.volumeDetail': 'Kilos × repeticiones, todas las series',
+    'progress.stats.records': 'Récords',
+    'progress.stats.recordsDetail':
+        'Semanas que superaron tu mejor marca o tus repeticiones',
+    'progress.stats.session': 'Por sesión',
+    'progress.stats.sessionDetail': 'Duración habitual de un día completo',
+    'progress.stats.effort': 'Cómo se sintieron las series',
+    'progress.stats.exercise': '{name}: resumen',
+    'progress.stats.best': 'Mejor serie',
+    'progress.stats.e1rm': '1RM estimado',
+    'progress.stats.sinceFirst': '{change} desde la primera semana',
+    'progress.stats.volumeChange': 'Volumen frente a la semana anterior',
+    'progress.stats.stalled': 'Estancado · {n} semanas',
+    'progress.stats.stalledHint':
+        'Ninguna serie supera a la anterior desde hace tiempo: toca cambiar algo',
 
     'profile.memberSince': 'Miembro desde {date}',
     'profile.followers': '{count} seguidores',

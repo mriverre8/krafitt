@@ -18,6 +18,15 @@ export const EFFORT_SAID = {
     easy: 'today.effortEasy',
 } as const;
 
+/** The fill each answer wears: the picked button and the effort bar of the
+    history alike. */
+export const EFFORT_FILL = {
+    fail: 'bg-danger text-on-danger',
+    hard: 'bg-draft text-on-draft',
+    normal: 'bg-muted text-surface',
+    easy: 'bg-surge text-on-surge',
+} as const;
+
 /** The one word that fits in a column. */
 export const EFFORT_WORD = {
     fail: 'today.effortFailShort',
