@@ -2,14 +2,12 @@
 
 import { useT } from '@/i18n/use-t';
 import { EFFORTS, type Effort } from '@/lib/progress';
-import { EFFORT_ICON, EFFORT_SAID, EFFORT_WORD } from '@/lib/effort';
-
-const PICKED = {
-    fail: 'bg-danger text-on-danger',
-    hard: 'bg-draft text-on-draft',
-    normal: 'bg-muted text-surface',
-    easy: 'bg-surge text-on-surge',
-} as const;
+import {
+    EFFORT_FILL,
+    EFFORT_ICON,
+    EFFORT_SAID,
+    EFFORT_WORD,
+} from '@/lib/effort';
 
 export function EffortSelector({
     name,
@@ -42,7 +40,7 @@ export function EffortSelector({
                         onClick={() => onChange(option)}
                         className={`eyebrow flex min-w-0 flex-1 items-center justify-center gap-1.5 transition-colors ${
                             on
-                                ? PICKED[option]
+                                ? EFFORT_FILL[option]
                                 : 'text-muted hover:bg-surface hover:text-ink'
                         }`}
                     >

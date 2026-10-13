@@ -3,6 +3,7 @@
 import { useT } from '@/i18n/use-t';
 import type { Logs, WeekState } from '@/lib/progress';
 import { useState } from 'react';
+import { ExerciseStats } from '@/components/history/exercise-stats';
 import { HistoryExercise } from '@/components/history/history-exercise';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
@@ -86,6 +87,11 @@ export function DayPanel({
                         position={position}
                         total={day.exercises.length}
                         onSelect={setSelected}
+                    />
+
+                    <ExerciseStats
+                        exercise={exercise}
+                        weeks={day.weeks}
                     />
                 </>
             )}

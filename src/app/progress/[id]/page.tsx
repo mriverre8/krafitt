@@ -1,8 +1,11 @@
 import { BackButton } from '@/components/ui/back-button';
 import { RoutineHistory } from '@/components/history/routine-history';
+import { RoutineSummary } from '@/components/history/routine-summary';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
+import { currentWeek } from '@/lib/progress';
 import { isMember, routineHistory } from '@/lib/queries';
+import { routineStats } from '@/lib/stats';
 import { badgeClass } from '@/lib/ui';
 import { FileSpreadsheet } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
@@ -21,9 +24,17 @@ export default async function RoutineProgressPage({
     if (history.routine.creatorId !== user.id && !(await isMember(id, user.id)))
         notFound();
 
-    const { routine, byDay } = history;
+    const { routine, byDay, timings } = history;
     const day = Number(query.currentDay);
     const initialDay = Number.isInteger(day) && day > 0 ? day : 0;
+
+    const days = routine.workouts.map((workout) => ({
+        id: workout.id,
+        name: workout.name,
+        exercises: workout.exercises,
+        weeks: byDay[workout.id] ?? {},
+    }));
+    const week = currentWeek(routine.cursor, days.length);
 
     return (
         <div className="space-y-6">
@@ -57,17 +68,23 @@ export default async function RoutineProgressPage({
                     {t('routine.noWorkouts')}
                 </p>
             ) : (
-                <RoutineHistory
-                    days={routine.workouts.map((workout) => ({
-                        id: workout.id,
-                        name: workout.name,
-                        exercises: workout.exercises,
-                        weeks: byDay[workout.id] ?? {},
-                    }))}
-                    durationWeeks={routine.durationWeeks}
-                    cursor={routine.cursor}
-                    initialDay={initialDay}
-                />
+                <>
+                    <RoutineSummary
+                        stats={routineStats(days, timings, routine.cursor)}
+                        week={
+                            routine.durationWeeks
+                                ? Math.min(week, routine.durationWeeks)
+                                : week
+                        }
+                        weeks={routine.durationWeeks}
+                    />
+                    <RoutineHistory
+                        days={days}
+                        durationWeeks={routine.durationWeeks}
+                        cursor={routine.cursor}
+                        initialDay={initialDay}
+                    />
+                </>
             )}
         </div>
     );

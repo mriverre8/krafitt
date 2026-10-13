@@ -477,7 +477,13 @@ export async function routineHistory(routineId: string) {
         (startedOn[session.workoutId] ??= {})[session.week] = session.startedAt;
     }
 
-    return { routine, byDay, startedOn };
+    // How long each day took, for the summary above the history.
+    const timings = sessions.map(({ startedAt, completedAt }) => ({
+        startedAt,
+        completedAt,
+    }));
+
+    return { routine, byDay, startedOn, timings };
 }
 
 /** The routine and its plan: archived exercises are left out, so whatever is

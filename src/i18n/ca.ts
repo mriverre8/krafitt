@@ -193,6 +193,31 @@ export const ca: Dict = {
     'progress.missed': 'Sense registrar',
     'progress.upcoming': 'Encara sense entrenar',
     'progress.tableCaption': '{exercise}: cada sèrie, setmana a setmana',
+    'progress.stats.title': 'Resum',
+    'progress.stats.adherence': 'Constància',
+    'progress.stats.adherenceDetail':
+        '{sets} de {total} sèries · {done} de {due} dies sencers',
+    'progress.stats.stalledCount': 'Estancats',
+    'progress.stats.stalledCountDetail':
+        'Exercicis sense millorar en {n}+ setmanes',
+    'progress.stats.week': 'Setmana',
+    'progress.stats.weekOf': 'Setmana {n} de {total}',
+    'progress.stats.volume': 'Volum',
+    'progress.stats.volumeDetail': 'Quilos × repeticions, totes les sèries',
+    'progress.stats.records': 'Rècords',
+    'progress.stats.recordsDetail':
+        'Setmanes que van superar la teva millor marca o les teves repeticions',
+    'progress.stats.session': 'Per sessió',
+    'progress.stats.sessionDetail': 'Durada habitual d’un dia complet',
+    'progress.stats.effort': 'Com es van sentir les sèries',
+    'progress.stats.exercise': '{name}: resum',
+    'progress.stats.best': 'Millor sèrie',
+    'progress.stats.e1rm': '1RM estimat',
+    'progress.stats.sinceFirst': '{change} des de la primera setmana',
+    'progress.stats.volumeChange': 'Volum respecte a la setmana anterior',
+    'progress.stats.stalled': 'Estancat · {n} setmanes',
+    'progress.stats.stalledHint':
+        'Cap sèrie supera l’anterior des de fa temps: toca canviar alguna cosa',
 
     'profile.memberSince': 'Membre des de {date}',
     'profile.followers': '{count} seguidors',
