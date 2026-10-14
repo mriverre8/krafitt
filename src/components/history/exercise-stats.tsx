@@ -2,6 +2,7 @@
 
 import { useLocale, useT } from '@/i18n/use-t';
 import type { Logs } from '@/lib/progress';
+import { PERIOD_WORDS, type Period } from '@/lib/period';
 import { exerciseStats, STALL_WEEKS, type StatsExercise } from '@/lib/stats';
 import { badgeClass, cardClass, labelClass } from '@/lib/ui';
 
@@ -11,12 +12,15 @@ import { badgeClass, cardClass, labelClass } from '@/lib/ui';
 export function ExerciseStats({
     exercise,
     weeks,
+    period = 'week',
 }: {
     exercise: StatsExercise & { name: string };
     /** Every logged week of the day, not only the ones the table draws. */
     weeks: Record<number, Logs>;
+    period?: Period;
 }) {
     const t = useT();
+    const words = PERIOD_WORDS[period];
     const locale = useLocale();
     const stats = exerciseStats(exercise, weeks);
     const stalled = stats.stalled >= STALL_WEEKS;
@@ -51,7 +55,7 @@ export function ExerciseStats({
                     className={`${badgeClass} bg-draft text-on-draft`}
                     title={t('progress.stats.stalledHint')}
                 >
-                    {t('progress.stats.stalled', { n: stats.stalled })}
+                    {t(words.stalled, { n: stats.stalled })}
                 </p>
             )}
 
@@ -65,7 +69,7 @@ export function ExerciseStats({
                             {kilos.format(stats.best.weight)}×{stats.best.reps}
                         </dd>
                         <dd className="text-muted mt-1 text-xs">
-                            {t('progress.weekLabel', { n: stats.best.week })}
+                            {t(words.label, { n: stats.best.week })}
                         </dd>
                     </div>
                     <div>
@@ -85,7 +89,7 @@ export function ExerciseStats({
                                           : 'text-muted'
                                 }`}
                             >
-                                {t('progress.stats.sinceFirst', {
+                                {t(words.sinceFirst, {
                                     change: signed.format(stats.change),
                                 })}
                             </dd>
@@ -98,7 +102,7 @@ export function ExerciseStats({
                 <figure className="space-y-2">
                     <figcaption className="flex items-baseline justify-between gap-2">
                         <span className={labelClass}>
-                            {t('progress.stats.volumeChange')}
+                            {t(words.volumeChange)}
                         </span>
                         <span className={`figure text-sm ${tone}`}>
                             {`${diff.format(delta)} kg (${signed.format(
@@ -116,7 +120,7 @@ export function ExerciseStats({
                                 className="contents"
                             >
                                 <dt className="text-muted text-xs">
-                                    {t('progress.weekLabel', { n: row.week })}
+                                    {t(words.label, { n: row.week })}
                                 </dt>
                                 <dd
                                     aria-hidden

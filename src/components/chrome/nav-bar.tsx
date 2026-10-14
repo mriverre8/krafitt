@@ -4,7 +4,7 @@ import { useT } from '@/i18n/use-t';
 import type { Theme } from '@/lib/theme';
 import { iconButtonClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
-import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
+import { CalendarDays, ClipboardList, Settings, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { Wordmark } from '@/components/ui/wordmark';
 import { UserMenu } from '@/components/chrome/user-menu';
@@ -51,10 +51,20 @@ export function NavBar({
                             {t('nav.today')}
                         </Link>
                         <Link
+                            href="/workouts"
+                            className={linkClass}
+                        >
+                            <Zap
+                                size={14}
+                                aria-hidden
+                            />
+                            {t('nav.workouts')}
+                        </Link>
+                        <Link
                             href="/routines"
                             className={linkClass}
                         >
-                            <Dumbbell
+                            <ClipboardList
                                 size={14}
                                 aria-hidden
                             />

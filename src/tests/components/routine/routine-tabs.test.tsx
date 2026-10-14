@@ -1,4 +1,4 @@
-import { RoutineTabs } from '@/components/routine/routine-tabs';
+import { RequestsTab, RoutineTabs } from '@/components/routine/routine-tabs';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -31,5 +31,34 @@ describe('RoutineTabs', () => {
         const link = screen.getByRole('link', { name: 'Requests (3)' });
         expect(link).toHaveAttribute('href', '/routines/requests');
         expect(link).toHaveTextContent('3');
+    });
+});
+
+describe('RequestsTab', () => {
+    // Workouts have an inbox of their own.
+    it('opens the inbox of its own section', async () => {
+        const { createT, dictionaries } = await import('@/i18n/config');
+        render(
+            <RequestsTab
+                count={2}
+                section="/workouts"
+                t={createT(dictionaries.en)}
+            />
+        );
+        expect(screen.getByRole('link')).toHaveAttribute(
+            'href',
+            '/workouts/requests'
+        );
+    });
+
+    it('draws nothing while nothing is waiting', async () => {
+        const { createT, dictionaries } = await import('@/i18n/config');
+        const { container } = render(
+            <RequestsTab
+                count={0}
+                t={createT(dictionaries.en)}
+            />
+        );
+        expect(container).toBeEmptyDOMElement();
     });
 });

@@ -27,7 +27,13 @@ import {
     Type,
     Undo2,
 } from 'lucide-react';
-import { startTransition, useActionState, useEffect, useState } from 'react';
+import {
+    startTransition,
+    useActionState,
+    useEffect,
+    useState,
+    type ReactNode,
+} from 'react';
 import { sameExercise } from '@/lib/history';
 import { toast } from '@/store/toast';
 import { ActionButton } from '@/components/ui/action-button';
@@ -58,6 +64,7 @@ export function WorkoutEditor({
     onRenameWorkout,
     onDeleteWorkout,
     retired = [],
+    empty,
 }: {
     workout: { id: string; name: string; exercises: ExerciseView[] };
     /** What this day is still missing, as last saved. */
@@ -65,19 +72,26 @@ export function WorkoutEditor({
     /** The same holes as fields to paint, by exercise id. */
     faults: Record<string, ExerciseFault>;
     saveExercises: DayAction;
-    /** Already bound to this day. */
-    onRenameWorkout: FormAction;
+    /** Already bound to this day. Left out for a workout, whose one day goes
+        by the workout's name — the page's own heading — and so is drawn with
+        no heading or day menu of its own. */
+    onRenameWorkout?: FormAction;
     /** Absent once the routine has started: its days are fixed from then on. */
     onDeleteWorkout?: (workoutId: string) => Promise<void>;
     /** Exercises the day archived, by name. Naming a card after one brings it
         back with its history — the server matches exercises by name. */
     retired?: string[];
+    /** What a day with nothing on it says out of edit mode. Given, it also
+        opens empty in edit mode — just the button to add the first exercise —
+        instead of on the blank card a routine's day starts from. */
+    empty?: ReactNode;
 }) {
     const t = useT();
     const editing = useEditMode();
+    const fresh = (exercises: ExerciseView[]) => toDrafts(exercises, !empty);
     const [state, formAction, pending] = useActionState(saveExercises, {});
     const [drafts, setDrafts] = useState<ExerciseDraft[]>(() =>
-        toDrafts(workout.exercises)
+        fresh(workout.exercises)
     );
     // Only what is not on a card already: one exercise is never in a day twice
     // by being brought back.
@@ -95,7 +109,7 @@ export function WorkoutEditor({
     // which lag behind it and sometimes never move at all: a technique left blank
     // is stored as the default, which can leave the day exactly as it was.
     const server = state.saved ?? workout.exercises;
-    const saved = JSON.stringify(toDrafts(server));
+    const saved = JSON.stringify(fresh(server));
     const plan = JSON.stringify(drafts);
     const dirty = plan !== saved;
 
@@ -105,7 +119,7 @@ export function WorkoutEditor({
     const [lastState, setLastState] = useState(state);
     if (state !== lastState) {
         setLastState(state);
-        if (state.saved) setDrafts(toDrafts(state.saved));
+        if (state.saved) setDrafts(fresh(state.saved));
     }
 
     // The save bar goes away on success and nothing else on screen says so;
@@ -124,7 +138,7 @@ export function WorkoutEditor({
     const [lastDiscarded, setLastDiscarded] = useState(discarded);
     if (discarded !== lastDiscarded) {
         setLastDiscarded(discarded);
-        setDrafts(toDrafts(server));
+        setDrafts(fresh(server));
     }
 
     /**
@@ -137,7 +151,7 @@ export function WorkoutEditor({
     function faultOf(draft: ExerciseDraft, index: number) {
         if (!showProblems || !highlight) return undefined;
         if (draft.id) return faults[draft.id];
-        return workout.exercises.length === 0 && index === 0
+        return !empty && workout.exercises.length === 0 && index === 0
             ? blankExerciseFault
             : undefined;
     }
@@ -169,70 +183,74 @@ export function WorkoutEditor({
 
     return (
         <div>
-            <div className="flex items-center justify-between gap-3">
-                <h3 className="display line-clamp-2 min-w-0 text-4xl leading-none">
-                    {workout.name}
-                </h3>
-                {editing && (
-                    <Dropdown
-                        label={t('routine.dayOptions')}
-                        icon={
-                            <Ellipsis
-                                size={18}
-                                aria-hidden
-                            />
-                        }
-                    >
-                        {(close) => (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        close();
-                                        showModal('rename', {
-                                            name: workout.name,
-                                            rename: onRenameWorkout,
-                                            title: t('routine.renameDay'),
-                                            label: t('routine.dayLabel'),
-                                        });
-                                    }}
-                                    className={menuItemClass}
-                                >
-                                    <Type
-                                        size={14}
-                                        aria-hidden
-                                    />
-                                    {t('routine.renameDay')}
-                                </button>
-                                {onDeleteWorkout && (
-                                    <ActionButton
-                                        action={() =>
-                                            onDeleteWorkout(workout.id)
-                                        }
-                                        confirm={{
-                                            title: t('routine.deleteDay'),
-                                            message: t(
-                                                'routine.deleteDayConfirm',
-                                                { name: workout.name }
-                                            ),
+            {onRenameWorkout && (
+                <div className="flex items-center justify-between gap-3">
+                    <h3 className="display line-clamp-2 min-w-0 text-4xl leading-none">
+                        {workout.name}
+                    </h3>
+                    {editing && (
+                        <Dropdown
+                            label={t('routine.dayOptions')}
+                            icon={
+                                <Ellipsis
+                                    size={18}
+                                    aria-hidden
+                                />
+                            }
+                        >
+                            {(close) => (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            close();
+                                            showModal('rename', {
+                                                name: workout.name,
+                                                rename: onRenameWorkout,
+                                                title: t('routine.renameDay'),
+                                                label: t('routine.dayLabel'),
+                                            });
                                         }}
-                                        className={menuDangerClass}
+                                        className={menuItemClass}
                                     >
-                                        <Trash
+                                        <Type
                                             size={14}
                                             aria-hidden
                                         />
-                                        {t('routine.deleteDay')}
-                                    </ActionButton>
-                                )}
-                            </>
-                        )}
-                    </Dropdown>
-                )}
-            </div>
+                                        {t('routine.renameDay')}
+                                    </button>
+                                    {onDeleteWorkout && (
+                                        <ActionButton
+                                            action={() =>
+                                                onDeleteWorkout(workout.id)
+                                            }
+                                            confirm={{
+                                                title: t('routine.deleteDay'),
+                                                message: t(
+                                                    'routine.deleteDayConfirm',
+                                                    { name: workout.name }
+                                                ),
+                                            }}
+                                            className={menuDangerClass}
+                                        >
+                                            <Trash
+                                                size={14}
+                                                aria-hidden
+                                            />
+                                            {t('routine.deleteDay')}
+                                        </ActionButton>
+                                    )}
+                                </>
+                            )}
+                        </Dropdown>
+                    )}
+                </div>
+            )}
 
             {showProblems && (
-                <div className={`${cardClass} border-l-danger mt-4`}>
+                <div
+                    className={`${cardClass} border-l-danger ${onRenameWorkout ? 'mt-4' : ''}`}
+                >
                     <div className="text-danger flex items-center gap-2">
                         <TriangleAlert
                             size={16}
@@ -293,9 +311,9 @@ export function WorkoutEditor({
                           />
                       ))}
 
-                {!editing && server.length === 0 && (
-                    <ExercisePreview exercise={blankExercise} />
-                )}
+                {!editing &&
+                    server.length === 0 &&
+                    (empty ?? <ExercisePreview exercise={blankExercise} />)}
 
                 {editing && (
                     <button
@@ -320,7 +338,7 @@ export function WorkoutEditor({
                     <button
                         type="button"
                         disabled={pending}
-                        onClick={() => setDrafts(toDrafts(workout.exercises))}
+                        onClick={() => setDrafts(fresh(workout.exercises))}
                         aria-label={t('exercise.undo')}
                         className={`${ghostClass} flex flex-1 items-center justify-center gap-1.5`}
                     >

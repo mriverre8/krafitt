@@ -1,6 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import type { RoutineKind } from '@/lib/progress';
 import { Trash } from 'lucide-react';
 import { ActionButton } from '@/components/ui/action-button';
 
@@ -8,10 +9,13 @@ export function DeleteRoutineButton({
     name,
     onDelete,
     className,
+    kind = 'routine',
 }: {
     name: string;
     onDelete: () => Promise<unknown>;
     className?: string;
+    /** Only the words change: what is lost is said differently for each. */
+    kind?: RoutineKind;
 }) {
     const t = useT();
 
@@ -19,8 +23,8 @@ export function DeleteRoutineButton({
         <ActionButton
             action={onDelete}
             confirm={{
-                title: t('routine.delete'),
-                message: t('routine.deleteConfirm', { name }),
+                title: t(`${kind}.delete`),
+                message: t(`${kind}.deleteConfirm`, { name }),
             }}
             className={
                 className ??
@@ -31,7 +35,7 @@ export function DeleteRoutineButton({
                 size={14}
                 aria-hidden
             />
-            {t('routine.delete')}
+            {t(`${kind}.delete`)}
         </ActionButton>
     );
 }

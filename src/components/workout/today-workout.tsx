@@ -6,13 +6,15 @@ import { setSlots } from '@/lib/history';
 import {
     flatSets,
     isSetEnabled,
-    isSetFilled,
+    filledSets,
     type Duration,
     type Logs,
     type PreviousLogs,
+    type RoutineKind,
 } from '@/lib/progress';
 import { ghostClass } from '@/lib/ui';
 import { HistoryLink } from '@/components/ui/history-link';
+import { FinishWorkoutButton } from '@/components/workout/finish-workout-button';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
 import { SkipForward } from 'lucide-react';
@@ -35,12 +37,24 @@ export type TodayWorkoutProps = {
     day: number;
     logs: Logs;
     previous: PreviousLogs;
+    /** A workout is one day done again and again: its "week" is which time
+        this is, and it is finished rather than skipped. */
+    kind?: RoutineKind;
 };
 
 export function TodayWorkout(props: TodayWorkoutProps) {
-    const { routineId, routineName, week, totalWeeks, workout, day, previous } =
-        props;
+    const {
+        routineId,
+        routineName,
+        week,
+        totalWeeks,
+        workout,
+        day,
+        previous,
+        kind = 'routine',
+    } = props;
     const t = useT();
+    const single = kind === 'workout';
     const router = useRouter();
     const { logs, hydrate } = useSessionStore();
     const [pending, startTransition] = useTransition();
@@ -73,9 +87,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     // How much of today is banked. Derived, never stored: the store already
     // holds the only copy of the logs.
     const all = flatSets(workout.exercises);
-    const doneSets = all.filter((s) =>
-        isSetFilled(logs, s.exerciseId, s.setIndex)
-    ).length;
+    const doneSets = filledSets(workout.exercises, logs);
     // The day stays on screen after the last set, so the counter says so instead
     // of reading n/n.
     const complete = all.length > 0 && doneSets === all.length;
@@ -86,6 +98,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     // A finished day is already behind us: the next fetch moves the cursor past
     // it on its own, so skipping it too would cost the user the day after.
     // Anything else is a real skip, and the sets left blank are lost for good.
+    // A workout has its own button, shared with its page.
     function onSkip() {
         if (complete) return router.refresh();
         showModal('confirm', {
@@ -106,7 +119,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                         <p className="eyebrow text-muted truncate">
-                            {routineName}
+                            {single ? t('today.workoutEyebrow') : routineName}
                         </p>
                         <h1 className="display text-ink mt-2 text-6xl">
                             {workout.name}
@@ -114,9 +127,14 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     </div>
                     <p className="bg-volt text-on-volt figure grid shrink-0 place-items-center rounded-md px-3 py-2 leading-none">
                         <span className="sr-only">
-                            {totalWeeks === null
-                                ? t('today.weekOpen', { week })
-                                : t('today.week', { week, total: totalWeeks })}
+                            {single
+                                ? t('today.run', { n: week })
+                                : totalWeeks === null
+                                  ? t('today.weekOpen', { week })
+                                  : t('today.week', {
+                                        week,
+                                        total: totalWeeks,
+                                    })}
                         </span>
                         <span
                             aria-hidden
@@ -128,9 +146,11 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                             aria-hidden
                             className="eyebrow mt-1 opacity-70"
                         >
-                            {totalWeeks === null
-                                ? t('progress.weekColumn')
-                                : `/ ${totalWeeks}`}
+                            {single
+                                ? t('today.runColumn')
+                                : totalWeeks === null
+                                  ? t('progress.weekColumn')
+                                  : `/ ${totalWeeks}`}
                         </span>
                     </p>
                 </div>
@@ -202,18 +222,27 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                 />
             ))}
 
-            <button
-                type="button"
-                disabled={pending}
-                onClick={onSkip}
-                className={`${ghostClass} flex w-full items-center justify-center gap-2`}
-            >
-                <SkipForward
-                    size={14}
-                    aria-hidden
+            {single ? (
+                <FinishWorkoutButton
+                    routineId={routineId}
+                    done={doneSets}
+                    total={all.length}
+                    className={`${ghostClass} flex w-full items-center justify-center gap-2`}
                 />
-                {t('today.skip')}
-            </button>
+            ) : (
+                <button
+                    type="button"
+                    disabled={pending}
+                    onClick={onSkip}
+                    className={`${ghostClass} flex w-full items-center justify-center gap-2`}
+                >
+                    <SkipForward
+                        size={14}
+                        aria-hidden
+                    />
+                    {t('today.skip')}
+                </button>
+            )}
         </div>
     );
 }

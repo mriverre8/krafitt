@@ -56,7 +56,14 @@ describe('UserMenu', () => {
             Array.from(menu.querySelectorAll('a, button')).map(
                 (item) => item.textContent
             )
-        ).toEqual(['Today', 'Routines', 'Profile', 'Settings', 'Sign out']);
+        ).toEqual([
+            'Today',
+            'Workouts',
+            'Routines',
+            'Profile',
+            'Settings',
+            'Sign out',
+        ]);
     });
 
     it('closes itself on the way out to a page', () => {

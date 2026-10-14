@@ -2,10 +2,10 @@
 
 import { useT } from '@/i18n/use-t';
 import { routineStatus, type Duration } from '@/lib/progress';
-import { badgeClass, cardLinkClass } from '@/lib/ui';
-import { CircleCheck, Flame } from 'lucide-react';
+import { cardLinkClass } from '@/lib/ui';
 import Link from 'next/link';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export type RoutineCardProps = {
     id: string;
@@ -55,39 +55,10 @@ export function RoutineCard(props: RoutineCardProps) {
                     </p>
                 </div>
 
-                {status === 'finished' ? (
-                    <span
-                        className={`${badgeClass} border-surge text-surge shrink-0 border-2`}
-                    >
-                        <CircleCheck
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.finished')}
-                    </span>
-                ) : status === 'active' ? (
-                    <span
-                        className={`${badgeClass} bg-volt text-on-volt shrink-0`}
-                    >
-                        <Flame
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routines.active')}
-                    </span>
-                ) : status === 'pending' ? (
-                    <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2`}
-                    >
-                        {t('routines.pending')}
-                    </span>
-                ) : (
-                    <span
-                        className={`${badgeClass} border-line text-muted shrink-0 border-2 border-dashed`}
-                    >
-                        {t('routines.incomplete')}
-                    </span>
-                )}
+                <StatusBadge
+                    status={status}
+                    kind="routine"
+                />
             </div>
 
             <div className="mt-5 space-y-2">

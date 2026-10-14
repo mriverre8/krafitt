@@ -161,3 +161,49 @@ describe('routineIdOfWorkout', () => {
         );
     });
 });
+
+/** A workout: one day, no duration, done twice so far and on the shelf now. */
+const workout = {
+    ...shelved,
+    kind: 'workout',
+    durationWeeks: null,
+    cursor: 2,
+};
+
+describe('workouts', () => {
+    // Between one time and the next it is as open as a routine on the shelf,
+    // logs and all: that is when exercises get swapped and archived.
+    it('can be edited between one time and the next', async () => {
+        findRoutine.mockResolvedValue(workout);
+        countSessions.mockResolvedValue(2);
+        await expect(requireEditableRoutine('r1', 'ada')).resolves.toEqual(
+            workout
+        );
+    });
+
+    it('cannot be edited while it is being done', async () => {
+        findRoutine.mockResolvedValue({ ...workout, isActive: true });
+        await expect(requireEditableRoutine('r1', 'ada')).rejects.toThrow(
+            'A workout in progress cannot be edited'
+        );
+    });
+
+    // Duration, people, visibility: asking for a routine turns a workout away.
+    it('is refused where only a routine will do', async () => {
+        findRoutine.mockResolvedValue(workout);
+        await expect(requireRoutine('r1', 'ada', 'routine')).rejects.toThrow(
+            'You do not have access to this routine'
+        );
+        await expect(requireRoutine('r1', 'ada', 'workout')).resolves.toEqual(
+            workout
+        );
+    });
+
+    // Its one day is the one it was made with, for good.
+    it('never gains or loses a day', async () => {
+        findRoutine.mockResolvedValue({ ...workout, cursor: 0 });
+        await expect(requireUnstartedRoutine('r1', 'ada')).rejects.toThrow(
+            'You do not have access to this routine'
+        );
+    });
+});

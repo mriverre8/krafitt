@@ -2,6 +2,7 @@
 
 import { useT } from '@/i18n/use-t';
 import type { FormAction } from '@/lib/forms';
+import type { RoutineKind } from '@/lib/progress';
 import { labelClass, menuDangerClass, menuItemClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import { ActionButton } from '@/components/ui/action-button';
@@ -43,6 +44,7 @@ export function RoutineOptions({
     editable,
     isPublic,
     setVisibility,
+    kind = 'routine',
 }: {
     name: string;
     rename?: FormAction;
@@ -67,6 +69,8 @@ export function RoutineOptions({
     editable: boolean;
     isPublic?: boolean;
     setVisibility?: (isPublic: boolean) => Promise<unknown>;
+    /** A workout is handed the same menu, with fewer rows and its own words. */
+    kind?: RoutineKind;
 }) {
     const t = useT();
 
@@ -139,7 +143,7 @@ export function RoutineOptions({
                             type="button"
                             onClick={() => {
                                 close();
-                                showModal('send', send);
+                                showModal('send', { ...send, kind });
                             }}
                             className={menuItemClass}
                         >
@@ -147,7 +151,7 @@ export function RoutineOptions({
                                 size={14}
                                 aria-hidden
                             />
-                            {t('routine.send')}
+                            {t(`${kind}.send`)}
                         </button>
                     )}
                     {people && (
@@ -176,8 +180,12 @@ export function RoutineOptions({
                             }}
                             success={t(
                                 isPublic
-                                    ? 'toast.madePrivate'
-                                    : 'toast.madePublic'
+                                    ? kind === 'workout'
+                                        ? 'toast.workoutPrivate'
+                                        : 'toast.madePrivate'
+                                    : kind === 'workout'
+                                      ? 'toast.workoutPublic'
+                                      : 'toast.madePublic'
                             )}
                             className={menuItemClass}
                         >
@@ -194,8 +202,8 @@ export function RoutineOptions({
                             )}
                             {t(
                                 isPublic
-                                    ? 'routine.makePrivate'
-                                    : 'routine.makePublic'
+                                    ? `${kind}.makePrivate`
+                                    : `${kind}.makePublic`
                             )}
                         </ActionButton>
                     )}
@@ -217,30 +225,35 @@ export function RoutineOptions({
                         <ActionButton
                             action={onSave}
                             confirm={{
-                                title: t('routine.save'),
-                                message: t('routine.saveConfirm', { name }),
-                                confirmLabel: t('routine.save'),
+                                title: t(`${kind}.save`),
+                                message: t(`${kind}.saveConfirm`, { name }),
+                                confirmLabel: t(`${kind}.save`),
                                 danger: false,
                             }}
-                            success={t('toast.saved', { name })}
+                            success={t(
+                                kind === 'workout'
+                                    ? 'toast.workoutSaved'
+                                    : 'toast.saved',
+                                { name }
+                            )}
                             className={menuItemClass}
                         >
                             <Bookmark
                                 size={14}
                                 aria-hidden
                             />
-                            {t('routine.save')}
+                            {t(`${kind}.save`)}
                         </ActionButton>
                     )}
                     {onDuplicate && (
                         <ActionButton
                             action={onDuplicate}
                             confirm={{
-                                title: t('routine.duplicate'),
-                                message: t('routine.duplicateConfirm', {
+                                title: t(`${kind}.duplicate`),
+                                message: t(`${kind}.duplicateConfirm`, {
                                     name,
                                 }),
-                                confirmLabel: t('routine.duplicate'),
+                                confirmLabel: t(`${kind}.duplicate`),
                                 danger: false,
                             }}
                             success={t('toast.duplicated', { name })}
@@ -250,7 +263,7 @@ export function RoutineOptions({
                                 size={14}
                                 aria-hidden
                             />
-                            {t('routine.duplicate')}
+                            {t(`${kind}.duplicate`)}
                         </ActionButton>
                     )}
                     {onLeave && (
@@ -274,6 +287,7 @@ export function RoutineOptions({
                         <DeleteRoutineButton
                             name={name}
                             onDelete={onDelete}
+                            kind={kind}
                             className={menuDangerClass}
                         />
                     )}

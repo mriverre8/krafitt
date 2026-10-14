@@ -1,20 +1,35 @@
 import { getT } from '@/i18n/server';
 import { prisma } from './db';
-import { isRoutineFinished, isRoutineLocked } from './progress';
+import {
+    isRoutineFinished,
+    isRoutineLocked,
+    toKind,
+    type RoutineKind,
+} from './progress';
 
 /**
  * The single place permissions are checked: every server action goes through it.
  * A routine belongs to whoever created it, so writing is all or nothing —
  * sharing it public grants reading and nothing more, which is why nothing here
  * knows about `isPublic`. The pages that only read do that check themselves.
+ *
+ * `kind` is for the moves only one kind has: a workout has no duration, no
+ * people, and one day that is neither added, taken away nor renamed on its
+ * own. Each action that is a routine's only passes it.
  */
-export async function requireRoutine(routineId: string, userId: string) {
+export async function requireRoutine(
+    routineId: string,
+    userId: string,
+    kind?: RoutineKind
+) {
     const t = await getT();
     const routine = await prisma.routine.findUnique({
         where: { id: routineId },
     });
     if (!routine) throw new Error(t('error.routineNotFound'));
     if (routine.creatorId !== userId) throw new Error(t('error.noAccess'));
+    if (kind && toKind(routine.kind) !== kind)
+        throw new Error(t('error.noAccess'));
     return routine;
 }
 
@@ -23,12 +38,20 @@ export async function requireRoutine(routineId: string, userId: string) {
  * trained: what was logged is matched against the plan as it stands, never
  * rewritten (see `lib/history.ts`). Only a routine that is over is closed —
  * its plan is the record of what it was.
+ *
+ * A workout is the other way round: it is never over, and it is closed while
+ * it is being done. Between one time and the next it is open again.
  */
 export async function requireEditableRoutine(
     routineId: string,
     userId: string
 ) {
     const routine = await requireRoutine(routineId, userId);
+    if (toKind(routine.kind) === 'workout') {
+        if (routine.isActive)
+            throw new Error((await getT())('error.workoutStarted'));
+        return routine;
+    }
     const workoutCount = await prisma.workout.count({ where: { routineId } });
     if (isRoutineFinished(routine.cursor, workoutCount, routine.durationWeeks))
         throw new Error((await getT())('error.routineFinished'));
@@ -38,13 +61,14 @@ export async function requireEditableRoutine(
 /**
  * Adding or deleting a day stops the moment the routine goes live: the cursor
  * counts days by position, so one more or one fewer would move it to another
- * week, and a deleted day takes its sessions with it.
+ * week, and a deleted day takes its sessions with it. A workout keeps the one
+ * day it was made with.
  */
 export async function requireUnstartedRoutine(
     routineId: string,
     userId: string
 ) {
-    const routine = await requireRoutine(routineId, userId);
+    const routine = await requireRoutine(routineId, userId, 'routine');
     const sessionCount = await prisma.workoutSession.count({
         where: { routineId },
     });

@@ -138,6 +138,36 @@ export function RoutineListSkeleton({ badge = true }: { badge?: boolean }) {
     );
 }
 
+/** `WorkoutCard`: the routine card's head — name, meta, badge — and nothing
+    under it, since a workout has no progress to draw. */
+export function WorkoutCardSkeleton({ accent = false }: { accent?: boolean }) {
+    return (
+        <div
+            className={`${cardClass} ${
+                accent ? 'border-l-volt border-l-[6px]' : ''
+            }`}
+        >
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                    <Bar className="h-6.75 w-2/3" />
+                    <Bar className={`mt-1.5 w-1/3 ${eyebrowLine}`} />
+                </div>
+                <Bar className="h-[25.2px] w-24 shrink-0" />
+            </div>
+        </div>
+    );
+}
+
+export function WorkoutListSkeleton() {
+    return (
+        <div className="space-y-3">
+            <WorkoutCardSkeleton accent />
+            <WorkoutCardSkeleton />
+            <WorkoutCardSkeleton />
+        </div>
+    );
+}
+
 /** `SharedOwnerBlocks`: a heading per owner over a few of their routines. */
 export function SharedOwnersSkeleton() {
     return (

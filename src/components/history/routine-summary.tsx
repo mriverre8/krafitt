@@ -2,6 +2,7 @@
 
 import { useLocale, useT } from '@/i18n/use-t';
 import { EFFORT_FILL, EFFORT_ICON, EFFORT_WORD } from '@/lib/effort';
+import { PERIOD_WORDS, type Period } from '@/lib/period';
 import { EFFORTS } from '@/lib/progress';
 import { STALL_WEEKS, type RoutineStats } from '@/lib/stats';
 import { cardClass, labelClass } from '@/lib/ui';
@@ -12,14 +13,17 @@ export function RoutineSummary({
     stats,
     week,
     weeks,
+    period = 'week',
 }: {
     stats: RoutineStats;
-    /** The week being trained. */
+    /** The week being trained — or, counting runs, how many times it was done. */
     week: number;
     /** How many there are; null for an open-ended routine. */
     weeks: number | null;
+    period?: Period;
 }) {
     const t = useT();
+    const words = PERIOD_WORDS[period];
     const locale = useLocale();
     const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
     const percent = new Intl.NumberFormat(locale, { style: 'percent' });
@@ -32,20 +36,26 @@ export function RoutineSummary({
             value: stats.setsDue
                 ? percent.format(stats.setsDone / stats.setsDue)
                 : '—',
-            detail: t('progress.stats.adherenceDetail', {
+            detail: t(words.adherence, {
                 sets: stats.setsDone,
                 total: stats.setsDue,
                 done: stats.done,
                 due: stats.due,
             }),
         },
-        {
-            label: t('progress.stats.week'),
-            value: weeks ? `${week}/${weeks}` : String(week),
-            detail: weeks
-                ? t('progress.stats.weekOf', { n: week, total: weeks })
-                : t('progress.weekLabel', { n: week }),
-        },
+        period === 'run'
+            ? {
+                  label: t('progress.stats.runs'),
+                  value: String(week),
+                  detail: t('progress.stats.runsDetail'),
+              }
+            : {
+                  label: t('progress.stats.week'),
+                  value: weeks ? `${week}/${weeks}` : String(week),
+                  detail: weeks
+                      ? t('progress.stats.weekOf', { n: week, total: weeks })
+                      : t('progress.weekLabel', { n: week }),
+              },
         {
             label: t('progress.stats.volume'),
             value: `${number.format(stats.volume)} kg`,
@@ -59,12 +69,12 @@ export function RoutineSummary({
         {
             label: t('progress.stats.records'),
             value: number.format(stats.records),
-            detail: t('progress.stats.recordsDetail'),
+            detail: t(words.records),
         },
         {
             label: t('progress.stats.stalledCount'),
             value: number.format(stats.stalled),
-            detail: t('progress.stats.stalledCountDetail', {
+            detail: t(words.stalledCount, {
                 n: STALL_WEEKS,
             }),
         },

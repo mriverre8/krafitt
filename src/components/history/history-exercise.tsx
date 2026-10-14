@@ -12,6 +12,7 @@ import {
     type WeekState,
 } from '@/lib/progress';
 import { EFFORT_ICON, EFFORT_SAID } from '@/lib/effort';
+import { PERIOD_WORDS, type Period } from '@/lib/period';
 import { formatLogged, formatReps, isTimed } from '@/lib/reps';
 import { setName, setPlaces, setShortLabel } from '@/lib/sets';
 import { cardClass, iconButtonClass } from '@/lib/ui';
@@ -31,14 +32,18 @@ export function HistoryExercise({
     position,
     total,
     onSelect,
+    period = 'week',
 }: {
     exercise: ExerciseView;
     rows: HistoryRow[];
     position: number;
     total: number;
     onSelect: (position: number) => void;
+    /** What each column counts: a week of a routine, a time a workout was done. */
+    period?: Period;
 }) {
     const t = useT();
+    const words = PERIOD_WORDS[period];
     const places = setPlaces(exercise.sets);
     const labels = places.map(setShortLabel);
     const names = places.map(setName);
@@ -142,7 +147,7 @@ export function HistoryExercise({
             >
                 <table className="w-full min-w-max border-separate border-spacing-0 text-center">
                     <caption className="sr-only">
-                        {t('progress.tableCaption', {
+                        {t(words.caption, {
                             exercise: exercise.name,
                         })}
                     </caption>
@@ -175,7 +180,7 @@ export function HistoryExercise({
                                         className={`min-w-16 border-b-2 px-2 pb-2 font-normal ${rule} ${band(row)}`}
                                     >
                                         <span className="sr-only">
-                                            {t('progress.weekLabel', {
+                                            {t(words.label, {
                                                 n: row.week,
                                             })}
                                         </span>
@@ -187,7 +192,7 @@ export function HistoryExercise({
                                                     : 'text-muted'
                                             }`}
                                         >
-                                            {t('progress.week', {
+                                            {t(words.short, {
                                                 n: row.week,
                                             })}
                                             <span className="w-2.5 shrink-0" />

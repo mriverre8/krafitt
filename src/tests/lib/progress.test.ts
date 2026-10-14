@@ -9,7 +9,10 @@ import {
     profileRoutines,
     routineStatus,
     setMove,
+    sectionOf,
+    toKind,
     weekState,
+    workoutRuns,
     type Logs,
 } from '@/lib/progress';
 import { describe, expect, it } from 'vitest';
@@ -316,5 +319,42 @@ describe('routineStatus', () => {
         expect(routineStatus({ ...shelf, canActivate: false })).toBe(
             'incomplete'
         );
+    });
+});
+
+describe('workoutRuns', () => {
+    const range = (from: number, to: number) =>
+        Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+    it('draws the times done and nothing ahead of them', () => {
+        expect(workoutRuns(0, false)).toEqual([]);
+        expect(workoutRuns(3, false)).toEqual([1, 2, 3]);
+    });
+
+    it('draws the time under way while it is being done', () => {
+        expect(workoutRuns(0, true)).toEqual([1]);
+        expect(workoutRuns(3, true)).toEqual([1, 2, 3, 4]);
+    });
+
+    it('holds ten, and then pages on like an open-ended routine', () => {
+        expect(workoutRuns(10, false)).toEqual(range(1, 10));
+        // The eleventh opens a window that starts on the tenth.
+        expect(workoutRuns(11, false)).toEqual([10, 11]);
+        expect(workoutRuns(12, false)).toEqual([10, 11, 12]);
+        expect(workoutRuns(19, false)).toEqual(range(10, 19));
+        expect(workoutRuns(20, false)).toEqual([19, 20]);
+    });
+});
+
+describe('routine kinds', () => {
+    it('reads anything but a workout as a routine', () => {
+        expect(toKind('workout')).toBe('workout');
+        expect(toKind('routine')).toBe('routine');
+        expect(toKind('')).toBe('routine');
+    });
+
+    it('sends each kind to its own section', () => {
+        expect(sectionOf('workout')).toBe('/workouts');
+        expect(sectionOf('routine')).toBe('/routines');
     });
 });

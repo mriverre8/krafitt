@@ -47,12 +47,16 @@ export const emptyExercise: ExerciseDraft = {
 };
 
 /**
- * The day always shows at least one exercise, the same way an exercise always
- * shows at least one set. Key order matters: the drafts are compared and
- * submitted as JSON.
+ * A routine's day always shows at least one exercise, the same way an
+ * exercise always shows at least one set. A workout opens with none instead
+ * (`blank` off): it says it is empty, and is filled in from the add button.
+ * Key order matters: the drafts are compared and submitted as JSON.
  */
-export function toDrafts(exercises: SavedExercise[]): ExerciseDraft[] {
-    if (exercises.length === 0) return [emptyExercise];
+export function toDrafts(
+    exercises: SavedExercise[],
+    blank = true
+): ExerciseDraft[] {
+    if (exercises.length === 0) return blank ? [emptyExercise] : [];
     return exercises.map((exercise) => ({
         id: exercise.id,
         name: exercise.name,

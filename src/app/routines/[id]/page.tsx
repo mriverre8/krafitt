@@ -37,6 +37,7 @@ import {
     isRoutineFinished,
     isRoutineLocked,
     positionFromCursor,
+    toKind,
 } from '@/lib/progress';
 import { isMember, retiredExerciseNames, routineDetail } from '@/lib/queries';
 import { badgeClass } from '@/lib/ui';
@@ -57,7 +58,8 @@ export default async function RoutinePage({
     if (!user) redirect('/');
 
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
-    if (!routine) notFound();
+    // A workout has a page of its own.
+    if (!routine || toKind(routine.kind) === 'workout') notFound();
 
     // One extra lookup, and only for someone who did not write the routine.
     const owner = routine.creatorId === user.id;
@@ -308,7 +310,7 @@ export default async function RoutinePage({
                             <ShareRoutineButton name={routine.name} />
                         </WhenNotEditing>
                     )}
-                    {(owner || member) && locked && (
+                    {(owner || member) && locked && complete && (
                         <WhenNotEditing>
                             <HistoryLink
                                 routineId={routine.id}

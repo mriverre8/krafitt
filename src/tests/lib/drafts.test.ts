@@ -6,6 +6,11 @@ describe('toDrafts', () => {
         expect(toDrafts([])).toEqual([emptyExercise]);
     });
 
+    // A workout opens empty and is filled in from the add button.
+    it('leaves an empty day empty when asked to', () => {
+        expect(toDrafts([], false)).toEqual([]);
+    });
+
     it('reads a stored exercise back into the form', () => {
         expect(
             toDrafts([

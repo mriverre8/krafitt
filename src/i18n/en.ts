@@ -12,12 +12,16 @@ export const en = {
     'common.share': 'Share',
     'common.copied': 'Link copied',
 
-    'toast.daySaved': 'Day saved',
+    'toast.daySaved': 'Changes saved',
     'toast.sent': 'Routine sent to {name}',
+    'toast.workoutSent': 'Workout sent to {name}',
     'toast.madePublic': 'The routine is now public',
     'toast.madePrivate': 'The routine is now private',
+    'toast.workoutPublic': 'The workout is now public',
+    'toast.workoutPrivate': 'The workout is now private',
     'toast.duplicated': 'Copy of {name} created',
     'toast.saved': '{name} saved to your routines',
+    'toast.workoutSaved': '{name} saved to your workouts',
     'toast.renamed': 'Name changed',
     'toast.durationChanged': 'Duration changed',
     'toast.activated': '{name} is now your active routine',
@@ -26,6 +30,9 @@ export const en = {
     'toast.invited': 'Request sent to {name}',
     'toast.joined': 'You are now a member of {routine}',
     'toast.received': '{routine} is now in your routines',
+    'toast.receivedWorkout': '{routine} is now in your workouts',
+    'toast.workoutFinished': 'Workout finished',
+    'toast.workoutCancelled': 'Workout called off',
 
     'pagination.label': 'Pagination',
     'pagination.previous': 'Previous',
@@ -36,6 +43,7 @@ export const en = {
     'nav.today': 'Today',
     'nav.home': 'Home',
     'nav.routines': 'Routines',
+    'nav.workouts': 'Workouts',
     'nav.signOut': 'Sign out',
     'nav.signOutConfirm':
         'You will have to sign in again to log your workouts.',
@@ -132,17 +140,18 @@ export const en = {
     'auth.continueWith': 'Continue with {provider}',
     'auth.or': 'or',
 
-    'home.noRoutineTitle': 'No active routine',
-    'home.noRoutineBody':
-        "Create a routine, or mark one of yours as active, to see today's workout here.",
+    'home.idleTitle': 'Nothing in progress',
+    'home.idleBody':
+        "Start a workout, or set a routine active, to see today's training here.",
     'home.finishedTitle': 'You finished {name}',
     'home.finishedBody':
-        'Every week of the routine is done. Create another one to keep going.',
+        'Every week of the routine is done. Start a workout, or set another routine active, to keep going.',
     'home.goToRoutines': 'Go to my routines',
+    'home.goToWorkouts': 'Go to my workouts',
 
     'today.week': 'Week {week} of {total}',
     'today.weekOpen': 'Week {week}',
-    'today.progress': '{done}/{total} sets',
+    'today.progress': '{done}/{total} {total|set|sets}',
     'today.done': 'Workout complete',
     'today.noExercises': 'This workout has no exercises yet.',
     'today.skip': 'Skip to next day',
@@ -150,6 +159,15 @@ export const en = {
     'today.skipConfirm':
         'This day is not finished. The sets you left blank stay blank. Skip it?',
     'today.skipAnyway': 'Skip anyway',
+    'today.workoutEyebrow': 'Workout',
+    'today.run': 'Session {n}',
+    'today.runColumn': 'Session',
+    'today.finish': 'Finish workout',
+    'today.finishConfirm':
+        'This workout is not done. The sets you left blank stay blank. Finish it?',
+    'today.finishEmptyConfirm':
+        'You have not logged a single set: the workout is called off and stays out of the history. Finish it?',
+    'today.finishAnyway': 'Finish anyway',
     'today.set': 'Set {n}',
     'today.weightLabel': 'Weight set {n}',
     'today.repsLabel': 'Reps set {n}',
@@ -160,7 +178,7 @@ export const en = {
     'today.reps': 'reps',
     'today.seconds': 'sec',
     'today.setPlan': '{min}-{max} reps',
-    'today.setPlanFixed': '{reps} reps',
+    'today.setPlanFixed': '{reps} {reps|rep|reps}',
     'today.effortLabel': 'How set {n} felt',
     'today.effortEasy': 'Had more in the tank',
     'today.effortNormal': 'As planned',
@@ -180,7 +198,7 @@ export const en = {
     'progress.weekColumn': 'Week',
     'progress.setColumn': 'Set',
     'progress.setLabel': 'Set {n}',
-    'progress.logged': '{weight} kg, {reps} reps',
+    'progress.logged': '{weight} kg, {reps} {reps|rep|reps}',
     'progress.loggedResult': '{weight} kg, {result}',
     'progress.counter': '{n}/{total}',
     'progress.exerciseCount': '{name}, exercise {n} of {total}',
@@ -194,7 +212,7 @@ export const en = {
     'progress.stats.title': 'Summary',
     'progress.stats.adherence': 'Consistency',
     'progress.stats.adherenceDetail':
-        '{sets} of {total} sets · {done} of {due} days in full',
+        '{sets} of {total} {total|set|sets} · {done} of {due} {due|day|days} in full',
     'progress.stats.stalledCount': 'Stalled',
     'progress.stats.stalledCountDetail':
         'Exercises not improving in {n}+ weeks',
@@ -215,9 +233,23 @@ export const en = {
     'progress.stats.stalled': 'Stalled · {n} weeks',
     'progress.stats.stalledHint':
         'No set has beaten its last outing in a while: time to change something',
+    'progress.run': '#{n}',
+    'progress.runLabel': 'Session {n}',
+    'progress.runTableCaption': '{exercise}: every set, session by session',
+    'progress.stats.runAdherenceDetail':
+        '{sets} of {total} {total|set|sets} · {done} of {due} {due|session|sessions} in full',
+    'progress.stats.runStalledCountDetail':
+        'Exercises not improving in {n}+ sessions',
+    'progress.stats.runs': 'Sessions',
+    'progress.stats.runsDetail': 'Times you have done it',
+    'progress.stats.runRecordsDetail':
+        'Sessions that beat your best load or reps',
+    'progress.stats.runSinceFirst': '{change} since the first time',
+    'progress.stats.runVolumeChange': 'Volume vs. previous time',
+    'progress.stats.runStalled': 'Stalled · {n} sessions',
 
     'profile.memberSince': 'Member since {date}',
-    'profile.followers': '{count} followers',
+    'profile.followers': '{count} {count|follower|followers}',
     'profile.following': '{count} following',
     'profile.follow': 'Follow',
     'profile.followed': 'Following',
@@ -230,8 +262,8 @@ export const en = {
     'profile.publicTitle': 'Public routines',
     'profile.noPublic': 'No public routines yet.',
     'profile.yearTitle': 'Training year {year}',
-    'profile.yearDays': '{days} days trained',
-    'profile.daySets': '{sets} sets · {date}',
+    'profile.yearDays': '{days} {days|day|days} trained',
+    'profile.daySets': '{sets} {sets|set|sets} · {date}',
     'profile.dayRest': 'Rest · {date}',
     'profile.less': 'Less',
     'profile.more': 'More',
@@ -263,10 +295,10 @@ export const en = {
     'routines.pending': 'Pending',
     'routines.incomplete': 'Incomplete',
     'routines.finished': 'Finished',
-    'routines.meta': '{weeks} weeks · {days} days',
-    'routines.metaOpen': 'Open-ended · {days} days',
-    'routines.progress': '{done}/{total} workouts',
-    'routines.progressOpen': '{done} workouts',
+    'routines.meta': '{weeks} {weeks|week|weeks} · {days} {days|day|days}',
+    'routines.metaOpen': 'Open-ended · {days} {days|day|days}',
+    'routines.progress': '{done}/{total} {total|day|days}',
+    'routines.progressOpen': '{done} {done|day|days}',
     'routines.newTitle': 'New routine',
     'routines.namePlaceholder': 'Routine name',
     'routines.nameLabel': 'Name',
@@ -277,9 +309,10 @@ export const en = {
     'routines.fixed': 'Weeks',
     'routines.create': 'Create routine',
 
-    'routine.meta': '{weeks} weeks · {days} days per week',
-    'routine.metaOpen': 'Open-ended · {days} days per week',
-    'routine.workouts': 'Workouts',
+    'routine.meta':
+        '{weeks} {weeks|week|weeks} · {days} {days|day|days} per week',
+    'routine.metaOpen': 'Open-ended · {days} {days|day|days} per week',
+    'routine.workouts': 'Days',
     'routine.dayTab': 'Day {n}, {name}',
     'routine.prevDay': 'Previous day',
     'routine.nextDay': 'Next day',
@@ -288,7 +321,7 @@ export const en = {
     'routine.renameDay': 'Rename day',
     'routine.deleteDay': 'Delete day',
     'routine.deleteDayConfirm': 'Delete {name} and its exercises?',
-    'routine.noWorkouts': 'This routine has no workouts yet.',
+    'routine.noWorkouts': 'This routine has no days yet.',
     'routine.dayLabel': 'Day name',
     'routine.dayPlaceholder': 'e.g. Push, Legs, Upper A',
     'routine.addDayTitle': 'Add day',
@@ -334,6 +367,40 @@ export const en = {
     'routine.save': 'Save routine',
     'routine.saveConfirm':
         'Save the routine {name} to your routines? You get your own copy, with no progress.',
+    'workouts.title': 'My workouts',
+    'workouts.empty': 'You have no workouts yet.',
+    'workouts.searchLabel': 'Search workouts',
+    'workouts.searchPlaceholder': 'Workout name',
+    'workouts.statusAll': 'All',
+    'workouts.active': 'In progress',
+    'workouts.pending': 'Ready',
+    'workouts.incomplete': 'Incomplete',
+    'workouts.meta':
+        '{exercises} {exercises|exercise|exercises} · {times} {times|session|sessions}',
+    'workouts.exercises': '{exercises} {exercises|exercise|exercises}',
+    'workouts.newTitle': 'New workout',
+    'workouts.namePlaceholder': 'Workout name',
+    'workouts.create': 'Create workout',
+    'workout.ready': 'The workout is complete. You can start it.',
+    'workout.start': 'Start workout',
+    'workout.startConfirm':
+        'Your routine {name} will no longer be active. You can set it active again whenever you like without losing your progress.',
+    'workout.emptyTitle': 'This workout is empty',
+    'workout.emptyBody':
+        'Add its exercises, with the sets they ask for. Once nothing is missing you can start it, as many times as you like.',
+    'workout.delete': 'Delete workout',
+    'workout.send': 'Send workout',
+    'workout.duplicate': 'Duplicate workout',
+    'workout.duplicateConfirm':
+        'Duplicate the workout {name}? The copy starts from scratch, with no sessions.',
+    'workout.by': 'Workout by {name}',
+    'workout.makePublic': 'Make public',
+    'workout.makePrivate': 'Make private',
+    'workout.save': 'Save workout',
+    'workout.saveConfirm':
+        'Save the workout {name} to your workouts? You get your own copy, with no sessions.',
+    'workout.deleteConfirm':
+        'Delete the workout {name}? Everything logged in it is lost.',
 
     'members.title': 'People',
     'members.link': 'People',
@@ -363,6 +430,7 @@ export const en = {
         'When someone invites you to a routine or sends you one, it shows up here.',
     'requests.member': 'Wants to add you to {routine} so you can see it',
     'requests.send': 'Wants to send you {routine}',
+    'requests.sendWorkout': 'Wants to send you the workout {routine}',
     'requests.sendWithMember':
         'Wants to send you {routine} and join it as a member',
     'requests.accept': 'Accept',
@@ -435,7 +503,7 @@ export const en = {
     'validate.noTechnique': 'name the technique or remove it',
     'validate.showFields': 'Show errors',
     'validate.problem': '1 thing left to finish',
-    'validate.problems': '{n} things left to finish',
+    'validate.problems': '{n} {n|thing|things} left to finish',
     'validate.hideFields': 'Hide errors',
 
     'technique.linear': 'Straight sets',
@@ -489,6 +557,9 @@ export const en = {
         'The routine has changed: reload to see it as it is now',
     'error.activeDayIncomplete': '{where}: {what}',
     'error.fillPrevious': 'Fill in the previous sets first',
+    'error.workoutTitle': 'Give the workout a name',
+    'error.workoutStarted': 'A workout in progress cannot be edited',
+    'error.workoutInProgress': 'Finish the workout {name} first',
 };
 
 export type Dict = typeof en;

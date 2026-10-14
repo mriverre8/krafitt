@@ -21,7 +21,7 @@ describe('RoutineCard', () => {
         render(<RoutineCard {...props} />);
         expect(screen.getByText('Strength')).toBeInTheDocument();
         expect(screen.getByText('4 weeks · 3 days')).toBeInTheDocument();
-        expect(screen.getByText('6/12 workouts')).toBeInTheDocument();
+        expect(screen.getByText('6/12 days')).toBeInTheDocument();
     });
 
     it('makes the whole card one link into the routine', () => {
@@ -39,7 +39,7 @@ describe('RoutineCard', () => {
                 cursor={99}
             />
         );
-        expect(screen.getByText('12/12 workouts')).toBeInTheDocument();
+        expect(screen.getByText('12/12 days')).toBeInTheDocument();
     });
 
     // The card only reports state now: activating happens on the routine's own

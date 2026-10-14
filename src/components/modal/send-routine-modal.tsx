@@ -4,6 +4,7 @@ import { useT } from '@/i18n/use-t';
 import { EMAIL_PATTERN } from '@/lib/constants';
 import { normalEmail } from '@/lib/utils';
 import type { FoundUser } from '@/lib/forms';
+import type { RoutineKind } from '@/lib/progress';
 import {
     cardClass,
     foundSearchFrameClass,
@@ -29,15 +30,19 @@ export type SendRoutineModalProps = {
         userId: string,
         addMe: boolean
     ) => Promise<{ error?: string } | void>;
+    /** A workout has no people, so there is no joining its copy to offer. */
+    kind?: RoutineKind;
     onClose: () => void;
 };
 
 export function SendRoutineModal({
     find,
     send,
+    kind = 'routine',
     onClose,
 }: SendRoutineModalProps) {
     const t = useT();
+    const workout = kind === 'workout';
     const [email, setEmail] = useState('');
     const [found, setFound] = useState<{ email: string; user: FoundUser }>();
     const [addMe, setAddMe] = useState(false);
@@ -48,7 +53,7 @@ export function SendRoutineModal({
 
     return (
         <Modal
-            title={t('routine.send')}
+            title={t(`${kind}.send`)}
             onClose={onClose}
         >
             <form
@@ -136,15 +141,17 @@ export function SendRoutineModal({
                 )}
             </form>
 
-            <label className="flex items-center gap-2 text-sm font-semibold">
-                <input
-                    type="checkbox"
-                    checked={addMe}
-                    onChange={(event) => setAddMe(event.target.checked)}
-                    className="accent-pulse size-4"
-                />
-                {t('routine.sendAddMe')}
-            </label>
+            {!workout && (
+                <label className="flex items-center gap-2 text-sm font-semibold">
+                    <input
+                        type="checkbox"
+                        checked={addMe}
+                        onChange={(event) => setAddMe(event.target.checked)}
+                        className="accent-pulse size-4"
+                    />
+                    {t('routine.sendAddMe')}
+                </label>
+            )}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button
@@ -162,7 +169,7 @@ export function SendRoutineModal({
                             try {
                                 const result = await send(
                                     found!.user.id,
-                                    addMe
+                                    !workout && addMe
                                 );
                                 if (result?.error)
                                     return setError(result.error);
@@ -171,7 +178,16 @@ export function SendRoutineModal({
                                 return setError(t('today.genericError'));
                             }
                             onClose();
-                            toast(t('toast.sent', { name: found!.user.name }));
+                            toast(
+                                t(
+                                    workout
+                                        ? 'toast.workoutSent'
+                                        : 'toast.sent',
+                                    {
+                                        name: found!.user.name,
+                                    }
+                                )
+                            );
                         })
                     }
                     className={`${primaryClass} flex items-center justify-center gap-2 py-2.5 text-sm`}
@@ -180,7 +196,7 @@ export function SendRoutineModal({
                         size={14}
                         aria-hidden
                     />
-                    {t('routine.send')}
+                    {t(`${kind}.send`)}
                 </button>
             </div>
         </Modal>
