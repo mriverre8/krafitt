@@ -46,7 +46,6 @@ export const ca: Dict = {
     'nav.home': 'Inici',
     'nav.routines': 'Rutines',
     'nav.workouts': 'Entrenaments',
-    'nav.workoutsShort': 'Entrenos',
     'nav.signOut': 'Tancar sessió',
     'nav.signOutConfirm':
         'Hauràs de tornar a iniciar sessió per registrar els teus entrenaments.',

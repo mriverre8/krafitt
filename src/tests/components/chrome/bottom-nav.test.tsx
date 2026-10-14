@@ -81,7 +81,9 @@ describe('BottomNav order', () => {
         pathname = '/';
         render(<BottomNav userId="u1" />);
         expect(
-            screen.getAllByRole('link').map((link) => link.textContent)
+            screen
+                .getAllByRole('link')
+                .map((link) => link.getAttribute('aria-label'))
         ).toEqual(['Home', 'Workouts', 'Routines', 'Profile']);
     });
 });

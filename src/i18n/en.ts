@@ -44,7 +44,6 @@ export const en = {
     'nav.home': 'Home',
     'nav.routines': 'Routines',
     'nav.workouts': 'Workouts',
-    'nav.workoutsShort': 'Workouts',
     'nav.signOut': 'Sign out',
     'nav.signOutConfirm':
         'You will have to sign in again to log your workouts.',

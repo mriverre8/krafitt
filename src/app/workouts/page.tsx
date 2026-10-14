@@ -23,7 +23,9 @@ export default async function WorkoutsPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="display text-6xl">{t('nav.workouts')}</h1>
+            <h1 className="display text-5xl sm:text-6xl">
+                {t('nav.workouts')}
+            </h1>
             {requests > 0 && (
                 <nav className="border-line flex border-b-2">
                     <RequestsTab

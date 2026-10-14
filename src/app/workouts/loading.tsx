@@ -5,7 +5,7 @@ export default function Loading() {
         <Skeleton>
             <Copy
                 k="nav.workouts"
-                className="display text-6xl"
+                className="display text-5xl sm:text-6xl"
             />
             <WorkoutListSkeleton />
         </Skeleton>

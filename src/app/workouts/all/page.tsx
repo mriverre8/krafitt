@@ -38,7 +38,9 @@ export default async function AllWorkoutsPage({
         <div className="space-y-6">
             <header>
                 <BackButton fallback="/workouts" />
-                <h1 className="display text-6xl">{t('workouts.title')}</h1>
+                <h1 className="display text-5xl sm:text-6xl">
+                    {t('workouts.title')}
+                </h1>
             </header>
 
             <SearchBar

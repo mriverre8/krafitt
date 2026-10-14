@@ -13,7 +13,7 @@ export default function Loading() {
                 <BackBar />
                 <Copy
                     k="workouts.title"
-                    className="display text-6xl"
+                    className="display text-5xl sm:text-6xl"
                 />
             </div>
             <SearchSkeleton filter />

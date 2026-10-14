@@ -21,7 +21,7 @@ export function BottomNav({ userId }: { userId: string }) {
         },
         {
             href: '/workouts',
-            label: t('nav.workoutsShort'),
+            label: t('nav.workouts'),
             Icon: Zap,
             active: pathname.startsWith('/workouts'),
         },
@@ -51,11 +51,10 @@ export function BottomNav({ userId }: { userId: string }) {
             >
                 <div
                     aria-hidden
-                    className={`bg-surface2/70 absolute inset-y-1.5 left-1.5 rounded-md transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none ${
+                    className={`bg-surface2/70 absolute inset-y-1.5 left-1.5 w-[calc((100%-1.5rem)/4)] rounded-md transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none ${
                         activeIndex < 0 ? 'opacity-0' : ''
                     }`}
                     style={{
-                        width: `calc((100% - ${0.75 + 0.25 * (links.length - 1)}rem) / ${links.length})`,
                         translate: `calc(${Math.max(activeIndex, 0)} * (100% + 0.25rem))`,
                     }}
                 />
@@ -64,17 +63,18 @@ export function BottomNav({ userId }: { userId: string }) {
                         key={href}
                         href={href}
                         aria-current={active ? 'page' : undefined}
-                        className={`font-display relative flex flex-1 items-center justify-center gap-1.5 rounded-md text-sm font-bold tracking-wide uppercase transition-colors ${
+                        aria-label={label}
+                        title={label}
+                        className={`relative flex flex-1 items-center justify-center rounded-md transition-colors ${
                             active
                                 ? 'text-pulse'
                                 : 'text-muted hover:text-pulse'
                         }`}
                     >
                         <Icon
-                            size={16}
+                            size={20}
                             aria-hidden
                         />
-                        {label}
                     </Link>
                 ))}
             </nav>
