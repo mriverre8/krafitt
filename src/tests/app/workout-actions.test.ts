@@ -1,6 +1,8 @@
 import {
     createWorkout,
     duplicateRoutine,
+    logSet,
+    renameWorkout,
     saveRoutine,
     sendRoutine,
     setActiveRoutine,
@@ -14,6 +16,7 @@ const updateMany = vi.fn();
 const create = vi.fn();
 const transaction = vi.fn();
 const countLogs = vi.fn();
+const upsertSession = vi.fn();
 const upsertRequest = vi.fn();
 const requireRoutine = vi.fn();
 const routineDetail = vi.fn();
@@ -35,6 +38,9 @@ vi.mock('@/lib/db', () => ({
             create: (...args: unknown[]) => create(...args),
         },
         setLog: { count: (...args: unknown[]) => countLogs(...args) },
+        workoutSession: {
+            upsert: (...args: unknown[]) => upsertSession(...args),
+        },
         routineRequest: {
             upsert: (...args: unknown[]) => upsertRequest(...args),
         },
@@ -43,6 +49,8 @@ vi.mock('@/lib/db', () => ({
 }));
 vi.mock('@/lib/access', () => ({
     requireRoutine: (...args: unknown[]) => requireRoutine(...args),
+    requireEditableRoutine: (...args: unknown[]) => requireRoutine(...args),
+    routineIdOfWorkout: async () => 'r2',
 }));
 vi.mock('@/lib/queries', () => ({
     routineDetail: (...args: unknown[]) => routineDetail(...args),
@@ -90,6 +98,7 @@ beforeEach(() => {
         create,
         transaction,
         countLogs,
+        upsertSession,
         upsertRequest,
         requireRoutine,
         routineDetail,
@@ -148,8 +157,8 @@ describe('skipDay', () => {
         expect(countLogs).toHaveBeenCalledWith({
             where: { session: { routineId: 'r2', userId: 'ada', week: 3 } },
         });
-        expect(update).toHaveBeenCalledWith({
-            where: { id: 'r2' },
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 2, isActive: true },
             data: { cursor: { increment: 1 }, isActive: false },
         });
     });
@@ -164,7 +173,7 @@ describe('skipDay', () => {
         });
         await skipDay('r2');
         expect(countLogs).not.toHaveBeenCalled();
-        expect(update).not.toHaveBeenCalled();
+        expect(updateMany).not.toHaveBeenCalled();
     });
 
     // Nothing logged, nothing done: it is called off, and is not counted.
@@ -176,18 +185,50 @@ describe('skipDay', () => {
         });
         countLogs.mockResolvedValue(0);
         await skipDay('r2');
-        expect(update).toHaveBeenCalledWith({
-            where: { id: 'r2' },
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 2, isActive: true },
             data: { cursor: undefined, isActive: false },
         });
     });
 
     it('leaves a routine active on its next day', async () => {
+        requireRoutine.mockResolvedValue({ kind: 'routine', cursor: 5 });
         await skipDay('r2');
-        expect(update).toHaveBeenCalledWith({
-            where: { id: 'r2' },
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
             data: { cursor: { increment: 1 }, isActive: undefined },
         });
+    });
+});
+
+describe('renameWorkout', () => {
+    // A workout's day carries the workout's name, and is renamed with it.
+    it("refuses a workout's day on its own", async () => {
+        requireRoutine.mockResolvedValue({ kind: 'workout' });
+        const data = new FormData();
+        data.set('name', 'Push');
+        await expect(renameWorkout('d1', {}, data)).rejects.toThrow(
+            'You do not have access to this routine'
+        );
+    });
+});
+
+describe('logSet', () => {
+    // A screen left open after the workout was finished or called off: the
+    // closed time stays as it was, and the next one is not opened early.
+    it.each([
+        ['no longer under way', { isActive: false, cursor: 2 }, 3],
+        [
+            'at another time than the one under way',
+            { isActive: true, cursor: 2 },
+            4,
+        ],
+    ])('refuses a workout %s', async (_, state, week) => {
+        requireRoutine.mockResolvedValue({ kind: 'workout', ...state });
+        await expect(logSet('d1', week, 'e1', 's1', 60, 8)).resolves.toEqual({
+            error: 'This workout is already finished',
+        });
+        expect(upsertSession).not.toHaveBeenCalled();
     });
 });
 

@@ -14,8 +14,8 @@ import {
  * knows about `isPublic`. The pages that only read do that check themselves.
  *
  * `kind` is for the moves only one kind has: a workout has no duration, no
- * people, no visibility and no days to add or take away. Asked for here, so no
- * action can forget it.
+ * people, and one day that is neither added, taken away nor renamed on its
+ * own. Each action that is a routine's only passes it.
  */
 export async function requireRoutine(
     routineId: string,

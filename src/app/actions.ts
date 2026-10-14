@@ -712,7 +712,10 @@ export async function renameWorkout(
     if (!name) return { error: t('error.workoutName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireEditableRoutine(routineId, user.id);
+    const routine = await requireEditableRoutine(routineId, user.id);
+    // A workout's one day carries the workout's name: it is renamed with it.
+    if (toKind(routine.kind) !== 'routine')
+        throw new Error(t('error.noAccess'));
 
     await prisma.workout.update({ where: { id: workoutId }, data: { name } });
     revalidatePath(`/routines/${routineId}`);
@@ -754,7 +757,14 @@ export async function logSet(
         return { error: t('error.reps') };
 
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id);
+    // A workout takes sets only for the time under way: a screen left open
+    // after finishing must not write into a closed time, nor open the next.
+    if (
+        toKind(routine.kind) === 'workout' &&
+        (!routine.isActive || week !== routine.cursor + 1)
+    )
+        return { error: t('error.alreadyFinished') };
 
     // The first logged set is what opens the session for this week.
     const session = await prisma.workoutSession.upsert({
@@ -837,8 +847,14 @@ export async function skipDay(routineId: string) {
                 },
             },
         })) > 0;
-    await prisma.routine.update({
-        where: { id: routineId },
+    // Guarded on what was read, like `todayWorkout`: two screens finishing at
+    // once both pass the check above, and only one of them may count.
+    await prisma.routine.updateMany({
+        where: {
+            id: routineId,
+            cursor: routine.cursor,
+            ...(workout && { isActive: true }),
+        },
         data: {
             cursor: counts ? { increment: 1 } : undefined,
             isActive: workout ? false : undefined,
