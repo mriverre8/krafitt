@@ -1,3 +1,4 @@
+import type { Translate } from '@/i18n/config';
 import { getT } from '@/i18n/server';
 import { Inbox } from 'lucide-react';
 import Link from 'next/link';
@@ -40,25 +41,46 @@ export async function RoutineTabs({
                     </Link>
                 );
             })}
-            {requests > 0 && (
-                <Link
-                    href="/routines/requests"
-                    aria-label={t('requests.tab', { count: requests })}
-                    className={`${tabClass(false)} ml-auto flex items-center gap-1.5`}
-                >
-                    <Inbox
-                        size={16}
-                        strokeWidth={2.5}
-                        aria-hidden
-                    />
-                    <span className="hidden sm:inline">
-                        {t('requests.title')}
-                    </span>
-                    <span className="bg-volt text-on-volt grid h-4 min-w-4 place-items-center rounded-full px-1 text-[0.625rem] leading-none">
-                        {requests}
-                    </span>
-                </Link>
-            )}
+            <RequestsTab
+                count={requests}
+                t={t}
+            />
         </nav>
+    );
+}
+
+/**
+ * The way into what is waiting on the user's answer, drawn as the last tab of
+ * a row. Each section keeps its own inbox — routines are sent to the one,
+ * workouts to the other — and `count` is that section's. Nothing waiting,
+ * nothing drawn.
+ */
+export function RequestsTab({
+    count,
+    section = '/routines',
+    t,
+}: {
+    count: number;
+    section?: '/routines' | '/workouts';
+    t: Translate;
+}) {
+    if (count <= 0) return null;
+
+    return (
+        <Link
+            href={`${section}/requests`}
+            aria-label={t('requests.tab', { count })}
+            className={`${tabClass(false)} ml-auto flex items-center gap-1.5`}
+        >
+            <Inbox
+                size={16}
+                strokeWidth={2.5}
+                aria-hidden
+            />
+            <span className="hidden sm:inline">{t('requests.title')}</span>
+            <span className="bg-volt text-on-volt grid h-4 min-w-4 place-items-center rounded-full px-1 text-[0.625rem] leading-none">
+                {count}
+            </span>
+        </Link>
     );
 }

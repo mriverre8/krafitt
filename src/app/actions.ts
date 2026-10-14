@@ -41,7 +41,9 @@ import {
     isRoutineFinished,
     isSessionComplete,
     isSetEnabled,
+    sectionOf,
     toEffort,
+    toKind,
     type Effort,
 } from '@/lib/progress';
 import { isMember, planExercises, routineDetail } from '@/lib/queries';
@@ -84,6 +86,43 @@ export async function createRoutine(
     redirect(`/routines/${routine.id}`);
 }
 
+/**
+ * A workout is made with the one day it will ever have, under its own name,
+ * and with no duration: it is done as many times as one likes.
+ */
+export async function createWorkout(
+    _previous: FormState,
+    data: FormData
+): Promise<FormState> {
+    const user = await requireUser();
+    const t = await getT();
+    const name = str(data, 'name');
+
+    if (!name) return { error: t('error.workoutTitle') };
+    if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
+
+    const workout = await prisma.routine.create({
+        data: {
+            name,
+            kind: 'workout',
+            durationWeeks: null,
+            creatorId: user.id,
+            workouts: { create: { name, order: 0 } },
+        },
+    });
+
+    revalidatePath('/workouts');
+    redirect(`/workouts/${workout.id}`);
+}
+
+/** Starting a workout is putting it on the home screen, where it is trained:
+    the same move as setting a routine active, and the same bar to clear. */
+export async function startWorkout(routineId: string) {
+    const result = await setActiveRoutine(routineId);
+    if (result?.error) return result;
+    redirect('/');
+}
+
 export async function setActiveRoutine(routineId: string) {
     const user = await requireUser();
     await requireRoutine(routineId, user.id);
@@ -93,6 +132,21 @@ export async function setActiveRoutine(routineId: string) {
 
     if (!routine || !isRoutineComplete(routine, t)) {
         return { error: t('error.routineIncomplete') };
+    }
+
+    // A workout under way is finished or left, never pushed aside: nothing
+    // takes its place on the home screen until it is done.
+    const underWay = await prisma.routine.findFirst({
+        where: {
+            creatorId: user.id,
+            kind: 'workout',
+            isActive: true,
+            id: { not: routineId },
+        },
+        select: { name: true },
+    });
+    if (underWay) {
+        return { error: t('error.workoutInProgress', { name: underWay.name }) };
     }
 
     if (
@@ -117,11 +171,12 @@ export async function setActiveRoutine(routineId: string) {
     ]);
     revalidatePath('/');
     revalidatePath('/routines');
+    revalidatePath('/workouts');
 }
 
 export async function deactivateRoutine(routineId: string) {
     const user = await requireUser();
-    await requireRoutine(routineId, user.id);
+    await requireRoutine(routineId, user.id, 'routine');
 
     await prisma.routine.update({
         where: { id: routineId },
@@ -141,13 +196,13 @@ export async function setRoutineVisibility(
     isPublic: boolean
 ) {
     const user = await requireUser();
-    await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id);
 
     await prisma.routine.update({
         where: { id: routineId },
         data: { isPublic },
     });
-    revalidatePath(`/routines/${routineId}`);
+    revalidatePath(`${sectionOf(routine.kind)}/${routineId}`);
 }
 
 export async function renameRoutine(
@@ -161,11 +216,23 @@ export async function renameRoutine(
 
     if (!name) return { error: t('error.routineName') };
     if (name.length > NAME_MAX) return { error: t('error.nameTooLong') };
-    await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id);
+    const section = sectionOf(routine.kind);
 
-    await prisma.routine.update({ where: { id: routineId }, data: { name } });
-    revalidatePath(`/routines/${routineId}`);
-    revalidatePath('/routines');
+    // A workout's one day goes by the workout's name, so the home screen and
+    // the history, which title the day, say the same thing.
+    await prisma.routine.update({
+        where: { id: routineId },
+        data: {
+            name,
+            workouts:
+                toKind(routine.kind) === 'workout'
+                    ? { updateMany: { where: {}, data: { name } } }
+                    : undefined,
+        },
+    });
+    revalidatePath(`${section}/${routineId}`);
+    revalidatePath(section);
     revalidatePath('/');
     return { ok: true };
 }
@@ -187,7 +254,7 @@ export async function setRoutineDuration(
     const user = await requireUser();
     const t = await getT();
     const durationWeeks = int(data, 'durationWeeks');
-    const routine = await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id, 'routine');
 
     if (routine.durationWeeks === null) {
         return { error: t('error.durationOpenEnded') };
@@ -211,10 +278,10 @@ export async function setRoutineDuration(
 
 export async function deleteRoutine(routineId: string) {
     const user = await requireUser();
-    await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id);
     await prisma.routine.delete({ where: { id: routineId } });
     revalidatePath('/');
-    redirect('/routines');
+    redirect(sectionOf(routine.kind));
 }
 
 /**
@@ -238,12 +305,18 @@ function copyRoutine(
     return prisma.routine.create({
         data: {
             name,
+            // A workout copies as a workout: one day, done as often as one likes.
+            kind: routine.kind,
             durationWeeks: routine.durationWeeks,
             creatorId,
             members: memberId ? { create: { userId: memberId } } : undefined,
             workouts: {
                 create: routine.workouts.map((workout) => ({
-                    name: workout.name,
+                    // A workout's one day goes by the workout's own name.
+                    name:
+                        toKind(routine.kind) === 'workout'
+                            ? name
+                            : workout.name,
                     order: workout.order,
                     exercises: {
                         create: workout.exercises.map((exercise) => ({
@@ -281,8 +354,10 @@ export async function duplicateRoutine(routineId: string) {
         user.id,
         t('routine.copyName', { name: routine.name.slice(0, room) })
     );
-    revalidatePath('/routines');
-    redirect(`/routines/${copy.id}`);
+    // A workout's copy is a workout, and opens among the workouts.
+    const section = sectionOf(routine.kind);
+    revalidatePath(section);
+    redirect(`${section}/${copy.id}`);
 }
 
 /**
@@ -300,8 +375,9 @@ export async function saveRoutine(routineId: string) {
     if (!allowed) return { error: t('error.noAccess') };
 
     const copy = await copyRoutine(routine, user.id, routine.name);
-    revalidatePath('/routines');
-    redirect(`/routines/${copy.id}`);
+    const section = sectionOf(routine.kind);
+    revalidatePath(section);
+    redirect(`${section}/${copy.id}`);
 }
 
 /**
@@ -324,11 +400,11 @@ export async function findRecipient(
 }
 
 /**
- * The owner's plan, offered to someone else as a routine of their own — the
- * same fresh copy `saveRoutine` makes, only pushed rather than pulled. Nothing
- * is copied yet: it waits as a request until they accept it, and sending again
- * before they answer only updates the member choice. Nothing on the sender's
- * side changes, so there is nothing of theirs to revalidate.
+ * The owner's plan — routine or workout — offered to someone else as one of
+ * their own: the same fresh copy `saveRoutine` makes, only pushed rather than
+ * pulled. Nothing is copied yet: it waits as a request until they accept it,
+ * and sending again before they answer only updates the member choice. Nothing
+ * on the sender's side changes, so there is nothing of theirs to revalidate.
  */
 export async function sendRoutine(
     routineId: string,
@@ -346,15 +422,18 @@ export async function sendRoutine(
     }
     if (userId === user.id) return { error: t('error.sendSelf') };
 
+    // A workout has no people: its copy is the recipient's alone, whatever the
+    // form sent.
+    const addSender = toKind(routine.kind) === 'routine' && addMe;
     await prisma.routineRequest.upsert({
         where: requestKey('send', routineId, userId),
         create: {
             kind: 'send',
             routineId,
             recipientId: userId,
-            addSender: addMe,
+            addSender,
         },
-        update: { addSender: addMe },
+        update: { addSender },
     });
 }
 
@@ -593,7 +672,9 @@ export async function saveExercises(
         }),
     ]);
 
-    revalidatePath(`/routines/${routineId}`);
+    // The page the editor is on, whichever kind it is: its badge and its list
+    // of what is missing are drawn from what was just saved.
+    revalidatePath(`${sectionOf(routine.kind)}/${routineId}`);
     revalidatePath(`/progress/${routineId}`);
     revalidatePath('/');
 
@@ -729,14 +810,45 @@ export async function logSet(
     }
 }
 
+/**
+ * Moving on with what was left blank. On a workout this is "Finish workout":
+ * the time counts like a skipped day does, with its blanks — unless nothing
+ * at all was logged — and the workout leaves the home screen rather than
+ * starting over.
+ */
 export async function skipDay(routineId: string) {
     const user = await requireUser();
-    await requireRoutine(routineId, user.id);
+    const routine = await requireRoutine(routineId, user.id);
+    const workout = toKind(routine.kind) === 'workout';
+    // Only a workout under way can be finished: a stale button — it was
+    // finished elsewhere, or closed by its last set — must not count it twice.
+    if (workout && !routine.isActive) return;
+    // A workout finished with nothing logged was never done: it is called off
+    // rather than counted, and leaves no row in the history. The time under
+    // way is the one after the cursor.
+    const counts =
+        !workout ||
+        (await prisma.setLog.count({
+            where: {
+                session: {
+                    routineId,
+                    userId: user.id,
+                    week: routine.cursor + 1,
+                },
+            },
+        })) > 0;
     await prisma.routine.update({
         where: { id: routineId },
-        data: { cursor: { increment: 1 } },
+        data: {
+            cursor: counts ? { increment: 1 } : undefined,
+            isActive: workout ? false : undefined,
+        },
     });
     revalidatePath('/');
+    if (workout) {
+        revalidatePath('/workouts');
+        revalidatePath(`/workouts/${routineId}`);
+    }
 }
 
 // ---------- people on a routine ----------
@@ -762,7 +874,7 @@ export async function findRoutineMember(
     const user = await requireUser();
     const t = await getT();
     // Owner-only, so this is never a general lookup of the app's users.
-    await requireRoutine(routineId, user.id);
+    await requireRoutine(routineId, user.id, 'routine');
 
     const email = str(data, 'email');
     if (!email) return { error: t('error.memberEmail') };
@@ -799,7 +911,7 @@ const userByEmail = (email: string) =>
  */
 export async function inviteRoutineMember(routineId: string, userId: string) {
     const user = await requireUser();
-    await requireRoutine(routineId, user.id);
+    await requireRoutine(routineId, user.id, 'routine');
     const t = await getT();
 
     if (userId === user.id) return { error: t('error.memberSelf') };
@@ -895,8 +1007,11 @@ export async function acceptRequest(requestId: string) {
             answered,
         ]);
     }
+    // Either inbox, and the list the copy joins: a routine or a workout.
     revalidatePath('/routines/requests');
     revalidatePath('/routines');
+    revalidatePath('/workouts/requests');
+    revalidatePath('/workouts');
 }
 
 /** Saying no: the request goes and nothing else happens. A stale button is a
@@ -908,6 +1023,8 @@ export async function declineRequest(requestId: string) {
     });
     revalidatePath('/routines/requests');
     revalidatePath('/routines');
+    revalidatePath('/workouts/requests');
+    revalidatePath('/workouts');
 }
 
 // ---------- follows ----------

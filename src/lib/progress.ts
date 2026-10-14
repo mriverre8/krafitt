@@ -98,6 +98,45 @@ export function historyWeeks(
     return Array.from({ length: HISTORY_WINDOW }, (_, i) => first + i);
 }
 
+/**
+ * What a routine row is. A `workout` is an open-ended routine of one day,
+ * trained as often as one likes: each "week" of it is one more time it was
+ * done, it is never finished, and it leaves the home screen once each time is
+ * over rather than putting the next one there.
+ */
+export const ROUTINE_KINDS = ['routine', 'workout'] as const;
+export type RoutineKind = (typeof ROUTINE_KINDS)[number];
+
+/** The rows the database holds as plain strings, read back as a kind: anything
+    that is not a workout is a routine, which is the column's default. */
+export const toKind = (kind: string): RoutineKind =>
+    kind === 'workout' ? 'workout' : 'routine';
+
+/** Where each kind lives. */
+export const sectionOf = (kind: string) =>
+    toKind(kind) === 'workout' ? '/workouts' : '/routines';
+
+/** A workout is never finished, so it only ever wears these three. */
+export const WORKOUT_STATUSES = [
+    'active',
+    'pending',
+    'incomplete',
+] as const satisfies readonly RoutineStatus[];
+
+/**
+ * The times a workout's history draws: every one done, and the one under way
+ * while it is active, never the ones not started. Up to ten of them, then it
+ * pages on the way an open-ended routine does, each window starting at the
+ * last row of the one before.
+ */
+export function workoutRuns(cursor: number, isActive: boolean): number[] {
+    const last = cursor + (isActive ? 1 : 0);
+    if (last <= 0) return [];
+    // `historyWeeks` windows on the run after the cursor; the last one drawn
+    // is the one to window on here.
+    return historyWeeks(null, last - 1, 1).filter((run) => run <= last);
+}
+
 /** What a set is made of, in the order it is argued over: the bar first, then
     the reps on it, then how the whole thing felt. Everything from the deciding
     part downwards is carried by its verdict, which is why the order matters
@@ -240,6 +279,14 @@ export function isSetFilled(
 ): boolean {
     const v = logs[exerciseId]?.[setIndex];
     return !!v && Number.isFinite(v.weight) && v.weight >= 0 && v.reps > 0;
+}
+
+/** How many sets of the workout are filled in: the progress of a day, and what
+    tells a workout half done from one with nothing logged. */
+export function filledSets(exercises: ExercisePlan[], logs: Logs): number {
+    return flatSets(exercises).filter((s) =>
+        isSetFilled(logs, s.exerciseId, s.setIndex)
+    ).length;
 }
 
 /**

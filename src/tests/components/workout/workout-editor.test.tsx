@@ -146,6 +146,51 @@ describe('WorkoutEditor', () => {
         ).toBeInTheDocument();
     });
 
+    // A workout's one day goes by the workout's name, which the page already
+    // titles it with: no heading of its own, and no day to rename or delete.
+    it('draws no day heading or menu without a day to rename', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                onRenameWorkout={undefined}
+                onDeleteWorkout={undefined}
+            />
+        );
+        expect(screen.queryByText('Push A')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Day options' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+    });
+
+    // A new workout: no blank card to fill in, only the button to add one —
+    // and nothing to save until something is added.
+    it('opens an empty workout on the add button alone', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+                onRenameWorkout={undefined}
+                empty={<p>Empty</p>}
+            />
+        );
+        expect(
+            screen.queryByLabelText('Exercise 1 name')
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Empty')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /Save changes/ })
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(addExercise());
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue('');
+        expect(
+            screen.getByRole('button', { name: /Save changes/ })
+        ).toBeInTheDocument();
+    });
+
     it('starts an empty day on a single blank exercise', () => {
         render(
             <WorkoutEditor
@@ -342,7 +387,7 @@ describe('WorkoutEditor', () => {
         fireEvent.click(save());
         await waitFor(() => expect(technique).toHaveValue(''));
         expect(noBar()).toBeNull();
-        expect(toasts()).toEqual(['Day saved']);
+        expect(toasts()).toEqual(['Changes saved']);
     });
 
     it('picks up the id a brand new exercise was given', async () => {
@@ -580,6 +625,19 @@ describe('WorkoutEditor, before Edit is pressed', () => {
         expect(screen.getByText('Exercise')).toBeInTheDocument();
         expect(screen.getByText('Set 1')).toBeInTheDocument();
         expect(screen.getByText('Reps to define')).toBeInTheDocument();
+    });
+
+    // A workout says it is empty instead, the way an empty routine does.
+    it('reads an empty workout as what it was told to say', () => {
+        rtlRender(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+                empty={<p>This workout is empty</p>}
+            />
+        );
+        expect(screen.getByText('This workout is empty')).toBeInTheDocument();
+        expect(screen.queryByText('Set 1')).not.toBeInTheDocument();
     });
 
     it('hides everything that would change the day', () => {

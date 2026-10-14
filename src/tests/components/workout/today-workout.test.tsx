@@ -280,3 +280,86 @@ describe('TodayWorkout', () => {
         ).toBeInTheDocument();
     });
 });
+
+describe('TodayWorkout, for a workout', () => {
+    const workout = {
+        ...props,
+        routineName: 'Legs',
+        week: 3,
+        totalWeeks: null,
+        kind: 'workout' as const,
+    };
+
+    beforeEach(() => {
+        useSessionStore.setState({ logs: {}, day: undefined });
+        useToastStore.setState({ toasts: [] });
+        vi.clearAllMocks();
+    });
+
+    // There are no weeks: the badge counts which time this is.
+    it('says which time it is rather than which week', () => {
+        render(<TodayWorkout {...workout} />);
+        expect(screen.getByText('Session 3')).toBeInTheDocument();
+        expect(screen.queryByText(/Week/)).not.toBeInTheDocument();
+        expect(screen.getByText('Workout')).toBeInTheDocument();
+    });
+
+    it('is finished rather than skipped, once confirmed', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...workout}
+                    logs={{ e1: { 0: { weight: 80, reps: 8 } } }}
+                />
+            )
+        );
+        expect(screen.queryByText('Skip to next day')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText('Finish workout'));
+        expect(await openConfirm()).toHaveTextContent(
+            'The sets you left blank stay blank'
+        );
+        await acceptConfirm('Finish anyway');
+        await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Workout finished', kind: 'success' },
+            ])
+        );
+    });
+
+    // With nothing logged it is called off, not counted, and says so.
+    it('warns that finishing with nothing logged calls it off', async () => {
+        render(withModals(<TodayWorkout {...workout} />));
+        fireEvent.click(screen.getByText('Finish workout'));
+        expect(await openConfirm()).toHaveTextContent(
+            'You have not logged a single set'
+        );
+        await acceptConfirm('Finish anyway');
+        await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Workout called off', kind: 'success' },
+            ])
+        );
+    });
+
+    // Done in full there are no blanks to warn about: it simply ends.
+    it('finishes without asking once every set is in', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...workout}
+                    logs={full}
+                />
+            )
+        );
+        fireEvent.click(screen.getByText('Finish workout'));
+        expect(confirmDialog()).not.toBeInTheDocument();
+        await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Workout finished', kind: 'success' },
+            ])
+        );
+    });
+});

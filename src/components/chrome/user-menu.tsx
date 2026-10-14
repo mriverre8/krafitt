@@ -3,7 +3,14 @@
 import { useT } from '@/i18n/use-t';
 import { authClient } from '@/lib/auth-client';
 import type { Theme } from '@/lib/theme';
-import { CalendarDays, Dumbbell, LogOut, Settings, User } from 'lucide-react';
+import {
+    CalendarDays,
+    ClipboardList,
+    LogOut,
+    Settings,
+    User,
+    Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/avatar';
@@ -62,11 +69,22 @@ export function UserMenu({
                         {t('nav.today')}
                     </Link>
                     <Link
+                        href="/workouts"
+                        onClick={close}
+                        className={`${itemClass} standalone:hidden md:hidden`}
+                    >
+                        <Zap
+                            size={14}
+                            aria-hidden
+                        />
+                        {t('nav.workouts')}
+                    </Link>
+                    <Link
                         href="/routines"
                         onClick={close}
                         className={`${itemClass} standalone:hidden md:hidden`}
                     >
-                        <Dumbbell
+                        <ClipboardList
                             size={14}
                             aria-hidden
                         />

@@ -1,9 +1,10 @@
 import { RoutineCard } from '@/components/routine/routine-card';
 import { RoutineSharedCard } from '@/components/routine/routine-shared-card';
+import { WorkoutCard } from '@/components/routine/workout-card';
 import { Avatar } from '@/components/ui/avatar';
 import type { Translate } from '@/i18n/config';
 import { getT } from '@/i18n/server';
-import { isRoutineFinished } from '@/lib/progress';
+import { isRoutineFinished, routineStatus } from '@/lib/progress';
 import { OWNER_PREVIEW_SIZE } from '@/lib/pagination';
 import type { routinesOf, sharingOwners } from '@/lib/queries';
 import { cardClass, ghostClass } from '@/lib/ui';
@@ -60,6 +61,39 @@ export async function RoutineList({
             {routines.length === 0 && (
                 <li className={noResultsClass}>
                     {t(searching ? 'routines.noResults' : 'routines.empty')}
+                </li>
+            )}
+        </ul>
+    );
+}
+
+/** The user's workouts: badged by the same rules as their routines, which a
+    workout never finishes. */
+export async function WorkoutList({
+    workouts,
+    searching = false,
+}: {
+    workouts: Routine[];
+    searching?: boolean;
+}) {
+    const t = await getT();
+
+    return (
+        <ul className="space-y-3">
+            {workouts.map((workout) => (
+                <li key={workout.id}>
+                    <WorkoutCard
+                        id={workout.id}
+                        name={workout.name}
+                        exercises={workout.workouts[0]?.exercises.length ?? 0}
+                        times={workout.cursor}
+                        status={routineStatus(ownRoutineState(workout, t))}
+                    />
+                </li>
+            ))}
+            {workouts.length === 0 && (
+                <li className={noResultsClass}>
+                    {t(searching ? 'routines.noResults' : 'workouts.empty')}
                 </li>
             )}
         </ul>

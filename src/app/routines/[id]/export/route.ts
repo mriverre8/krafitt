@@ -2,6 +2,7 @@ import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { fileName, routineWorkbook, xlsxResponse } from '@/lib/export';
 import { isMember, routineDetail } from '@/lib/queries';
+import { toKind } from '@/lib/progress';
 import { isRoutineComplete } from '@/lib/validate';
 import type { NextRequest } from 'next/server';
 
@@ -16,7 +17,9 @@ export async function GET(
     if (!user) return new Response(null, { status: 401 });
 
     const [routine, t] = await Promise.all([routineDetail(id), getT()]);
-    if (!routine) return new Response(null, { status: 404 });
+    // A workout does not export: it is not a plan to hand over.
+    if (!routine || toKind(routine.kind) === 'workout')
+        return new Response(null, { status: 404 });
     const owner = routine.creatorId === user.id;
     if (!owner && !routine.isPublic && !(await isMember(id, user.id)))
         return new Response(null, { status: 404 });

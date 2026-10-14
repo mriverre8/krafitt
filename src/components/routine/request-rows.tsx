@@ -2,6 +2,7 @@ import { acceptRequest, declineRequest } from '@/app/actions';
 import { ActionButton } from '@/components/ui/action-button';
 import { Avatar } from '@/components/ui/avatar';
 import { getT } from '@/i18n/server';
+import { toKind } from '@/lib/progress';
 import type { requestsOf } from '@/lib/queries';
 import { cardClass, ghostClass, primaryClass } from '@/lib/ui';
 import { Check, X } from 'lucide-react';
@@ -28,12 +29,15 @@ export async function RequestRows({
         <ul className="space-y-3">
             {requests.map(({ id, kind, addSender, routine }) => {
                 const sender = routine.creator;
+                const workout = toKind(routine.kind) === 'workout';
                 const what =
                     kind === 'member'
                         ? 'requests.member'
-                        : addSender
-                          ? 'requests.sendWithMember'
-                          : 'requests.send';
+                        : workout
+                          ? 'requests.sendWorkout'
+                          : addSender
+                            ? 'requests.sendWithMember'
+                            : 'requests.send';
                 return (
                     <li
                         key={id}
@@ -81,7 +85,9 @@ export async function RequestRows({
                                 success={t(
                                     kind === 'member'
                                         ? 'toast.joined'
-                                        : 'toast.received',
+                                        : workout
+                                          ? 'toast.receivedWorkout'
+                                          : 'toast.received',
                                     { routine: routine.name }
                                 )}
                                 className={`${primaryClass} flex items-center gap-1.5 px-3! py-1.5! text-xs!`}

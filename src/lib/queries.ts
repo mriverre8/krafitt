@@ -2,7 +2,13 @@ import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from './db';
 import { toLogs, toPrevious } from './history';
 import { OWNER_PREVIEW_SIZE } from './pagination';
-import { isSessionComplete, positionFromCursor, type Logs } from './progress';
+import {
+    isSessionComplete,
+    positionFromCursor,
+    toKind,
+    type Logs,
+    type RoutineKind,
+} from './progress';
 import { dayKey } from './training-year';
 
 /**
@@ -61,10 +67,14 @@ export async function todayWorkout(userId: string) {
     // closes it too, and no log would ever arrive to close it otherwise.
     // Guarded on the cursor we read, so a concurrent skip cannot make it jump
     // two days.
+    //
+    // A workout moves on the same way, but there is no next time to show: it
+    // leaves the home screen, and is done again only when started again.
     if (
         session &&
         (session.completedAt || isSessionComplete(workout.exercises, logs))
     ) {
+        const workoutDone = toKind(routine.kind) === 'workout';
         await prisma.$transaction([
             prisma.workoutSession.updateMany({
                 where: { id: session.id, completedAt: null },
@@ -72,9 +82,13 @@ export async function todayWorkout(userId: string) {
             }),
             prisma.routine.updateMany({
                 where: { id: routine.id, cursor: routine.cursor },
-                data: { cursor: { increment: 1 } },
+                data: {
+                    cursor: { increment: 1 },
+                    isActive: workoutDone ? false : undefined,
+                },
             }),
         ]);
+        if (workoutDone) return null;
         return todayWorkout(userId);
     }
 
@@ -199,10 +213,14 @@ const withPlan = {
  */
 export async function routinesOf(
     userId: string,
-    { q, ...page }: { skip?: number; take?: number; q?: string } = {}
+    {
+        q,
+        kind = 'routine',
+        ...page
+    }: { skip?: number; take?: number; q?: string; kind?: RoutineKind } = {}
 ) {
     return prisma.routine.findMany({
-        where: { creatorId: userId, name: q ? like(q) : undefined },
+        where: { creatorId: userId, kind, name: q ? like(q) : undefined },
         orderBy: { createdAt: 'desc' },
         ...page,
         include: withPlan,
@@ -361,14 +379,22 @@ export async function routineInvites(routineId: string) {
     return invites.map(({ recipient }) => recipient);
 }
 
+/** What is waiting on someone's answer about one kind of plan: each section
+    keeps its own inbox, routines in one and workouts in the other. */
+const waitingOn = (userId: string, kind: RoutineKind) => ({
+    recipientId: userId,
+    routine: { kind },
+});
+
 /** What is waiting on someone's answer, newest first. Whoever asked is the
     routine's creator: only they may ask. */
 export function requestsOf(
     userId: string,
-    page: { skip: number; take: number }
+    page: { skip: number; take: number },
+    kind: RoutineKind = 'routine'
 ) {
     return prisma.routineRequest.findMany({
-        where: { recipientId: userId },
+        where: waitingOn(userId, kind),
         orderBy: { createdAt: 'desc' },
         ...page,
         select: {
@@ -378,6 +404,7 @@ export function requestsOf(
             routine: {
                 select: {
                     name: true,
+                    kind: true,
                     creator: { select: { id: true, name: true, image: true } },
                 },
             },
@@ -385,12 +412,42 @@ export function requestsOf(
     });
 }
 
-export function countRequests(userId: string) {
-    return prisma.routineRequest.count({ where: { recipientId: userId } });
+export function countRequests(userId: string, kind: RoutineKind = 'routine') {
+    return prisma.routineRequest.count({ where: waitingOn(userId, kind) });
 }
 
-export function countRoutines(userId: string) {
-    return prisma.routine.count({ where: { creatorId: userId } });
+export function countRoutines(userId: string, kind: RoutineKind = 'routine') {
+    return prisma.routine.count({ where: { creatorId: userId, kind } });
+}
+
+/** What was logged in one session: a week of a routine's day, or one time a
+    workout was done. */
+export async function sessionLogs(
+    userId: string,
+    workoutId: string,
+    week: number
+) {
+    const session = await prisma.workoutSession.findUnique({
+        where: { userId_workoutId_week: { userId, workoutId, week } },
+        select: { logs: true },
+    });
+    return session?.logs ?? [];
+}
+
+/** Whatever is on the user's home screen now, routine or workout: at most one
+    of them is active. Enough to warn about it before something takes its place. */
+export function activeRoutine(userId: string) {
+    return prisma.routine.findFirst({
+        where: { creatorId: userId, isActive: true },
+        select: {
+            id: true,
+            name: true,
+            kind: true,
+            cursor: true,
+            durationWeeks: true,
+            _count: { select: { workouts: true } },
+        },
+    });
 }
 
 export function countSharedRoutines(

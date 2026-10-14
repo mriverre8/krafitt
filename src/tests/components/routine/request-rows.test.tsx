@@ -19,8 +19,14 @@ const request = (
     id: string,
     kind: 'member' | 'send',
     addSender = false,
-    name = 'Push'
-) => ({ id, kind, addSender, routine: { name, creator: ada } });
+    name = 'Push',
+    routineKind = 'routine'
+) => ({
+    id,
+    kind,
+    addSender,
+    routine: { name, kind: routineKind, creator: ada },
+});
 
 beforeEach(() => {
     vi.mocked(acceptRequest).mockReset().mockResolvedValue(undefined);
@@ -51,6 +57,15 @@ describe('RequestRows', () => {
         await rows([request('r3', 'send')]);
 
         expect(screen.getByText('Wants to send you Push')).toBeInTheDocument();
+    });
+
+    // It lands among the workouts, never with its sender in it.
+    it('says a sent workout is a workout', async () => {
+        await rows([request('r4', 'send', false, 'Legs', 'workout')]);
+
+        expect(
+            screen.getByText('Wants to send you the workout Legs')
+        ).toBeInTheDocument();
     });
 
     // The bug this catches is every row answering the first request.

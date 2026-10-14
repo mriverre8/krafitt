@@ -14,12 +14,16 @@ export const es: Dict = {
     'common.share': 'Compartir',
     'common.copied': 'Enlace copiado',
 
-    'toast.daySaved': 'Día guardado',
+    'toast.daySaved': 'Cambios guardados',
     'toast.sent': 'Rutina enviada a {name}',
+    'toast.workoutSent': 'Entrenamiento enviado a {name}',
     'toast.madePublic': 'La rutina ahora es pública',
     'toast.madePrivate': 'La rutina ahora es privada',
+    'toast.workoutPublic': 'El entrenamiento ahora es público',
+    'toast.workoutPrivate': 'El entrenamiento ahora es privado',
     'toast.duplicated': 'Copia de {name} creada',
     'toast.saved': '{name} guardada en tus rutinas',
+    'toast.workoutSaved': '{name} guardado en tus entrenamientos',
     'toast.renamed': 'Nombre cambiado',
     'toast.durationChanged': 'Duración cambiada',
     'toast.activated': '{name} es ahora tu rutina activa',
@@ -28,6 +32,9 @@ export const es: Dict = {
     'toast.invited': 'Solicitud enviada a {name}',
     'toast.joined': 'Ya eres miembro de {routine}',
     'toast.received': '{routine} ya está en tus rutinas',
+    'toast.receivedWorkout': '{routine} ya está en tus entrenamientos',
+    'toast.workoutFinished': 'Entrenamiento finalizado',
+    'toast.workoutCancelled': 'Entrenamiento cancelado',
 
     'pagination.label': 'Paginación',
     'pagination.previous': 'Anterior',
@@ -38,6 +45,8 @@ export const es: Dict = {
     'nav.today': 'Hoy',
     'nav.home': 'Inicio',
     'nav.routines': 'Rutinas',
+    'nav.workouts': 'Entrenamientos',
+    'nav.workoutsShort': 'Entrenos',
     'nav.signOut': 'Cerrar sesión',
     'nav.signOutConfirm':
         'Tendrás que volver a iniciar sesión para registrar tus entrenos.',
@@ -134,13 +143,14 @@ export const es: Dict = {
     'auth.continueWith': 'Continuar con {provider}',
     'auth.or': 'o',
 
-    'home.noRoutineTitle': 'No tienes ninguna rutina activa',
-    'home.noRoutineBody':
-        'Crea una rutina, o marca como activa una de las que ya tienes, para ver aquí el entrenamiento de hoy.',
+    'home.idleTitle': 'No tienes nada en marcha',
+    'home.idleBody':
+        'Empieza un entrenamiento, o marca una rutina como activa, para ver aquí lo que toca hoy.',
     'home.finishedTitle': 'Has terminado {name}',
     'home.finishedBody':
-        'Todas las semanas de la rutina están completadas. Crea otra para seguir.',
+        'Todas las semanas de la rutina están completadas. Empieza un entrenamiento o activa otra rutina para seguir.',
     'home.goToRoutines': 'Ir a mis rutinas',
+    'home.goToWorkouts': 'Ir a mis entrenamientos',
 
     'today.week': 'Semana {week} de {total}',
     'today.weekOpen': 'Semana {week}',
@@ -152,6 +162,15 @@ export const es: Dict = {
     'today.skipConfirm':
         'Este día no está terminado. Las series en blanco se quedan en blanco. ¿Saltarlo?',
     'today.skipAnyway': 'Saltar igualmente',
+    'today.workoutEyebrow': 'Entrenamiento',
+    'today.run': 'Sesión {n}',
+    'today.runColumn': 'Sesión',
+    'today.finish': 'Finalizar entrenamiento',
+    'today.finishConfirm':
+        'Este entrenamiento no está acabado. Las series en blanco se quedan en blanco. ¿Finalizarlo?',
+    'today.finishEmptyConfirm':
+        'No has registrado ninguna serie: el entrenamiento se cancela y no queda en el histórico. ¿Finalizarlo?',
+    'today.finishAnyway': 'Finalizar igualmente',
     'today.set': 'Serie {n}',
     'today.weightLabel': 'Peso serie {n}',
     'today.repsLabel': 'Repeticiones serie {n}',
@@ -218,6 +237,20 @@ export const es: Dict = {
     'progress.stats.stalled': 'Estancado · {n} semanas',
     'progress.stats.stalledHint':
         'Ninguna serie supera a la anterior desde hace tiempo: toca cambiar algo',
+    'progress.run': '#{n}',
+    'progress.runLabel': 'Sesión {n}',
+    'progress.runTableCaption': '{exercise}: cada serie, sesión a sesión',
+    'progress.stats.runAdherenceDetail':
+        '{sets} de {total} series · {done} de {due} sesiones enteras',
+    'progress.stats.runStalledCountDetail':
+        'Ejercicios sin mejorar en {n}+ sesiones',
+    'progress.stats.runs': 'Sesiones',
+    'progress.stats.runsDetail': 'Sesiones que has hecho',
+    'progress.stats.runRecordsDetail':
+        'Sesiones que superaron tu mejor marca o tus repeticiones',
+    'progress.stats.runSinceFirst': '{change} desde la primera sesión',
+    'progress.stats.runVolumeChange': 'Volumen frente a la sesión anterior',
+    'progress.stats.runStalled': 'Estancado · {n} sesiones',
 
     'profile.memberSince': 'Miembro desde {date}',
     'profile.followers': '{count} seguidores',
@@ -268,8 +301,8 @@ export const es: Dict = {
     'routines.finished': 'Terminada',
     'routines.meta': '{weeks} semanas · {days} días',
     'routines.metaOpen': 'Indefinida · {days} días',
-    'routines.progress': '{done}/{total} entrenamientos',
-    'routines.progressOpen': '{done} entrenamientos',
+    'routines.progress': '{done}/{total} días',
+    'routines.progressOpen': '{done} días',
     'routines.newTitle': 'Nueva rutina',
     'routines.namePlaceholder': 'Nombre de la rutina',
     'routines.nameLabel': 'Nombre',
@@ -282,7 +315,7 @@ export const es: Dict = {
 
     'routine.meta': '{weeks} semanas · {days} días por semana',
     'routine.metaOpen': 'Indefinida · {days} días por semana',
-    'routine.workouts': 'Entrenamientos',
+    'routine.workouts': 'Días',
     'routine.dayTab': 'Día {n}, {name}',
     'routine.prevDay': 'Día anterior',
     'routine.nextDay': 'Día siguiente',
@@ -291,7 +324,7 @@ export const es: Dict = {
     'routine.renameDay': 'Cambiar nombre',
     'routine.deleteDay': 'Borrar día',
     'routine.deleteDayConfirm': '¿Borrar {name} y sus ejercicios?',
-    'routine.noWorkouts': 'Esta rutina aún no tiene entrenamientos.',
+    'routine.noWorkouts': 'Esta rutina aún no tiene días.',
     'routine.dayLabel': 'Nombre del día',
     'routine.dayPlaceholder': 'Ej. Empuje, Pierna, Torso A',
     'routine.addDayTitle': 'Añadir día',
@@ -338,6 +371,38 @@ export const es: Dict = {
     'routine.save': 'Guardar rutina',
     'routine.saveConfirm':
         '¿Guardar la rutina {name} en tus rutinas? Tendrás tu propia copia, sin progreso.',
+    'workouts.title': 'Mis entrenamientos',
+    'workouts.empty': 'Aún no tienes entrenamientos.',
+    'workouts.searchLabel': 'Buscar entrenamientos',
+    'workouts.searchPlaceholder': 'Nombre del entrenamiento',
+    'workouts.statusAll': 'Todos',
+    'workouts.active': 'En curso',
+    'workouts.pending': 'Listo',
+    'workouts.incomplete': 'Incompleto',
+    'workouts.meta': '{exercises} ejercicios · {times} sesiones',
+    'workouts.exercises': '{exercises} ejercicios',
+    'workouts.newTitle': 'Nuevo entrenamiento',
+    'workouts.namePlaceholder': 'Nombre del entrenamiento',
+    'workouts.create': 'Crear entrenamiento',
+    'workout.start': 'Empezar entrenamiento',
+    'workout.startConfirm':
+        'Tu rutina {name} dejará de estar activa. Podrás volver a activarla cuando quieras sin perder tu progreso.',
+    'workout.emptyTitle': 'Este entrenamiento está vacío',
+    'workout.emptyBody':
+        'Añade sus ejercicios con las series que toca. Cuando no falte nada podrás empezarlo, tantas veces como quieras.',
+    'workout.delete': 'Borrar entrenamiento',
+    'workout.send': 'Enviar entrenamiento',
+    'workout.duplicate': 'Duplicar entrenamiento',
+    'workout.duplicateConfirm':
+        '¿Duplicar el entrenamiento {name}? La copia empieza de cero, sin sesiones.',
+    'workout.by': 'Entrenamiento de {name}',
+    'workout.makePublic': 'Hacer público',
+    'workout.makePrivate': 'Hacer privado',
+    'workout.save': 'Guardar entrenamiento',
+    'workout.saveConfirm':
+        '¿Guardar el entrenamiento {name} en tus entrenamientos? Tendrás tu propia copia, sin sesiones.',
+    'workout.deleteConfirm':
+        '¿Borrar el entrenamiento {name}? Se pierde todo lo registrado.',
 
     'members.title': 'Personas',
     'members.link': 'Personas',
@@ -368,6 +433,7 @@ export const es: Dict = {
         'Cuando alguien te invite a una rutina o te envíe una, aparecerá aquí.',
     'requests.member': 'Quiere añadirte a {routine} para que veas su contenido',
     'requests.send': 'Quiere enviarte {routine}',
+    'requests.sendWorkout': 'Quiere enviarte el entrenamiento {routine}',
     'requests.sendWithMember':
         'Quiere enviarte {routine} y unirse como miembro',
     'requests.accept': 'Aceptar',
@@ -497,4 +563,7 @@ export const es: Dict = {
         'La rutina ha cambiado: recarga para verla como está ahora',
     'error.activeDayIncomplete': '{where}: {what}',
     'error.fillPrevious': 'Rellena antes las series anteriores',
+    'error.workoutTitle': 'Ponle un nombre al entrenamiento',
+    'error.workoutStarted': 'Un entrenamiento en curso no se puede editar',
+    'error.workoutInProgress': 'Termina antes el entrenamiento {name}',
 };

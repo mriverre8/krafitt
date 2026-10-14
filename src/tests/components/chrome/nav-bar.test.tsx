@@ -113,7 +113,14 @@ describe('NavBar', () => {
             Array.from(menu.querySelectorAll('a, button')).map(
                 (item) => item.textContent
             )
-        ).toEqual(['Today', 'Routines', 'Profile', 'Settings', 'Sign out']);
+        ).toEqual([
+            'Today',
+            'Workouts',
+            'Routines',
+            'Profile',
+            'Settings',
+            'Sign out',
+        ]);
     });
 
     it('opens the settings modal from the user menu, and closes the menu', () => {

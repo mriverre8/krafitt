@@ -3,6 +3,7 @@ import { Landing } from '@/components/landing/landing';
 import { TodayWorkout } from '@/components/workout/today-workout';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
+import { toKind } from '@/lib/progress';
 import { todayWorkout } from '@/lib/queries';
 
 export default async function HomePage() {
@@ -14,8 +15,8 @@ export default async function HomePage() {
     if (!today) {
         return (
             <EmptyState
-                title={t('home.noRoutineTitle')}
-                body={t('home.noRoutineBody')}
+                title={t('home.idleTitle')}
+                body={t('home.idleBody')}
             />
         );
     }
@@ -39,6 +40,7 @@ export default async function HomePage() {
             day={today.day}
             logs={today.logs}
             previous={today.previous}
+            kind={toKind(today.routine.kind)}
         />
     );
 }

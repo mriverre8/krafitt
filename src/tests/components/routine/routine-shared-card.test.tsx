@@ -19,7 +19,7 @@ describe('RoutineSharedCard', () => {
 
         expect(screen.getByText('Strength')).toBeInTheDocument();
         expect(screen.getByText('4 weeks · 3 days')).toBeInTheDocument();
-        expect(screen.getByText('6/12 workouts')).toBeInTheDocument();
+        expect(screen.getByText('6/12 days')).toBeInTheDocument();
     });
 
     it('makes the whole card one link into the routine', () => {
@@ -52,6 +52,6 @@ describe('RoutineSharedCard', () => {
         );
 
         expect(screen.queryByRole('img')).not.toBeInTheDocument();
-        expect(screen.getByText('6 workouts')).toBeInTheDocument();
+        expect(screen.getByText('6 days')).toBeInTheDocument();
     });
 });

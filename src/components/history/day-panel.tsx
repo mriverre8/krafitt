@@ -1,6 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
+import type { Period } from '@/lib/period';
 import type { Logs, WeekState } from '@/lib/progress';
 import { useState } from 'react';
 import { ExerciseStats } from '@/components/history/exercise-stats';
@@ -22,12 +23,14 @@ export function DayPanel({
     id,
     labelledBy,
     hidden,
+    period,
 }: {
     day: HistoryDay;
     rows: WeekRow[];
     id: string;
     labelledBy: string;
     hidden: boolean;
+    period?: Period;
 }) {
     const t = useT();
     const [selected, setSelected] = useState(0);
@@ -87,11 +90,13 @@ export function DayPanel({
                         position={position}
                         total={day.exercises.length}
                         onSelect={setSelected}
+                        period={period}
                     />
 
                     <ExerciseStats
                         exercise={exercise}
                         weeks={day.weeks}
+                        period={period}
                     />
                 </>
             )}

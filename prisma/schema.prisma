@@ -90,13 +90,17 @@ model Routine {
   isActive      Boolean  @default(false)
   isPublic      Boolean  @default(false)
   cursor        Int      @default(0)
+  /// "routine" | "workout". A workout is an open-ended routine of one day that
+  /// leaves the home screen each time it is done: every "week" of it is one
+  /// more time it was trained, and the cursor counts them.
+  kind          String   @default("routine")
 
   workouts Workout[]
   sessions WorkoutSession[]
   members  RoutineMember[]
   requests RoutineRequest[]
 
-  @@index([creatorId])
+  @@index([creatorId, kind])
 }
 
 model RoutineMember {

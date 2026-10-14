@@ -38,6 +38,15 @@ describe('BottomNav', () => {
         );
     });
 
+    it('links the workouts, and marks them inside one', () => {
+        pathname = '/workouts/w1';
+        render(<BottomNav userId="u1" />);
+        const workouts = screen.getByRole('link', { name: 'Workouts' });
+        expect(workouts).toHaveAttribute('href', '/workouts');
+        expect(workouts).toHaveAttribute('aria-current', 'page');
+        expect(screen.getAllByRole('link')).toHaveLength(4);
+    });
+
     // Someone else's profile is not "Profile": the tab is your own.
     it('leaves Profile unmarked on another user', () => {
         pathname = '/profile/u2';
@@ -64,5 +73,15 @@ describe('EditModeProvider', () => {
 
         unmount();
         expect(root).not.toHaveAttribute('data-editing');
+    });
+});
+
+describe('BottomNav order', () => {
+    it('puts the workouts before the routines', () => {
+        pathname = '/';
+        render(<BottomNav userId="u1" />);
+        expect(
+            screen.getAllByRole('link').map((link) => link.textContent)
+        ).toEqual(['Home', 'Workouts', 'Routines', 'Profile']);
     });
 });

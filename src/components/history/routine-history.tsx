@@ -1,5 +1,6 @@
 'use client';
 
+import type { Period } from '@/lib/period';
 import { historyWeeks, weekState, type Duration } from '@/lib/progress';
 import { useId, useState } from 'react';
 import { DayPanel, type HistoryDay } from '@/components/history/day-panel';
@@ -12,12 +13,18 @@ export function RoutineHistory({
     durationWeeks,
     cursor,
     initialDay = 0,
+    weeks,
+    period,
 }: {
     days: HistoryDay[];
     durationWeeks: Duration;
     cursor: number;
     /** The day tab to open on, counted from 0. Past the last day means the last. */
     initialDay?: number;
+    /** The rows to draw. Left out, they are a routine's: worked out from its
+        duration and how far in it is. */
+    weeks?: number[];
+    period?: Period;
 }) {
     const baseId = useId();
     const [selected, setSelected] = useState(initialDay);
@@ -25,27 +32,29 @@ export function RoutineHistory({
 
     if (days.length === 0) return null;
 
-    const weeks = historyWeeks(durationWeeks, cursor, days.length);
+    const rows = weeks ?? historyWeeks(durationWeeks, cursor, days.length);
 
     return (
         <div className="space-y-8">
-            <DaySwitcher
-                days={days.map((day) => ({
-                    id: day.id,
-                    name: day.name,
-                    ready: true,
-                    unsaved: false,
-                }))}
-                index={index}
-                baseId={baseId}
-                onSelect={setSelected}
-            />
+            {days.length > 1 || period !== 'run' ? (
+                <DaySwitcher
+                    days={days.map((day) => ({
+                        id: day.id,
+                        name: day.name,
+                        ready: true,
+                        unsaved: false,
+                    }))}
+                    index={index}
+                    baseId={baseId}
+                    onSelect={setSelected}
+                />
+            ) : null}
 
             {days.map((day, position) => (
                 <DayPanel
                     key={day.id}
                     day={day}
-                    rows={weeks.map((week) => ({
+                    rows={rows.map((week) => ({
                         week,
                         state: weekState(cursor, week, position, days.length),
                         logs: day.weeks[week] ?? {},
@@ -53,6 +62,7 @@ export function RoutineHistory({
                     id={`${baseId}-panel-${position}`}
                     labelledBy={`${baseId}-tab-${position}`}
                     hidden={position !== index}
+                    period={period}
                 />
             ))}
         </div>

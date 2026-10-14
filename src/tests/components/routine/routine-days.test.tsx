@@ -87,10 +87,10 @@ describe('RoutineDays', () => {
         expect(tab(1)).toHaveAttribute('aria-selected', 'false');
     });
 
-    it('offers the workouts label and chevrons to move between days', () => {
+    it('offers the days label and chevrons to move between days', () => {
         render(<RoutineDays {...base} />);
         expect(
-            screen.getByRole('tablist', { name: 'Workouts' })
+            screen.getByRole('tablist', { name: 'Days' })
         ).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: 'Previous day' })

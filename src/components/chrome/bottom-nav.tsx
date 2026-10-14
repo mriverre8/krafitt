@@ -1,7 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import { Dumbbell, House, User } from 'lucide-react';
+import { ClipboardList, House, User, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -20,9 +20,15 @@ export function BottomNav({ userId }: { userId: string }) {
             active: pathname === '/',
         },
         {
+            href: '/workouts',
+            label: t('nav.workoutsShort'),
+            Icon: Zap,
+            active: pathname.startsWith('/workouts'),
+        },
+        {
             href: '/routines',
             label: t('nav.routines'),
-            Icon: Dumbbell,
+            Icon: ClipboardList,
             active: pathname.startsWith('/routines'),
         },
         {
@@ -45,10 +51,11 @@ export function BottomNav({ userId }: { userId: string }) {
             >
                 <div
                     aria-hidden
-                    className={`bg-surface2/70 absolute inset-y-1.5 left-1.5 w-[calc((100%-1.25rem)/3)] rounded-md transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none ${
+                    className={`bg-surface2/70 absolute inset-y-1.5 left-1.5 rounded-md transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none ${
                         activeIndex < 0 ? 'opacity-0' : ''
                     }`}
                     style={{
+                        width: `calc((100% - ${0.75 + 0.25 * (links.length - 1)}rem) / ${links.length})`,
                         translate: `calc(${Math.max(activeIndex, 0)} * (100% + 0.25rem))`,
                     }}
                 />

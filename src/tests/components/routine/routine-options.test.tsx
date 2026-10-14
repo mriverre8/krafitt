@@ -8,6 +8,7 @@ import { RoutineOptions } from '@/components/routine/routine-options';
 import type { FormAction } from '@/lib/forms';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { useToastStore } from '@/store/toast';
 import {
     acceptConfirm,
     renderWithLocale,
@@ -345,5 +346,56 @@ describe('the people row of RoutineOptions', () => {
         expect(
             await screen.findByRole('link', { name: 'People' })
         ).toBeInTheDocument();
+    });
+});
+
+describe('RoutineOptions, for a workout', () => {
+    const open = () =>
+        fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+
+    it('makes a workout public in a workout’s own words', async () => {
+        useToastStore.setState({ toasts: [] });
+        const setVisibility = vi.fn(async () => {});
+        renderWithLocale(
+            withModals(
+                <RoutineOptions
+                    kind="workout"
+                    name="Legs"
+                    editable={false}
+                    isPublic={false}
+                    setVisibility={setVisibility}
+                />
+            )
+        );
+        open();
+        fireEvent.click(screen.getByText('Make public'));
+        await waitFor(() => expect(setVisibility).toHaveBeenCalledWith(true));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'The workout is now public' },
+            ])
+        );
+    });
+
+    // Someone else's public workout: a copy among one's own workouts.
+    it('saves someone else’s workout as a workout', async () => {
+        const onSave = vi.fn(async () => {});
+        renderWithLocale(
+            withModals(
+                <RoutineOptions
+                    kind="workout"
+                    name="Legs"
+                    editable={false}
+                    onSave={onSave}
+                />
+            )
+        );
+        open();
+        fireEvent.click(screen.getByText('Save workout'));
+        expect(await screen.findByRole('dialog')).toHaveTextContent(
+            'Save the workout Legs to your workouts?'
+        );
+        await acceptConfirm('Save workout');
+        await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
     });
 });

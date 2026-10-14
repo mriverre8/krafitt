@@ -3,7 +3,7 @@ import { RoutineHistory } from '@/components/history/routine-history';
 import { RoutineSummary } from '@/components/history/routine-summary';
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
-import { currentWeek } from '@/lib/progress';
+import { currentWeek, sectionOf, toKind, workoutRuns } from '@/lib/progress';
 import { isMember, routineHistory } from '@/lib/queries';
 import { routineStats } from '@/lib/stats';
 import { badgeClass } from '@/lib/ui';
@@ -35,11 +35,16 @@ export default async function RoutineProgressPage({
         weeks: byDay[workout.id] ?? {},
     }));
     const week = currentWeek(routine.cursor, days.length);
+    // A workout is read by the times it was done, not by weeks, and it does
+    // not export.
+    const workout = toKind(routine.kind) === 'workout';
 
     return (
         <div className="space-y-6">
             <header>
-                <BackButton fallback={`/routines/${routine.id}`} />
+                <BackButton
+                    fallback={`${sectionOf(routine.kind)}/${routine.id}`}
+                />
                 <h1 className="mt-5">
                     <span className="eyebrow text-muted block">
                         {routine.name}
@@ -48,19 +53,21 @@ export default async function RoutineProgressPage({
                         {t('progress.title')}
                     </span>
                 </h1>
-                <div className="mt-4 flex">
-                    <a
-                        href={`/progress/${routine.id}/export`}
-                        download
-                        className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
-                    >
-                        <FileSpreadsheet
-                            size={13}
-                            aria-hidden
-                        />
-                        {t('routine.export')}
-                    </a>
-                </div>
+                {!workout && (
+                    <div className="mt-4 flex">
+                        <a
+                            href={`/progress/${routine.id}/export`}
+                            download
+                            className={`${badgeClass} lift border-line text-muted hover:border-pulse hover:text-pulse border-2`}
+                        >
+                            <FileSpreadsheet
+                                size={13}
+                                aria-hidden
+                            />
+                            {t('routine.export')}
+                        </a>
+                    </div>
+                )}
             </header>
 
             {routine.workouts.length === 0 ? (
@@ -72,17 +79,26 @@ export default async function RoutineProgressPage({
                     <RoutineSummary
                         stats={routineStats(days, timings, routine.cursor)}
                         week={
-                            routine.durationWeeks
-                                ? Math.min(week, routine.durationWeeks)
-                                : week
+                            workout
+                                ? routine.cursor
+                                : routine.durationWeeks
+                                  ? Math.min(week, routine.durationWeeks)
+                                  : week
                         }
                         weeks={routine.durationWeeks}
+                        period={workout ? 'run' : 'week'}
                     />
                     <RoutineHistory
                         days={days}
                         durationWeeks={routine.durationWeeks}
                         cursor={routine.cursor}
                         initialDay={initialDay}
+                        weeks={
+                            workout
+                                ? workoutRuns(routine.cursor, routine.isActive)
+                                : undefined
+                        }
+                        period={workout ? 'run' : 'week'}
                     />
                 </>
             )}

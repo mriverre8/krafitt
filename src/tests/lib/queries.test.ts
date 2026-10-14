@@ -1,10 +1,26 @@
-import { followList, isFollowing, routineHistory } from '@/lib/queries';
+import {
+    followList,
+    isFollowing,
+    routineHistory,
+    countRequests,
+    requestsOf,
+    routinesOf,
+    todayWorkout,
+} from '@/lib/queries';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const findFollows = vi.fn();
 const findFollow = vi.fn();
 const findRoutine = vi.fn();
 const findSessions = vi.fn();
+const findActive = vi.fn();
+const findRoutines = vi.fn();
+const moveRoutine = vi.fn();
+const findSession = vi.fn();
+const closeSession = vi.fn();
+const transaction = vi.fn();
+const findRequests = vi.fn();
+const countRequestRows = vi.fn();
 
 vi.mock('@/lib/db', () => ({
     prisma: {
@@ -12,10 +28,22 @@ vi.mock('@/lib/db', () => ({
             findMany: (...args: unknown[]) => findFollows(...args),
             findUnique: (...args: unknown[]) => findFollow(...args),
         },
-        routine: { findUnique: (...args: unknown[]) => findRoutine(...args) },
+        routine: {
+            findUnique: (...args: unknown[]) => findRoutine(...args),
+            findFirst: (...args: unknown[]) => findActive(...args),
+            findMany: (...args: unknown[]) => findRoutines(...args),
+            updateMany: (...args: unknown[]) => moveRoutine(...args),
+        },
         workoutSession: {
             findMany: (...args: unknown[]) => findSessions(...args),
+            findUnique: (...args: unknown[]) => findSession(...args),
+            updateMany: (...args: unknown[]) => closeSession(...args),
         },
+        routineRequest: {
+            findMany: (...args: unknown[]) => findRequests(...args),
+            count: (...args: unknown[]) => countRequestRows(...args),
+        },
+        $transaction: (...args: unknown[]) => transaction(...args),
     },
 }));
 
@@ -152,5 +180,121 @@ describe('routineHistory', () => {
                 },
             },
         });
+    });
+});
+
+describe('routinesOf', () => {
+    // The routines pages and the profile call it bare: workouts must not show
+    // up on them.
+    it('lists routines unless asked for workouts', async () => {
+        findRoutines.mockReset().mockResolvedValue([]);
+        await routinesOf('ada');
+        expect(findRoutines.mock.calls[0][0].where).toMatchObject({
+            creatorId: 'ada',
+            kind: 'routine',
+        });
+        await routinesOf('ada', { kind: 'workout' });
+        expect(findRoutines.mock.calls[1][0].where).toMatchObject({
+            kind: 'workout',
+        });
+    });
+});
+
+describe('todayWorkout', () => {
+    /** One day of one exercise of one set, done twice before and on the
+        home screen for the third time. */
+    const active = (kind: string) => ({
+        id: 'r1',
+        kind,
+        isActive: true,
+        cursor: 2,
+        durationWeeks: null,
+        workouts: [
+            {
+                id: 'w1',
+                name: 'Legs',
+                exercises: [
+                    {
+                        id: 'e1',
+                        sets: [{ kind: 'normal', repMode: 'range' }],
+                    },
+                ],
+            },
+        ],
+    });
+
+    beforeEach(() => {
+        findActive.mockReset();
+        findSessions.mockResolvedValue([]);
+        // Its one set is in: this time is over.
+        findSession.mockReset().mockResolvedValue({
+            id: 's3',
+            completedAt: null,
+            logs: [
+                {
+                    exerciseId: 'e1',
+                    slot: '1',
+                    weight: 60,
+                    reps: 8,
+                    effort: 'normal',
+                },
+            ],
+        });
+        moveRoutine.mockReset().mockReturnValue('move');
+        closeSession.mockReset().mockReturnValue('close');
+        transaction.mockReset().mockResolvedValue([]);
+    });
+
+    it('takes a finished workout off the home screen', async () => {
+        findActive.mockResolvedValue(active('workout'));
+
+        await expect(todayWorkout('ada')).resolves.toBeNull();
+        expect(findSession.mock.calls[0][0].where).toEqual({
+            userId_workoutId_week: { userId: 'ada', workoutId: 'w1', week: 3 },
+        });
+        expect(moveRoutine).toHaveBeenCalledWith({
+            where: { id: 'r1', cursor: 2 },
+            data: { cursor: { increment: 1 }, isActive: false },
+        });
+        expect(transaction).toHaveBeenCalledWith(['close', 'move']);
+        // No next time is put in its place.
+        expect(findActive).toHaveBeenCalledTimes(1);
+    });
+
+    it('moves a routine on to its next day and stays on it', async () => {
+        findActive
+            .mockResolvedValueOnce(active('routine'))
+            .mockResolvedValueOnce(null);
+
+        await todayWorkout('ada');
+        expect(moveRoutine).toHaveBeenCalledWith({
+            where: { id: 'r1', cursor: 2 },
+            data: { cursor: { increment: 1 }, isActive: undefined },
+        });
+        expect(findActive).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('the inboxes', () => {
+    // Each section answers its own: routines in one, workouts in the other.
+    it('keeps the routines and the workouts apart', async () => {
+        findRequests.mockReset().mockResolvedValue([]);
+        countRequestRows.mockReset().mockResolvedValue(0);
+
+        await requestsOf('ada', page);
+        await countRequests('ada');
+        await requestsOf('ada', page, 'workout');
+        await countRequests('ada', 'workout');
+
+        const routines = { recipientId: 'ada', routine: { kind: 'routine' } };
+        const workouts = { recipientId: 'ada', routine: { kind: 'workout' } };
+        expect(findRequests.mock.calls.map(([q]) => q.where)).toEqual([
+            routines,
+            workouts,
+        ]);
+        expect(countRequestRows.mock.calls.map(([q]) => q.where)).toEqual([
+            routines,
+            workouts,
+        ]);
     });
 });

@@ -125,3 +125,35 @@ describe('SendRoutineModal', () => {
         expect(useToastStore.getState().toasts).toEqual([]);
     });
 });
+
+describe('SendRoutineModal, for a workout', () => {
+    // A workout has no people: there is no joining its copy to offer.
+    it('sends without the member choice', async () => {
+        useToastStore.setState({ toasts: [] });
+        renderWithLocale(
+            <SendRoutineModal
+                find={find}
+                send={send}
+                kind="workout"
+                onClose={onClose}
+            />
+        );
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+
+        fireEvent.change(
+            screen.getByRole('textbox', { name: "User's account" }),
+            { target: { value: 'ada@example.com' } }
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+        const sendButton = screen.getByRole('button', { name: 'Send workout' });
+        await waitFor(() => expect(sendButton).toBeEnabled());
+        fireEvent.click(sendButton);
+
+        await waitFor(() => expect(send).toHaveBeenCalledWith('ada', false));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Workout sent to Ada' },
+            ])
+        );
+    });
+});

@@ -50,3 +50,21 @@ describe('DeleteRoutineButton', () => {
         );
     });
 });
+
+describe('DeleteRoutineButton, for a workout', () => {
+    it('speaks of a workout throughout', async () => {
+        render(
+            withModals(
+                <DeleteRoutineButton
+                    name="Legs"
+                    onDelete={vi.fn()}
+                    kind="workout"
+                />
+            )
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Delete workout/ }));
+        expect(await openConfirm()).toHaveTextContent(
+            'Delete the workout Legs? Everything logged in it is lost.'
+        );
+    });
+});

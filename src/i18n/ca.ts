@@ -14,12 +14,16 @@ export const ca: Dict = {
     'common.share': 'Compartir',
     'common.copied': 'Enllaç copiat',
 
-    'toast.daySaved': 'Dia desat',
+    'toast.daySaved': 'Canvis desats',
     'toast.sent': 'Rutina enviada a {name}',
+    'toast.workoutSent': 'Entrenament enviat a {name}',
     'toast.madePublic': 'La rutina ara és pública',
     'toast.madePrivate': 'La rutina ara és privada',
+    'toast.workoutPublic': "L'entrenament ara és públic",
+    'toast.workoutPrivate': "L'entrenament ara és privat",
     'toast.duplicated': 'Còpia de {name} creada',
     'toast.saved': '{name} desada a les teves rutines',
+    'toast.workoutSaved': '{name} desat als teus entrenaments',
     'toast.renamed': 'Nom canviat',
     'toast.durationChanged': 'Durada canviada',
     'toast.activated': '{name} és ara la teva rutina activa',
@@ -28,6 +32,9 @@ export const ca: Dict = {
     'toast.invited': 'Sol·licitud enviada a {name}',
     'toast.joined': 'Ja ets membre de {routine}',
     'toast.received': '{routine} ja és a les teves rutines',
+    'toast.receivedWorkout': '{routine} ja és als teus entrenaments',
+    'toast.workoutFinished': 'Entrenament finalitzat',
+    'toast.workoutCancelled': 'Entrenament cancel·lat',
 
     'pagination.label': 'Paginació',
     'pagination.previous': 'Anterior',
@@ -38,6 +45,8 @@ export const ca: Dict = {
     'nav.today': 'Avui',
     'nav.home': 'Inici',
     'nav.routines': 'Rutines',
+    'nav.workouts': 'Entrenaments',
+    'nav.workoutsShort': 'Entrenos',
     'nav.signOut': 'Tancar sessió',
     'nav.signOutConfirm':
         'Hauràs de tornar a iniciar sessió per registrar els teus entrenaments.',
@@ -134,13 +143,14 @@ export const ca: Dict = {
     'auth.continueWith': 'Continua amb {provider}',
     'auth.or': 'o',
 
-    'home.noRoutineTitle': 'No tens cap rutina activa',
-    'home.noRoutineBody':
-        "Crea una rutina, o marca com a activa una de les que ja tens, per veure aquí l'entrenament d'avui.",
+    'home.idleTitle': 'No tens res en marxa',
+    'home.idleBody':
+        'Comença un entrenament, o marca una rutina com a activa, per veure aquí el que toca avui.',
     'home.finishedTitle': 'Has acabat {name}',
     'home.finishedBody':
-        "Totes les setmanes de la rutina estan completades. Crea'n una altra per continuar.",
+        'Totes les setmanes de la rutina estan completades. Comença un entrenament o activa una altra rutina per continuar.',
     'home.goToRoutines': 'Anar a les meves rutines',
+    'home.goToWorkouts': 'Anar als meus entrenaments',
 
     'today.week': 'Setmana {week} de {total}',
     'today.weekOpen': 'Setmana {week}',
@@ -152,6 +162,15 @@ export const ca: Dict = {
     'today.skipConfirm':
         'Aquest dia no està acabat. Les sèries en blanc es queden en blanc. Saltar-lo?',
     'today.skipAnyway': 'Saltar igualment',
+    'today.workoutEyebrow': 'Entrenament',
+    'today.run': 'Sessió {n}',
+    'today.runColumn': 'Sessió',
+    'today.finish': 'Finalitzar entrenament',
+    'today.finishConfirm':
+        'Aquest entrenament no està acabat. Les sèries en blanc es queden en blanc. Finalitzar-lo?',
+    'today.finishEmptyConfirm':
+        "No has registrat cap sèrie: l'entrenament es cancel·la i no queda a l'històric. Finalitzar-lo?",
+    'today.finishAnyway': 'Finalitzar igualment',
     'today.set': 'Sèrie {n}',
     'today.weightLabel': 'Pes sèrie {n}',
     'today.repsLabel': 'Repeticions sèrie {n}',
@@ -218,6 +237,20 @@ export const ca: Dict = {
     'progress.stats.stalled': 'Estancat · {n} setmanes',
     'progress.stats.stalledHint':
         'Cap sèrie supera l’anterior des de fa temps: toca canviar alguna cosa',
+    'progress.run': '#{n}',
+    'progress.runLabel': 'Sessió {n}',
+    'progress.runTableCaption': '{exercise}: cada sèrie, sessió a sessió',
+    'progress.stats.runAdherenceDetail':
+        '{sets} de {total} sèries · {done} de {due} sessions senceres',
+    'progress.stats.runStalledCountDetail':
+        'Exercicis sense millorar en {n}+ sessions',
+    'progress.stats.runs': 'Sessions',
+    'progress.stats.runsDetail': 'Sessions que has fet',
+    'progress.stats.runRecordsDetail':
+        'Sessions que van superar la teva millor marca o les teves repeticions',
+    'progress.stats.runSinceFirst': '{change} des de la primera sessió',
+    'progress.stats.runVolumeChange': 'Volum respecte a la sessió anterior',
+    'progress.stats.runStalled': 'Estancat · {n} sessions',
 
     'profile.memberSince': 'Membre des de {date}',
     'profile.followers': '{count} seguidors',
@@ -268,8 +301,8 @@ export const ca: Dict = {
     'routines.finished': 'Acabada',
     'routines.meta': '{weeks} setmanes · {days} dies',
     'routines.metaOpen': 'Indefinida · {days} dies',
-    'routines.progress': '{done}/{total} entrenaments',
-    'routines.progressOpen': '{done} entrenaments',
+    'routines.progress': '{done}/{total} dies',
+    'routines.progressOpen': '{done} dies',
     'routines.newTitle': 'Nova rutina',
     'routines.namePlaceholder': 'Nom de la rutina',
     'routines.nameLabel': 'Nom',
@@ -282,7 +315,7 @@ export const ca: Dict = {
 
     'routine.meta': '{weeks} setmanes · {days} dies per setmana',
     'routine.metaOpen': 'Indefinida · {days} dies per setmana',
-    'routine.workouts': 'Entrenaments',
+    'routine.workouts': 'Dies',
     'routine.dayTab': 'Dia {n}, {name}',
     'routine.prevDay': 'Dia anterior',
     'routine.nextDay': 'Dia següent',
@@ -291,7 +324,7 @@ export const ca: Dict = {
     'routine.renameDay': 'Canviar el nom',
     'routine.deleteDay': 'Esborrar dia',
     'routine.deleteDayConfirm': 'Esborrar {name} i els seus exercicis?',
-    'routine.noWorkouts': 'Aquesta rutina encara no té entrenaments.',
+    'routine.noWorkouts': 'Aquesta rutina encara no té dies.',
     'routine.dayLabel': 'Nom del dia',
     'routine.dayPlaceholder': 'Ex. Empenta, Cama, Tors A',
     'routine.addDayTitle': 'Afegir dia',
@@ -338,6 +371,38 @@ export const ca: Dict = {
     'routine.save': 'Desar rutina',
     'routine.saveConfirm':
         'Desar la rutina {name} a les teves rutines? Tindràs la teva pròpia còpia, sense progrés.',
+    'workouts.title': 'Els meus entrenaments',
+    'workouts.empty': 'Encara no tens entrenaments.',
+    'workouts.searchLabel': 'Cerca entrenaments',
+    'workouts.searchPlaceholder': "Nom de l'entrenament",
+    'workouts.statusAll': 'Tots',
+    'workouts.active': 'En curs',
+    'workouts.pending': 'Llest',
+    'workouts.incomplete': 'Incomplet',
+    'workouts.meta': '{exercises} exercicis · {times} sessions',
+    'workouts.exercises': '{exercises} exercicis',
+    'workouts.newTitle': 'Nou entrenament',
+    'workouts.namePlaceholder': "Nom de l'entrenament",
+    'workouts.create': 'Crear entrenament',
+    'workout.start': 'Començar entrenament',
+    'workout.startConfirm':
+        'La teva rutina {name} deixarà d’estar activa. Podràs tornar a activar-la quan vulguis sense perdre el teu progrés.',
+    'workout.emptyTitle': 'Aquest entrenament està buit',
+    'workout.emptyBody':
+        'Afegeix-hi els exercicis amb les sèries que toca. Quan no falti res podràs començar-lo, tantes vegades com vulguis.',
+    'workout.delete': 'Esborrar entrenament',
+    'workout.send': 'Enviar entrenament',
+    'workout.duplicate': 'Duplicar entrenament',
+    'workout.duplicateConfirm':
+        "Duplicar l'entrenament {name}? La còpia comença de zero, sense sessions.",
+    'workout.by': 'Entrenament de {name}',
+    'workout.makePublic': 'Fer públic',
+    'workout.makePrivate': 'Fer privat',
+    'workout.save': 'Desar entrenament',
+    'workout.saveConfirm':
+        "Desar l'entrenament {name} als teus entrenaments? Tindràs la teva pròpia còpia, sense sessions.",
+    'workout.deleteConfirm':
+        "Esborrar l'entrenament {name}? Es perd tot el que s'hi ha registrat.",
 
     'members.title': 'Persones',
     'members.link': 'Persones',
@@ -368,6 +433,7 @@ export const ca: Dict = {
         "Quan algú et convidi a una rutina o te n'enviï una, apareixerà aquí.",
     'requests.member': 'Vol afegir-te a {routine} perquè en vegis el contingut',
     'requests.send': 'Vol enviar-te {routine}',
+    'requests.sendWorkout': "Vol enviar-te l'entrenament {routine}",
     'requests.sendWithMember':
         "Vol enviar-te {routine} i unir-s'hi com a membre",
     'requests.accept': 'Accepta',
@@ -497,4 +563,7 @@ export const ca: Dict = {
         'La rutina ha canviat: torna a carregar per veure-la com és ara',
     'error.activeDayIncomplete': '{where}: {what}',
     'error.fillPrevious': 'Omple abans les sèries anteriors',
+    'error.workoutTitle': "Posa-li un nom a l'entrenament",
+    'error.workoutStarted': 'Un entrenament en curs no es pot editar',
+    'error.workoutInProgress': "Acaba abans l'entrenament {name}",
 };

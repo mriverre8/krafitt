@@ -1,6 +1,7 @@
 import { getT } from '@/i18n/server';
 import { currentUser } from '@/lib/auth';
 import { fileName, routineWorkbook, xlsxResponse } from '@/lib/export';
+import { toKind } from '@/lib/progress';
 import { isMember, routineHistory } from '@/lib/queries';
 import type { NextRequest } from 'next/server';
 
@@ -17,6 +18,9 @@ export async function GET(
     const [history, t] = await Promise.all([routineHistory(id), getT()]);
     if (!history) return new Response(null, { status: 404 });
     const { routine, byDay, startedOn } = history;
+    // Workouts do not export.
+    if (toKind(routine.kind) === 'workout')
+        return new Response(null, { status: 404 });
     if (routine.creatorId !== user.id && !(await isMember(id, user.id)))
         return new Response(null, { status: 404 });
 
