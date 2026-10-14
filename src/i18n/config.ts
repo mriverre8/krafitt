@@ -14,14 +14,25 @@ export function isLocale(value: unknown): value is Locale {
     return LOCALES.includes(value as Locale);
 }
 
-/** Replaces {placeholders} with the given params. */
+/**
+ * Replaces {placeholders} with the given params, and {key|one|other} with
+ * `one` when params[key] is 1 and `other` otherwise.
+ *
+ * ponytail: "exactly 1 is singular" holds for en, es and ca only; a locale
+ * with other plural rules needs `Intl.PluralRules` here.
+ */
 export function interpolate(
     template: string,
     params?: Record<string, string | number>
 ) {
     if (!params) return template;
-    return template.replace(/\{(\w+)\}/g, (match, key: string) =>
-        key in params ? String(params[key]) : match
+    return template.replace(
+        /\{(\w+)(?:\|([^|}]*)\|([^|}]*))?\}/g,
+        (match, key: string, one?: string, other?: string) => {
+            if (!(key in params)) return match;
+            if (one === undefined) return String(params[key]);
+            return params[key] === 1 ? one : other!;
+        }
     );
 }
 

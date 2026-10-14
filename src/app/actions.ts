@@ -832,38 +832,44 @@ export async function skipDay(routineId: string) {
     const workout = toKind(routine.kind) === 'workout';
     // Only a workout under way can be finished: a stale button — it was
     // finished elsewhere, or closed by its last set — must not count it twice.
-    if (workout && !routine.isActive) return;
-    // A workout finished with nothing logged was never done: it is called off
-    // rather than counted, and leaves no row in the history. The time under
-    // way is the one after the cursor.
-    const counts =
-        !workout ||
-        (await prisma.setLog.count({
-            where: {
-                session: {
-                    routineId,
-                    userId: user.id,
-                    week: routine.cursor + 1,
+    let finished = false;
+    if (!workout || routine.isActive) {
+        // A workout finished with nothing logged was never done: it is called
+        // off rather than counted, and leaves no row in the history. The time
+        // under way is the one after the cursor.
+        const counts =
+            !workout ||
+            (await prisma.setLog.count({
+                where: {
+                    session: {
+                        routineId,
+                        userId: user.id,
+                        week: routine.cursor + 1,
+                    },
                 },
+            })) > 0;
+        // Guarded on what was read, like `todayWorkout`: two screens finishing
+        // at once both pass the check above, and only one of them may count.
+        const { count } = await prisma.routine.updateMany({
+            where: {
+                id: routineId,
+                cursor: routine.cursor,
+                ...(workout && { isActive: true }),
             },
-        })) > 0;
-    // Guarded on what was read, like `todayWorkout`: two screens finishing at
-    // once both pass the check above, and only one of them may count.
-    await prisma.routine.updateMany({
-        where: {
-            id: routineId,
-            cursor: routine.cursor,
-            ...(workout && { isActive: true }),
-        },
-        data: {
-            cursor: counts ? { increment: 1 } : undefined,
-            isActive: workout ? false : undefined,
-        },
-    });
+            data: {
+                cursor: counts ? { increment: 1 } : undefined,
+                isActive: workout ? false : undefined,
+            },
+        });
+        finished = count > 0;
+    }
+    // Revalidated either way: a stale screen is refreshed to what is there now.
     revalidatePath('/');
     if (workout) {
         revalidatePath('/workouts');
         revalidatePath(`/workouts/${routineId}`);
+        if (!finished)
+            return { error: (await getT())('error.alreadyFinished') };
     }
 }
 

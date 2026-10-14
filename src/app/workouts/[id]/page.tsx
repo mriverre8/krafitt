@@ -240,7 +240,7 @@ export default async function WorkoutPage({
                                         size={16}
                                         aria-hidden
                                     />
-                                    {t('validate.ok')}
+                                    {t('workout.ready')}
                                 </p>
                             </WhenEditing>
                             <WhenNotEditing>

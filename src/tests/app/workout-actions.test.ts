@@ -106,6 +106,7 @@ beforeEach(() => {
         mock.mockReset();
     redirect.mockClear();
     requireRoutine.mockResolvedValue({ kind: 'routine' });
+    updateMany.mockResolvedValue({ count: 1 });
 });
 
 describe('setActiveRoutine', () => {
@@ -152,7 +153,7 @@ describe('skipDay', () => {
             cursor: 2,
         });
         countLogs.mockResolvedValue(3);
-        await skipDay('r2');
+        await expect(skipDay('r2')).resolves.toBeUndefined();
         // The time under way is the third.
         expect(countLogs).toHaveBeenCalledWith({
             where: { session: { routineId: 'r2', userId: 'ada', week: 3 } },
@@ -171,9 +172,26 @@ describe('skipDay', () => {
             isActive: false,
             cursor: 3,
         });
-        await skipDay('r2');
+        await expect(skipDay('r2')).resolves.toEqual({
+            error: 'This workout is already finished',
+        });
         expect(countLogs).not.toHaveBeenCalled();
         expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    // Finished on another screen between the read and the write: the guarded
+    // write finds nothing to change.
+    it('says so when another screen finished it first', async () => {
+        requireRoutine.mockResolvedValue({
+            kind: 'workout',
+            isActive: true,
+            cursor: 2,
+        });
+        countLogs.mockResolvedValue(3);
+        updateMany.mockResolvedValue({ count: 0 });
+        await expect(skipDay('r2')).resolves.toEqual({
+            error: 'This workout is already finished',
+        });
     });
 
     // Nothing logged, nothing done: it is called off, and is not counted.
