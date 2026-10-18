@@ -70,6 +70,37 @@ export function positionFromCursor(
     };
 }
 
+/**
+ * The days that can be trained now instead of the cursor's: its own and the
+ * rest of its week, less those already done. Days behind the cursor were due
+ * and are left as they were — done, skipped or missed.
+ */
+export function pickableDays(
+    cursor: number,
+    workoutCount: number,
+    done: ReadonlySet<number>
+): number[] {
+    if (workoutCount <= 0) return [];
+    const from = Math.max(cursor, 0) % workoutCount;
+    return Array.from(
+        { length: workoutCount - from },
+        (_, i) => from + i
+    ).filter((index) => !done.has(index));
+}
+
+/**
+ * The day of the cursor's week being trained: a day picked ahead of the
+ * cursor's takes its place; one at or behind it is stale and changes nothing.
+ * `picked` is its index, -1 for none.
+ */
+export function shownDay(
+    cursor: number,
+    workoutCount: number,
+    picked: number
+): number {
+    return Math.max(Math.max(cursor, 0) % workoutCount, picked);
+}
+
 /** How many weeks of an open-ended routine the history holds at once. */
 export const HISTORY_WINDOW = 10;
 
@@ -186,11 +217,18 @@ export function weekState(
     cursor: number,
     week: number,
     workoutIndex: number,
-    workoutCount: number
+    workoutCount: number,
+    picked = -1
 ): WeekState {
     const position = (week - 1) * workoutCount + workoutIndex;
-    if (cursor > position) return 'past';
-    return cursor === position ? 'current' : 'upcoming';
+    // The day being trained is the picked one, when there is one: the
+    // cursor's own is then still to come.
+    const here =
+        cursor +
+        shownDay(cursor, workoutCount, picked) -
+        (cursor % workoutCount);
+    if (position === here) return 'current';
+    return cursor > position ? 'past' : 'upcoming';
 }
 
 /** Every workout of every week is behind the cursor. An empty routine is never

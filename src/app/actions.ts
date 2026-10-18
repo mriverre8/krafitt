@@ -41,7 +41,10 @@ import {
     isRoutineFinished,
     isSessionComplete,
     isSetEnabled,
+    pickableDays,
+    positionFromCursor,
     sectionOf,
+    shownDay,
     toEffort,
     toKind,
     type Effort,
@@ -859,6 +862,67 @@ export async function cancelDay(workoutId: string, week: number) {
     revalidatePath('/');
 }
 
+/** A routine's days in the order the cursor walks them. */
+const dayIds = async (routineId: string) =>
+    (
+        await prisma.workout.findMany({
+            where: { routineId },
+            orderBy: { order: 'asc' },
+            select: { id: true },
+        })
+    ).map((w) => w.id);
+
+/**
+ * Training another day of this week instead of the one in order. Only before
+ * the day on screen is started, and only a day still to come this week. The
+ * cursor stays put (see `todayWorkout`), so picking its own day is going back
+ * to the order.
+ */
+export async function pickDay(routineId: string, workoutId: string) {
+    const user = await requireUser();
+    const t = await getT();
+    const routine = await requireRoutine(routineId, user.id, 'routine');
+    const days = await dayIds(routineId);
+    const position = positionFromCursor(
+        routine.cursor,
+        days.length,
+        routine.durationWeeks
+    );
+    const index = days.indexOf(workoutId);
+    if (!routine.isActive || !position || index < 0)
+        return { error: t('error.dayNotAvailable') };
+
+    const sessions = await prisma.workoutSession.findMany({
+        where: { userId: user.id, routineId, week: position.week },
+        select: { workoutId: true, completedAt: true },
+    });
+    const shown =
+        days[
+            shownDay(
+                routine.cursor,
+                days.length,
+                days.indexOf(routine.pickedWorkoutId ?? '')
+            )
+        ];
+    if (sessions.some((s) => s.workoutId === shown && !s.completedAt))
+        return { error: t('error.dayStarted') };
+    const done = new Set(
+        sessions
+            .filter((s) => s.completedAt)
+            .map((s) => days.indexOf(s.workoutId))
+    );
+    if (!pickableDays(routine.cursor, days.length, done).includes(index))
+        return { error: t('error.dayNotAvailable') };
+
+    await prisma.routine.updateMany({
+        where: { id: routineId, cursor: routine.cursor },
+        data: {
+            pickedWorkoutId: index === position.workoutIndex ? null : workoutId,
+        },
+    });
+    revalidatePath('/');
+}
+
 /**
  * Moving on with what was left blank. On a workout this is "Finish workout":
  * the time counts like a skipped day does, with its blanks — unless nothing
@@ -869,6 +933,36 @@ export async function skipDay(routineId: string) {
     const user = await requireUser();
     const routine = await requireRoutine(routineId, user.id);
     const workout = toKind(routine.kind) === 'workout';
+    // A picked day is closed with its blanks, and the cursor left on the day it
+    // stood on: it steps over this one when it gets here, already complete.
+    if (!workout && routine.pickedWorkoutId) {
+        const days = await dayIds(routineId);
+        if (
+            days.indexOf(routine.pickedWorkoutId) >
+            routine.cursor % days.length
+        ) {
+            await prisma.$transaction([
+                prisma.workoutSession.updateMany({
+                    where: {
+                        userId: user.id,
+                        workoutId: routine.pickedWorkoutId,
+                        week: currentWeek(routine.cursor, days.length),
+                        completedAt: null,
+                    },
+                    data: { completedAt: new Date() },
+                }),
+                prisma.routine.updateMany({
+                    where: {
+                        id: routineId,
+                        pickedWorkoutId: routine.pickedWorkoutId,
+                    },
+                    data: { pickedWorkoutId: null },
+                }),
+            ]);
+            revalidatePath('/');
+            return;
+        }
+    }
     // Only a workout under way can be finished: a stale button — it was
     // finished elsewhere, or closed by its last set — must not count it twice.
     let finished = false;
@@ -898,6 +992,8 @@ export async function skipDay(routineId: string) {
             data: {
                 cursor: counts ? { increment: 1 } : undefined,
                 isActive: workout ? false : undefined,
+                // A pick never outlives the cursor moving: see `todayWorkout`.
+                pickedWorkoutId: null,
             },
         });
         finished = count > 0;

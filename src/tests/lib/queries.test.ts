@@ -254,7 +254,11 @@ describe('todayWorkout', () => {
         });
         expect(moveRoutine).toHaveBeenCalledWith({
             where: { id: 'r1', cursor: 2 },
-            data: { cursor: { increment: 1 }, isActive: false },
+            data: {
+                cursor: { increment: 1 },
+                isActive: false,
+                pickedWorkoutId: null,
+            },
         });
         expect(transaction).toHaveBeenCalledWith(['close', 'move']);
         // No next time is put in its place.
@@ -269,7 +273,55 @@ describe('todayWorkout', () => {
         await todayWorkout('ada');
         expect(moveRoutine).toHaveBeenCalledWith({
             where: { id: 'r1', cursor: 2 },
-            data: { cursor: { increment: 1 }, isActive: undefined },
+            data: {
+                cursor: { increment: 1 },
+                isActive: undefined,
+                pickedWorkoutId: null,
+            },
+        });
+        expect(findActive).toHaveBeenCalledTimes(2);
+    });
+
+    // Two days a week, the cursor on week 2's first and its second picked.
+    const picked = () => {
+        const routine = active('routine');
+        return {
+            ...routine,
+            pickedWorkoutId: 'w2',
+            workouts: [
+                routine.workouts[0],
+                { ...routine.workouts[0], id: 'w2', name: 'Push' },
+            ],
+        };
+    };
+
+    it('puts the picked day on screen, with the days left to pick', async () => {
+        findActive.mockResolvedValueOnce(picked());
+        findSession.mockResolvedValueOnce(null);
+
+        const today = await todayWorkout('ada');
+        expect(findSession.mock.calls[0][0].where).toEqual({
+            userId_workoutId_week: { userId: 'ada', workoutId: 'w2', week: 2 },
+        });
+        expect(today).toMatchObject({
+            day: 1,
+            workout: { id: 'w2' },
+            choices: [
+                { id: 'w1', name: 'Legs', index: 0 },
+                { id: 'w2', name: 'Push', index: 1 },
+            ],
+        });
+    });
+
+    // The cursor steps over it once it gets there, already complete.
+    it('drops the pick once done and leaves the cursor where it was', async () => {
+        findActive.mockResolvedValueOnce(picked()).mockResolvedValueOnce(null);
+
+        await todayWorkout('ada');
+        expect(moveRoutine).toHaveBeenCalledTimes(1);
+        expect(moveRoutine).toHaveBeenCalledWith({
+            where: { id: 'r1', pickedWorkoutId: 'w2' },
+            data: { pickedWorkoutId: null },
         });
         expect(findActive).toHaveBeenCalledTimes(2);
     });

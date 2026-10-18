@@ -1,6 +1,6 @@
 'use client';
 
-import { cancelDay, logSet, skipDay, startDay } from '@/app/actions';
+import { cancelDay, logSet, pickDay, skipDay, startDay } from '@/app/actions';
 import { useT } from '@/i18n/use-t';
 import { setSlots } from '@/lib/history';
 import {
@@ -12,13 +12,13 @@ import {
     type PreviousLogs,
     type RoutineKind,
 } from '@/lib/progress';
-import { primaryClass, stickyBarClass } from '@/lib/ui';
+import { ghostClass, primaryClass, stickyBarClass } from '@/lib/ui';
 import { HistoryLink } from '@/components/ui/history-link';
 import { ExercisePreview } from '@/components/workout/exercise-preview';
 import { FinishWorkoutButton } from '@/components/workout/finish-workout-button';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
-import { Flag, Play } from 'lucide-react';
+import { ArrowLeftRight, Flag, Play } from 'lucide-react';
 import { unstable_rethrow, useRouter } from 'next/navigation';
 import { useEffect, useTransition } from 'react';
 import { showModal } from '@/store/modal';
@@ -41,6 +41,8 @@ export type TodayWorkoutProps = {
     started?: boolean;
     logs: Logs;
     previous: PreviousLogs;
+    /** The days of this week that can be trained instead, this one among them. */
+    choices?: { id: string; name: string; index: number }[];
     /** A workout is one day done again and again: its "week" is which time
         this is, and it is finished rather than skipped. */
     kind?: RoutineKind;
@@ -105,6 +107,17 @@ export function TodayWorkout(props: TodayWorkoutProps) {
 
     function onStart() {
         run(() => startDay(workout.id, week));
+    }
+
+    // Only before starting: a day under way is finished or called off first.
+    const choices = props.choices ?? [];
+    const canChangeDay = !started && choices.length > 1;
+    function onChangeDay() {
+        showModal('pickDay', {
+            choices,
+            current: workout.id,
+            onPick: (workoutId) => run(() => pickDay(routineId, workoutId)),
+        });
     }
 
     // A finished day is already behind us: the next fetch moves the cursor past
@@ -270,25 +283,42 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         className={`${primaryClass} flex w-full items-center justify-center gap-2`}
                     />
                 ) : (
-                    <button
-                        type="button"
-                        disabled={pending}
-                        onClick={started ? onFinish : onStart}
-                        className={`${primaryClass} flex w-full items-center justify-center gap-2`}
-                    >
-                        {started ? (
-                            <Flag
-                                size={16}
-                                aria-hidden
-                            />
-                        ) : (
-                            <Play
-                                size={16}
-                                aria-hidden
-                            />
+                    <>
+                        {canChangeDay && (
+                            <button
+                                type="button"
+                                disabled={pending}
+                                onClick={onChangeDay}
+                                aria-label={t('today.changeDay')}
+                                title={t('today.changeDay')}
+                                className={`${ghostClass} flex shrink-0 items-center justify-center`}
+                            >
+                                <ArrowLeftRight
+                                    size={18}
+                                    aria-hidden
+                                />
+                            </button>
                         )}
-                        {t(started ? 'today.finish' : 'today.start')}
-                    </button>
+                        <button
+                            type="button"
+                            disabled={pending}
+                            onClick={started ? onFinish : onStart}
+                            className={`${primaryClass} flex w-full items-center justify-center gap-2`}
+                        >
+                            {started ? (
+                                <Flag
+                                    size={16}
+                                    aria-hidden
+                                />
+                            ) : (
+                                <Play
+                                    size={16}
+                                    aria-hidden
+                                />
+                            )}
+                            {t(started ? 'today.finish' : 'today.start')}
+                        </button>
+                    </>
                 )}
             </div>
         </div>

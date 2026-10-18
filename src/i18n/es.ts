@@ -185,6 +185,10 @@ export const es: Dict = {
     'today.effortHardShort': 'Dura',
     'today.effortNormalShort': 'Justa',
     'today.effortEasyShort': 'Sobraba',
+    'today.changeDay': 'Cambiar día',
+    'today.changeDayBody':
+        'Elige otro día de esta semana. Los demás se quedan pendientes y siguen en su orden.',
+    'today.changeDayCurrent': 'Ahora',
     'today.genericError': 'Algo ha fallado',
 
     'progress.link': 'Histórico',
@@ -559,6 +563,8 @@ export const es: Dict = {
     'error.planChanged':
         'La rutina ha cambiado: recarga para verla como está ahora',
     'error.activeDayIncomplete': '{where}: {what}',
+    'error.dayNotAvailable': 'Ese día no se puede entrenar ahora',
+    'error.dayStarted': 'Termina o cancela antes el día empezado',
     'error.fillPrevious': 'Rellena antes las series anteriores',
     'error.workoutTitle': 'Ponle un nombre al entrenamiento',
     'error.workoutStarted': 'Un entrenamiento en curso no se puede editar',

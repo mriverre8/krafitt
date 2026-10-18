@@ -183,6 +183,10 @@ export const en = {
     'today.effortHardShort': 'Tough',
     'today.effortNormalShort': 'On plan',
     'today.effortEasyShort': 'Had more',
+    'today.changeDay': 'Change day',
+    'today.changeDayBody':
+        'Pick another day of this week. The rest stay pending, in their order.',
+    'today.changeDayCurrent': 'Now',
     'today.genericError': 'Something went wrong',
 
     'progress.link': 'History',
@@ -551,6 +555,8 @@ export const en = {
     'error.planChanged':
         'The routine has changed: reload to see it as it is now',
     'error.activeDayIncomplete': '{where}: {what}',
+    'error.dayNotAvailable': 'That day cannot be trained now',
+    'error.dayStarted': 'Finish or call off the day under way first',
     'error.fillPrevious': 'Fill in the previous sets first',
     'error.workoutTitle': 'Give the workout a name',
     'error.workoutStarted': 'A workout in progress cannot be edited',

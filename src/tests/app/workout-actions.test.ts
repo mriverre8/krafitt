@@ -3,6 +3,7 @@ import {
     duplicateRoutine,
     cancelDay,
     logSet,
+    pickDay,
     renameWorkout,
     saveRoutine,
     sendRoutine,
@@ -20,6 +21,9 @@ const transaction = vi.fn();
 const countLogs = vi.fn();
 const upsertSession = vi.fn();
 const deleteSessions = vi.fn();
+const findSessions = vi.fn();
+const updateSessions = vi.fn();
+const findWorkouts = vi.fn();
 const upsertRequest = vi.fn();
 const requireRoutine = vi.fn();
 const routineDetail = vi.fn();
@@ -41,9 +45,12 @@ vi.mock('@/lib/db', () => ({
             create: (...args: unknown[]) => create(...args),
         },
         setLog: { count: (...args: unknown[]) => countLogs(...args) },
+        workout: { findMany: (...args: unknown[]) => findWorkouts(...args) },
         workoutSession: {
             upsert: (...args: unknown[]) => upsertSession(...args),
             deleteMany: (...args: unknown[]) => deleteSessions(...args),
+            findMany: (...args: unknown[]) => findSessions(...args),
+            updateMany: (...args: unknown[]) => updateSessions(...args),
         },
         routineRequest: {
             upsert: (...args: unknown[]) => upsertRequest(...args),
@@ -104,6 +111,9 @@ beforeEach(() => {
         countLogs,
         upsertSession,
         deleteSessions,
+        findSessions,
+        updateSessions,
+        findWorkouts,
         upsertRequest,
         requireRoutine,
         routineDetail,
@@ -165,7 +175,11 @@ describe('skipDay', () => {
         });
         expect(updateMany).toHaveBeenCalledWith({
             where: { id: 'r2', cursor: 2, isActive: true },
-            data: { cursor: { increment: 1 }, isActive: false },
+            data: {
+                cursor: { increment: 1 },
+                isActive: false,
+                pickedWorkoutId: null,
+            },
         });
     });
 
@@ -210,8 +224,34 @@ describe('skipDay', () => {
         await skipDay('r2');
         expect(updateMany).toHaveBeenCalledWith({
             where: { id: 'r2', cursor: 2, isActive: true },
-            data: { cursor: undefined, isActive: false },
+            data: {
+                cursor: undefined,
+                isActive: false,
+                pickedWorkoutId: null,
+            },
         });
+    });
+
+    // The cursor steps over it later, its session already complete.
+    it('closes a picked day with its blanks, the cursor left alone', async () => {
+        week2('d3');
+        updateSessions.mockReturnValue('close');
+        updateMany.mockReturnValue('unpick');
+        await skipDay('r2');
+        expect(updateSessions).toHaveBeenCalledWith({
+            where: {
+                userId: 'ada',
+                workoutId: 'd3',
+                week: 2,
+                completedAt: null,
+            },
+            data: { completedAt: expect.any(Date) },
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', pickedWorkoutId: 'd3' },
+            data: { pickedWorkoutId: null },
+        });
+        expect(transaction).toHaveBeenCalledWith(['close', 'unpick']);
     });
 
     it('leaves a routine active on its next day', async () => {
@@ -219,8 +259,84 @@ describe('skipDay', () => {
         await skipDay('r2');
         expect(updateMany).toHaveBeenCalledWith({
             where: { id: 'r2', cursor: 5 },
-            data: { cursor: { increment: 1 }, isActive: undefined },
+            data: {
+                cursor: { increment: 1 },
+                isActive: undefined,
+                pickedWorkoutId: null,
+            },
         });
+    });
+});
+
+/** Five days a week, the cursor on week 2's first: d0 is the day in order. */
+const week2 = (pickedWorkoutId: string | null = null) => {
+    requireRoutine.mockResolvedValue({
+        kind: 'routine',
+        isActive: true,
+        cursor: 5,
+        durationWeeks: 4,
+        pickedWorkoutId,
+    });
+    findWorkouts.mockResolvedValue(
+        ['d0', 'd1', 'd2', 'd3', 'd4'].map((id) => ({ id }))
+    );
+};
+
+describe('pickDay', () => {
+    it('puts another day of the week on screen, the cursor left alone', async () => {
+        week2();
+        findSessions.mockResolvedValue([]);
+        await expect(pickDay('r2', 'd3')).resolves.toBeUndefined();
+        expect(requireRoutine).toHaveBeenCalledWith('r2', 'ada', 'routine');
+        expect(findSessions.mock.calls[0][0].where).toEqual({
+            userId: 'ada',
+            routineId: 'r2',
+            week: 2,
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { pickedWorkoutId: 'd3' },
+        });
+    });
+
+    it("goes back to the order on the cursor's own day", async () => {
+        week2('d3');
+        findSessions.mockResolvedValue([]);
+        await pickDay('r2', 'd0');
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { pickedWorkoutId: null },
+        });
+    });
+
+    it('refuses a day already done this week', async () => {
+        week2();
+        findSessions.mockResolvedValue([
+            { workoutId: 'd3', completedAt: new Date() },
+        ]);
+        await expect(pickDay('r2', 'd3')).resolves.toEqual({
+            error: 'That day cannot be trained now',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses a day that is not one of the routine', async () => {
+        week2();
+        await expect(pickDay('r2', 'other')).resolves.toEqual({
+            error: 'That day cannot be trained now',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses while the day on screen is under way', async () => {
+        week2('d2');
+        findSessions.mockResolvedValue([
+            { workoutId: 'd2', completedAt: null },
+        ]);
+        await expect(pickDay('r2', 'd3')).resolves.toEqual({
+            error: 'Finish or call off the day under way first',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
     });
 });
 

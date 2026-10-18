@@ -94,6 +94,10 @@ model Routine {
   /// leaves the home screen each time it is done: every "week" of it is one
   /// more time it was trained, and the cursor counts them.
   kind          String   @default("routine")
+  /// A day of the current week trained ahead of the cursor's: shown on the
+  /// home screen instead of it until done. The cursor stays put and steps over
+  /// the day once it gets there, since its session is already complete.
+  pickedWorkoutId String?
 
   workouts Workout[]
   sessions WorkoutSession[]

@@ -5,6 +5,7 @@ import {
     isRoutineLocked,
     isSessionComplete,
     isSetEnabled,
+    pickableDays,
     positionFromCursor,
     profileRoutines,
     routineStatus,
@@ -108,6 +109,17 @@ describe('weekState', () => {
     it('puts every week behind a routine that is over', () => {
         expect(weekState(6, 3, 1, 2)).toBe('past');
     });
+
+    // Three days a week, the cursor on week 2's first and its third picked.
+    it('makes the picked day the current one, the cursor day still to come', () => {
+        expect(weekState(3, 2, 2, 3, 2)).toBe('current');
+        expect(weekState(3, 2, 0, 3, 2)).toBe('upcoming');
+        expect(weekState(3, 1, 2, 3, 2)).toBe('past');
+    });
+
+    it('ignores a pick behind the cursor', () => {
+        expect(weekState(4, 2, 1, 3, 0)).toBe('current');
+    });
 });
 
 describe('positionFromCursor', () => {
@@ -142,6 +154,25 @@ describe('positionFromCursor', () => {
         });
         expect(positionFromCursor(999, 2, null)).not.toBeNull();
         expect(positionFromCursor(0, 0, null)).toBeNull();
+    });
+});
+
+describe('pickableDays', () => {
+    // Five days a week: cursor 7 is week 2, day 3.
+    it('offers the cursor day and the rest of its week', () => {
+        expect(pickableDays(7, 5, new Set())).toEqual([2, 3, 4]);
+    });
+
+    it('leaves out the days already done this week', () => {
+        expect(pickableDays(7, 5, new Set([3]))).toEqual([2, 4]);
+    });
+
+    it('starts the week over at its first day', () => {
+        expect(pickableDays(5, 5, new Set())).toEqual([0, 1, 2, 3, 4]);
+    });
+
+    it('offers nothing on a routine with no days', () => {
+        expect(pickableDays(0, 0, new Set())).toEqual([]);
     });
 });
 

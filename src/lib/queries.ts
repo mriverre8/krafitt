@@ -4,6 +4,8 @@ import { toLogs, toPrevious } from './history';
 import { OWNER_PREVIEW_SIZE } from './pagination';
 import {
     isSessionComplete,
+    pickableDays,
+    shownDay,
     positionFromCursor,
     toKind,
     type Logs,
@@ -42,10 +44,17 @@ export async function todayWorkout(userId: string) {
     );
     if (!position) return { routine, finished: true as const };
 
-    const workout = routine.workouts[position.workoutIndex];
     const week = position.week;
+    const single = toKind(routine.kind) === 'workout';
+    // A day picked ahead of the cursor's takes its place until it is done.
+    const day = shownDay(
+        routine.cursor,
+        routine.workouts.length,
+        routine.workouts.findIndex((w) => w.id === routine.pickedWorkoutId)
+    );
+    const workout = routine.workouts[day];
 
-    const [session, previousSessions] = await Promise.all([
+    const [session, previousSessions, doneThisWeek] = await Promise.all([
         prisma.workoutSession.findUnique({
             where: {
                 userId_workoutId_week: { userId, workoutId: workout.id, week },
@@ -57,6 +66,18 @@ export async function todayWorkout(userId: string) {
             orderBy: { week: 'asc' },
             include: { logs: true },
         }),
+        // What the day can be changed to: a workout has only the one.
+        single
+            ? []
+            : prisma.workoutSession.findMany({
+                  where: {
+                      userId,
+                      routineId: routine.id,
+                      week,
+                      completedAt: { not: null },
+                  },
+                  select: { workoutId: true },
+              }),
     ]);
 
     const logs = toLogs(session?.logs ?? [], workout.exercises);
@@ -70,33 +91,58 @@ export async function todayWorkout(userId: string) {
     //
     // A workout moves on the same way, but there is no next time to show: it
     // leaves the home screen, and is done again only when started again.
+    //
+    // A picked day leaves the cursor where it is: it goes back to the day it
+    // stood on, and steps over this one when it gets here, already complete.
+    // Moving the cursor drops the pick, so none outlives its week.
     if (
         session &&
         (session.completedAt || isSessionComplete(workout.exercises, logs))
     ) {
-        const workoutDone = toKind(routine.kind) === 'workout';
         await prisma.$transaction([
             prisma.workoutSession.updateMany({
                 where: { id: session.id, completedAt: null },
                 data: { completedAt: new Date() },
             }),
-            prisma.routine.updateMany({
-                where: { id: routine.id, cursor: routine.cursor },
-                data: {
-                    cursor: { increment: 1 },
-                    isActive: workoutDone ? false : undefined,
-                },
-            }),
+            day !== position.workoutIndex
+                ? prisma.routine.updateMany({
+                      where: { id: routine.id, pickedWorkoutId: workout.id },
+                      data: { pickedWorkoutId: null },
+                  })
+                : prisma.routine.updateMany({
+                      where: { id: routine.id, cursor: routine.cursor },
+                      data: {
+                          cursor: { increment: 1 },
+                          isActive: single ? false : undefined,
+                          pickedWorkoutId: null,
+                      },
+                  }),
         ]);
-        if (workoutDone) return null;
+        if (single) return null;
         return todayWorkout(userId);
     }
+
+    const done = new Set(doneThisWeek.map((s) => s.workoutId));
+    const choices = pickableDays(
+        routine.cursor,
+        routine.workouts.length,
+        new Set(
+            routine.workouts.flatMap((w, index) =>
+                done.has(w.id) ? [index] : []
+            )
+        )
+    ).map((index) => ({
+        id: routine.workouts[index].id,
+        name: routine.workouts[index].name,
+        index,
+    }));
 
     return {
         routine,
         finished: false as const,
         workout,
-        day: position.workoutIndex,
+        day,
+        choices,
         week,
         // A session is opened by starting the day (`startDay`) or by its
         // first set: either way, the day is under way.

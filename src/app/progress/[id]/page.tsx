@@ -92,6 +92,9 @@ export default async function RoutineProgressPage({
                         days={days}
                         durationWeeks={routine.durationWeeks}
                         cursor={routine.cursor}
+                        picked={routine.workouts.findIndex(
+                            (w) => w.id === routine.pickedWorkoutId
+                        )}
                         initialDay={initialDay}
                         weeks={
                             workout
