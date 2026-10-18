@@ -6,7 +6,7 @@ import { useSessionStore } from '@/store/session';
 import { useToastStore } from '@/store/toast';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { logSet, skipDay } from '@/app/actions';
+import { cancelDay, logSet, skipDay, startDay } from '@/app/actions';
 import {
     acceptConfirm,
     confirmDialog,
@@ -15,7 +15,12 @@ import {
     withModals,
 } from '@/tests/setup-helpers';
 
-vi.mock('@/app/actions', () => ({ logSet: vi.fn(), skipDay: vi.fn() }));
+vi.mock('@/app/actions', () => ({
+    cancelDay: vi.fn(),
+    logSet: vi.fn(),
+    skipDay: vi.fn(),
+    startDay: vi.fn(),
+}));
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ refresh }),
@@ -52,6 +57,7 @@ const props: TodayWorkoutProps = {
         ],
     },
     day: 1,
+    started: true,
     logs: {},
     previous: {},
 };
@@ -62,7 +68,10 @@ const full = {
 
 describe('TodayWorkout', () => {
     beforeEach(() => {
-        useSessionStore.setState({ logs: {}, day: undefined });
+        useSessionStore.setState({
+            logs: {},
+            day: undefined,
+        });
         vi.clearAllMocks();
     });
 
@@ -111,14 +120,34 @@ describe('TodayWorkout', () => {
         expect(screen.getByText('Week 2 of 8')).toBeInTheDocument();
     });
 
-    // No start button any more: the first set is open from the moment the day
-    // is on screen, and logging it is what opens the session.
-    it('opens the first set straight away and locks the rest', () => {
-        render(<TodayWorkout {...props} />);
+    // A routine's day is read before it is trained: the plan, no fields.
+    // Starting it is the server's to record, and the day it sends back is the
+    // one under way.
+    it('shows the day as a preview until it is started', async () => {
+        const { rerender } = render(
+            <TodayWorkout
+                {...props}
+                started={false}
+            />
+        );
+        expect(screen.getByText('Bench press')).toBeInTheDocument();
+        expect(screen.queryByLabelText('Weight set 1')).not.toBeInTheDocument();
+        expect(screen.queryByText('Skip to next day')).not.toBeInTheDocument();
+        // No progress to show for a day not yet under way.
+        expect(screen.queryByText('0/2 sets')).not.toBeInTheDocument();
+        expect(screen.queryByRole('img', { name: '0/2 sets' })).toBeNull();
+
+        fireEvent.click(screen.getByText('Start workout'));
+        await waitFor(() => expect(startDay).toHaveBeenCalledWith('w1', 2));
+
+        rerender(<TodayWorkout {...props} />);
+        expect(screen.getByText('0/2 sets')).toBeInTheDocument();
         expect(screen.getByLabelText('Weight set 1')).toBeEnabled();
         expect(screen.getByLabelText('Weight set 2')).toBeDisabled();
+        expect(screen.getByText('Finish workout')).toBeInTheDocument();
     });
 
+    // Coming back to a day with anything logged lands in it, not on its preview.
     it('opens the next set once the previous one is logged', () => {
         render(
             <TodayWorkout
@@ -126,13 +155,42 @@ describe('TodayWorkout', () => {
                 logs={{ e1: { 0: { weight: 80, reps: 8 } } }}
             />
         );
+        expect(screen.queryByText('Start workout')).not.toBeInTheDocument();
         expect(screen.getByLabelText('Weight set 2')).toBeEnabled();
     });
 
-    it('confirms before skipping an unfinished day', async () => {
+    // Nothing logged, nothing to end: it goes back to being read, and the day
+    // stays where it is.
+    it('calls the day off when finished with nothing logged, once confirmed', async () => {
+        useToastStore.setState({ toasts: [] });
         render(withModals(<TodayWorkout {...props} />));
-        fireEvent.click(screen.getByText('Skip to next day'));
-        expect(await openConfirm()).toBeInTheDocument();
+        fireEvent.click(screen.getByText('Finish workout'));
+        expect(await openConfirm()).toHaveTextContent(
+            'You have not logged a single set'
+        );
+        await acceptConfirm('Finish anyway');
+        await waitFor(() => expect(cancelDay).toHaveBeenCalledWith('w1', 2));
+        expect(skipDay).not.toHaveBeenCalled();
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Workout called off', kind: 'success' },
+            ])
+        );
+    });
+
+    it('confirms before finishing a day half done', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    logs={{ e1: { 0: { weight: 80, reps: 8 } } }}
+                />
+            )
+        );
+        fireEvent.click(screen.getByText('Finish workout'));
+        expect(await openConfirm()).toHaveTextContent(
+            'The sets you left blank stay blank'
+        );
         expect(skipDay).not.toHaveBeenCalled();
 
         await declineConfirm();
@@ -140,24 +198,39 @@ describe('TodayWorkout', () => {
         expect(skipDay).not.toHaveBeenCalled();
     });
 
-    it('skips once the confirmation is accepted', async () => {
-        render(withModals(<TodayWorkout {...props} />));
-        fireEvent.click(screen.getByText('Skip to next day'));
-        await acceptConfirm('Skip anyway');
+    it('moves on to the next day once the confirmation is accepted', async () => {
+        useToastStore.setState({ toasts: [] });
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    logs={{ e1: { 0: { weight: 80, reps: 8 } } }}
+                />
+            )
+        );
+        fireEvent.click(screen.getByText('Finish workout'));
+        await acceptConfirm('Finish anyway');
         await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
         await waitFor(() =>
             expect(useToastStore.getState().toasts).toMatchObject([
-                { message: 'Day skipped', kind: 'success' },
+                { message: 'Workout finished', kind: 'success' },
             ])
         );
     });
 
-    it('raises an error toast when the skip fails', async () => {
+    it('raises an error toast when finishing fails', async () => {
         vi.mocked(skipDay).mockRejectedValueOnce(new Error('boom'));
         useToastStore.setState({ toasts: [] });
-        render(withModals(<TodayWorkout {...props} />));
-        fireEvent.click(screen.getByText('Skip to next day'));
-        await acceptConfirm('Skip anyway');
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    logs={{ e1: { 0: { weight: 80, reps: 8 } } }}
+                />
+            )
+        );
+        fireEvent.click(screen.getByText('Finish workout'));
+        await acceptConfirm('Finish anyway');
         await waitFor(() =>
             expect(useToastStore.getState().toasts).toMatchObject([
                 { message: 'Something went wrong', kind: 'error' },
@@ -174,10 +247,9 @@ describe('TodayWorkout', () => {
                 logs={full}
             />
         );
-        fireEvent.click(screen.getByText('Skip to next day'));
+        fireEvent.click(screen.getByText('Finish workout'));
         expect(skipDay).not.toHaveBeenCalled();
         expect(refresh).toHaveBeenCalled();
-        expect(useToastStore.getState().toasts).toEqual([]);
     });
 
     // Coming back from the history replays the payload this page was rendered
@@ -291,7 +363,10 @@ describe('TodayWorkout, for a workout', () => {
     };
 
     beforeEach(() => {
-        useSessionStore.setState({ logs: {}, day: undefined });
+        useSessionStore.setState({
+            logs: {},
+            day: undefined,
+        });
         useToastStore.setState({ toasts: [] });
         vi.clearAllMocks();
     });
@@ -313,7 +388,7 @@ describe('TodayWorkout, for a workout', () => {
                 />
             )
         );
-        expect(screen.queryByText('Skip to next day')).not.toBeInTheDocument();
+        expect(screen.queryByText('Start workout')).not.toBeInTheDocument();
         fireEvent.click(screen.getByText('Finish workout'));
         expect(await openConfirm()).toHaveTextContent(
             'The sets you left blank stay blank'

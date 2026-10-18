@@ -16,6 +16,7 @@ import {
     menuDangerClass,
     menuItemClass,
     primaryClass,
+    stickyBarClass,
 } from '@/lib/ui';
 import { showModal } from '@/store/modal';
 import {
@@ -334,7 +335,7 @@ export function WorkoutEditor({
             </div>
 
             {editing && dirty && (
-                <div className="border-line bg-bg/85 sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t px-4 py-3 backdrop-blur-md">
+                <div className={stickyBarClass}>
                     <button
                         type="button"
                         disabled={pending}

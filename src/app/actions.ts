@@ -766,7 +766,9 @@ export async function logSet(
     )
         return { error: t('error.alreadyFinished') };
 
-    // The first logged set is what opens the session for this week.
+    // A routine's day is usually opened by starting it (`startDay`); a workout's
+    // time, by its first set. Opened here too either way: the session may be
+    // gone by now — called off from another screen — or predate starting.
     const session = await prisma.workoutSession.upsert({
         where: { userId_workoutId_week: { userId: user.id, workoutId, week } },
         create: { userId: user.id, routineId, workoutId, week },
@@ -818,6 +820,43 @@ export async function logSet(
             data: { completedAt: new Date() },
         });
     }
+}
+
+/**
+ * Starting a routine's day on the home screen. The session is what says it was
+ * started, so the day stays under way however the app is closed or left — and
+ * its `startedAt` is when training began, not when the first set went in.
+ * A workout is started on its own page (`startWorkout`) and never comes here.
+ */
+export async function startDay(workoutId: string, week: number) {
+    const user = await requireUser();
+    const routineId = await routineIdOfWorkout(workoutId);
+    await requireRoutine(routineId, user.id, 'routine');
+    await prisma.workoutSession.upsert({
+        where: { userId_workoutId_week: { userId: user.id, workoutId, week } },
+        create: { userId: user.id, routineId, workoutId, week },
+        update: {},
+    });
+    revalidatePath('/');
+}
+
+/**
+ * Finishing a started day with nothing logged: the day goes back to being read,
+ * and leaves nothing behind. Only an empty session goes — a set logged from
+ * another screen in the meantime keeps it, and the day stays under way.
+ */
+export async function cancelDay(workoutId: string, week: number) {
+    const user = await requireUser();
+    await prisma.workoutSession.deleteMany({
+        where: {
+            userId: user.id,
+            workoutId,
+            week,
+            completedAt: null,
+            logs: { none: {} },
+        },
+    });
+    revalidatePath('/');
 }
 
 /**
