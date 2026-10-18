@@ -1,12 +1,14 @@
 import {
     createWorkout,
     duplicateRoutine,
+    cancelDay,
     logSet,
     renameWorkout,
     saveRoutine,
     sendRoutine,
     setActiveRoutine,
     skipDay,
+    startDay,
 } from '@/app/actions';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,6 +19,7 @@ const create = vi.fn();
 const transaction = vi.fn();
 const countLogs = vi.fn();
 const upsertSession = vi.fn();
+const deleteSessions = vi.fn();
 const upsertRequest = vi.fn();
 const requireRoutine = vi.fn();
 const routineDetail = vi.fn();
@@ -40,6 +43,7 @@ vi.mock('@/lib/db', () => ({
         setLog: { count: (...args: unknown[]) => countLogs(...args) },
         workoutSession: {
             upsert: (...args: unknown[]) => upsertSession(...args),
+            deleteMany: (...args: unknown[]) => deleteSessions(...args),
         },
         routineRequest: {
             upsert: (...args: unknown[]) => upsertRequest(...args),
@@ -99,6 +103,7 @@ beforeEach(() => {
         transaction,
         countLogs,
         upsertSession,
+        deleteSessions,
         upsertRequest,
         requireRoutine,
         routineDetail,
@@ -247,6 +252,40 @@ describe('logSet', () => {
             error: 'This workout is already finished',
         });
         expect(upsertSession).not.toHaveBeenCalled();
+    });
+});
+
+describe('startDay', () => {
+    // The session is what says the day was started, so it outlives the app.
+    it('opens the session for the day', async () => {
+        await startDay('d1', 3);
+        expect(requireRoutine).toHaveBeenCalledWith('r2', 'ada', 'routine');
+        expect(upsertSession).toHaveBeenCalledWith(
+            expect.objectContaining({
+                create: {
+                    userId: 'ada',
+                    routineId: 'r2',
+                    workoutId: 'd1',
+                    week: 3,
+                },
+            })
+        );
+    });
+});
+
+describe('cancelDay', () => {
+    // A set logged from another screen keeps the day under way.
+    it('drops the session only while nothing is logged in it', async () => {
+        await cancelDay('d1', 3);
+        expect(deleteSessions).toHaveBeenCalledWith({
+            where: {
+                userId: 'ada',
+                workoutId: 'd1',
+                week: 3,
+                completedAt: null,
+                logs: { none: {} },
+            },
+        });
     });
 });
 

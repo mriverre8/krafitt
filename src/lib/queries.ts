@@ -98,6 +98,9 @@ export async function todayWorkout(userId: string) {
         workout,
         day: position.workoutIndex,
         week,
+        // A session is opened by starting the day (`startDay`) or by its
+        // first set: either way, the day is under way.
+        started: session !== null,
         logs,
         previous: toPrevious(previousSessions, workout.exercises),
     };

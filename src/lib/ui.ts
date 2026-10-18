@@ -106,6 +106,12 @@ export const dangerClass =
     'tracking-wide text-on-danger hover:bg-danger/85 disabled:pointer-events-none ' +
     'disabled:opacity-40';
 
+/** The bar a screen's one main move sits in, pinned to the bottom edge so it
+    is in reach however far the page is scrolled. */
+export const stickyBarClass =
+    'sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t border-line ' +
+    'bg-bg/85 px-4 py-3 backdrop-blur-md';
+
 export const ghostClass =
     'lift rounded-md border-2 border-line px-4 py-2.5 font-display text-sm font-bold uppercase ' +
     'tracking-wide text-muted hover:border-pulse hover:text-pulse ' +
