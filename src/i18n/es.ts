@@ -34,6 +34,7 @@ export const es: Dict = {
     'toast.receivedWorkout': '{routine} ya está en tus entrenamientos',
     'toast.workoutFinished': 'Entrenamiento finalizado',
     'toast.workoutCancelled': 'Entrenamiento cancelado',
+    'toast.weekSkipped': 'Semana saltada',
 
     'pagination.label': 'Paginación',
     'pagination.previous': 'Anterior',
@@ -189,6 +190,9 @@ export const es: Dict = {
     'today.changeDayBody':
         'Elige otro día de esta semana. Los demás se quedan pendientes y siguen en su orden.',
     'today.changeDayCurrent': 'Ahora',
+    'today.skipWeek': 'Saltar semana',
+    'today.skipWeekConfirm':
+        'Los días que te quedan esta semana se quedan sin registrar y pasas a la siguiente. ¿Saltar la semana?',
     'today.genericError': 'Algo ha fallado',
 
     'progress.link': 'Histórico',

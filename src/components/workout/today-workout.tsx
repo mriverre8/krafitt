@@ -1,6 +1,13 @@
 'use client';
 
-import { cancelDay, logSet, pickDay, skipDay, startDay } from '@/app/actions';
+import {
+    cancelDay,
+    logSet,
+    pickDay,
+    skipDay,
+    skipWeek,
+    startDay,
+} from '@/app/actions';
 import { useT } from '@/i18n/use-t';
 import { setSlots } from '@/lib/history';
 import {
@@ -18,7 +25,7 @@ import { ExercisePreview } from '@/components/workout/exercise-preview';
 import { FinishWorkoutButton } from '@/components/workout/finish-workout-button';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
-import { ArrowLeftRight, Flag, Play } from 'lucide-react';
+import { ArrowLeftRight, Flag, Play, SkipForward } from 'lucide-react';
 import { unstable_rethrow, useRouter } from 'next/navigation';
 import { useEffect, useTransition } from 'react';
 import { showModal } from '@/store/modal';
@@ -117,6 +124,21 @@ export function TodayWorkout(props: TodayWorkoutProps) {
             choices,
             current: workout.id,
             onPick: (workoutId) => run(() => pickDay(routineId, workoutId)),
+        });
+    }
+
+    // The rest of the week is left not logged, for good: asked first.
+    function onSkipWeek() {
+        showModal('confirm', {
+            title: t('today.skipWeek'),
+            message: t('today.skipWeekConfirm'),
+            confirmLabel: t('today.skipWeek'),
+            onConfirm: () =>
+                run(async () => {
+                    const result = await skipWeek(routineId);
+                    if (result) return result;
+                    toast(t('toast.weekSkipped'));
+                }),
         });
     }
 
@@ -294,6 +316,21 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                 className={`${ghostClass} flex shrink-0 items-center justify-center`}
                             >
                                 <ArrowLeftRight
+                                    size={18}
+                                    aria-hidden
+                                />
+                            </button>
+                        )}
+                        {!started && (
+                            <button
+                                type="button"
+                                disabled={pending}
+                                onClick={onSkipWeek}
+                                aria-label={t('today.skipWeek')}
+                                title={t('today.skipWeek')}
+                                className={`${ghostClass} flex shrink-0 items-center justify-center`}
+                            >
+                                <SkipForward
                                     size={18}
                                     aria-hidden
                                 />

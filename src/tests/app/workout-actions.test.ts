@@ -9,6 +9,7 @@ import {
     sendRoutine,
     setActiveRoutine,
     skipDay,
+    skipWeek,
     startDay,
 } from '@/app/actions';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,6 +23,7 @@ const countLogs = vi.fn();
 const upsertSession = vi.fn();
 const deleteSessions = vi.fn();
 const findSessions = vi.fn();
+const countSessions = vi.fn();
 const updateSessions = vi.fn();
 const findWorkouts = vi.fn();
 const upsertRequest = vi.fn();
@@ -50,6 +52,7 @@ vi.mock('@/lib/db', () => ({
             upsert: (...args: unknown[]) => upsertSession(...args),
             deleteMany: (...args: unknown[]) => deleteSessions(...args),
             findMany: (...args: unknown[]) => findSessions(...args),
+            count: (...args: unknown[]) => countSessions(...args),
             updateMany: (...args: unknown[]) => updateSessions(...args),
         },
         routineRequest: {
@@ -112,6 +115,7 @@ beforeEach(() => {
         upsertSession,
         deleteSessions,
         findSessions,
+        countSessions,
         updateSessions,
         findWorkouts,
         upsertRequest,
@@ -335,6 +339,50 @@ describe('pickDay', () => {
         ]);
         await expect(pickDay('r2', 'd3')).resolves.toEqual({
             error: 'Finish or call off the day under way first',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+});
+
+describe('skipWeek', () => {
+    // Cursor 5 on five days a week is week 2's first: week 3 starts at 10.
+    it("moves the cursor to next week's first day and drops a pick", async () => {
+        week2('d3');
+        countSessions.mockResolvedValue(0);
+        await expect(skipWeek('r2')).resolves.toBeUndefined();
+        expect(requireRoutine).toHaveBeenCalledWith('r2', 'ada', 'routine');
+        // The day on screen is the picked one.
+        expect(countSessions.mock.calls[0][0].where).toMatchObject({
+            workoutId: 'd3',
+            week: 2,
+            completedAt: null,
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { cursor: 10, pickedWorkoutId: null },
+        });
+    });
+
+    it('refuses while the day on screen is under way', async () => {
+        week2();
+        countSessions.mockResolvedValue(1);
+        await expect(skipWeek('r2')).resolves.toEqual({
+            error: 'Finish or call off the day under way first',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses a routine that is over', async () => {
+        week2();
+        requireRoutine.mockResolvedValue({
+            kind: 'routine',
+            isActive: true,
+            cursor: 20,
+            durationWeeks: 4,
+            pickedWorkoutId: null,
+        });
+        await expect(skipWeek('r2')).resolves.toEqual({
+            error: 'This routine is already finished',
         });
         expect(updateMany).not.toHaveBeenCalled();
     });

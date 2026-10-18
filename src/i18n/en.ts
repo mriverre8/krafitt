@@ -32,6 +32,7 @@ export const en = {
     'toast.receivedWorkout': '{routine} is now in your workouts',
     'toast.workoutFinished': 'Workout finished',
     'toast.workoutCancelled': 'Workout called off',
+    'toast.weekSkipped': 'Week skipped',
 
     'pagination.label': 'Pagination',
     'pagination.previous': 'Previous',
@@ -187,6 +188,9 @@ export const en = {
     'today.changeDayBody':
         'Pick another day of this week. The rest stay pending, in their order.',
     'today.changeDayCurrent': 'Now',
+    'today.skipWeek': 'Skip week',
+    'today.skipWeekConfirm':
+        'The days left this week stay not logged and you move on to the next one. Skip the week?',
     'today.genericError': 'Something went wrong',
 
     'progress.link': 'History',

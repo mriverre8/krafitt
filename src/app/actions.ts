@@ -924,6 +924,50 @@ export async function pickDay(routineId: string, workoutId: string) {
 }
 
 /**
+ * Leaving the rest of this week and going on to the next one's first day. The
+ * days left behind are behind the cursor now, so the history reads them as
+ * not logged; one done ahead keeps what it has. Skipping the last week ends
+ * the routine. Only before the day on screen is started, like `pickDay`.
+ */
+export async function skipWeek(routineId: string) {
+    const user = await requireUser();
+    const t = await getT();
+    const routine = await requireRoutine(routineId, user.id, 'routine');
+    const days = await dayIds(routineId);
+    const position = positionFromCursor(
+        routine.cursor,
+        days.length,
+        routine.durationWeeks
+    );
+    if (!routine.isActive || !position)
+        return { error: t('error.routineFinished') };
+
+    const shown =
+        days[
+            shownDay(
+                routine.cursor,
+                days.length,
+                days.indexOf(routine.pickedWorkoutId ?? '')
+            )
+        ];
+    const underWay = await prisma.workoutSession.count({
+        where: {
+            userId: user.id,
+            workoutId: shown,
+            week: position.week,
+            completedAt: null,
+        },
+    });
+    if (underWay > 0) return { error: t('error.dayStarted') };
+
+    await prisma.routine.updateMany({
+        where: { id: routineId, cursor: routine.cursor },
+        data: { cursor: position.week * days.length, pickedWorkoutId: null },
+    });
+    revalidatePath('/');
+}
+
+/**
  * Moving on with what was left blank. On a workout this is "Finish workout":
  * the time counts like a skipped day does, with its blanks — unless nothing
  * at all was logged — and the workout leaves the home screen rather than
