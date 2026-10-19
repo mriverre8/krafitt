@@ -185,7 +185,7 @@ export type RoutineStats = {
     records: number;
     /** Every logged set, by how it felt. */
     efforts: Record<Effort, number>;
-    /** Typical length of a finished day, in minutes. */
+    /** Typical length of a day done in full in one sitting, in minutes. */
     minutes: number | null;
 };
 

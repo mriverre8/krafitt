@@ -514,19 +514,19 @@ describe('TodayWorkout, for a workout', () => {
         );
     });
 
-    // Done in full there is nothing to finish: the next fetch ends it.
-    it('shows a workout done in full, with nothing to press', () => {
+    // Done in full it is still finished by hand, without asking: until then
+    // it stays active, and no other can be started.
+    it('finishes a workout done in full with one press', async () => {
         render(
-            <TodayWorkout
-                {...workout}
-                logs={full}
-            />
+            withModals(
+                <TodayWorkout
+                    {...workout}
+                    logs={full}
+                />
+            )
         );
-        expect(screen.getByRole('status')).toHaveTextContent(
-            'Workout complete'
-        );
-        expect(
-            screen.queryByRole('button', { name: /Finish workout/ })
-        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Finish workout/ }));
+        await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 });

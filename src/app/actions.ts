@@ -833,7 +833,8 @@ export async function logSet(
     if (isSessionComplete(session.workout.exercises, logs)) {
         await prisma.workoutSession.update({
             where: { id: session.id },
-            data: { completedAt: new Date(), leftAt: null },
+            // `leftAt` stays: a day taken up again is not one sitting.
+            data: { completedAt: new Date() },
         });
     }
 }
@@ -849,15 +850,31 @@ export async function logSet(
 export async function startDay(workoutId: string, week: number) {
     const user = await requireUser();
     const routineId = await routineIdOfWorkout(workoutId);
-    await requireRoutine(routineId, user.id, 'routine');
+    const routine = await requireRoutine(routineId, user.id, 'routine');
     const key = { userId_workoutId_week: { userId: user.id, workoutId, week } };
     // A day taken up again keeps when it was left: what it had by then is
     // kept as it was, and only the sets left blank are filled in.
     const left = await prisma.workoutSession.findUnique({
         where: key,
-        select: { id: true, completedAt: true },
+        select: {
+            id: true,
+            completedAt: true,
+            logs: true,
+            workout: { include: { exercises: planExercises } },
+        },
     });
     if (left?.completedAt) {
+        // Only a day of this week left with blanks: a stale button on a day
+        // done since, or a week behind, leaves the session as it was.
+        const { exercises } = left.workout;
+        const days = await dayIds(routineId);
+        if (
+            week !== currentWeek(routine.cursor, days.length) ||
+            isSessionComplete(exercises, toLogs(left.logs, exercises))
+        ) {
+            revalidatePath('/');
+            return { error: (await getT())('error.dayNotAvailable') };
+        }
         await prisma.workoutSession.updateMany({
             where: { id: left.id, completedAt: left.completedAt },
             data: { leftAt: left.completedAt, completedAt: null },

@@ -195,6 +195,8 @@ model WorkoutSession {
   week        Int
   startedAt   DateTime  @default(now())
   completedAt DateTime?
+  /// When a day taken up again had been closed: its sets from before stay as
+  /// they were. Kept once it is done, so it is not read as one sitting.
   leftAt      DateTime?
 
   logs SetLog[]

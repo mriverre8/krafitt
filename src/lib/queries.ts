@@ -647,11 +647,19 @@ export async function routineHistory(routineId: string) {
         (startedOn[session.workoutId] ??= {})[session.week] = session.startedAt;
     }
 
-    // How long each day took, for the summary above the history.
-    const timings = sessions.map(({ startedAt, completedAt }) => ({
-        startedAt,
-        completedAt,
-    }));
+    // How long each day took, for the summary above the history: only days
+    // done in full in one sitting. One closed with blanks, or taken up again
+    // — its start from the first try, its end from the last — says nothing.
+    const timings = sessions
+        .filter(
+            (session) =>
+                !session.leftAt &&
+                isSessionComplete(
+                    exercisesOf.get(session.workoutId) ?? [],
+                    byDay[session.workoutId][session.week]
+                )
+        )
+        .map(({ startedAt, completedAt }) => ({ startedAt, completedAt }));
 
     return { routine, byDay, startedOn, timings };
 }

@@ -368,9 +368,14 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         />
                     </button>
                 )}
-                {done ? (
-                    // Where the button to finish was: green, and nothing to
-                    // press.
+                {single ? (
+                    <FinishWorkoutButton
+                        routineId={routineId}
+                        done={doneSets}
+                        total={all.length}
+                        className={`${primaryClass} flex w-full items-center justify-center gap-2`}
+                    />
+                ) : done ? (
                     <p
                         role="status"
                         className={`${doneClass} flex w-full items-center justify-center gap-2`}
@@ -381,13 +386,6 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         />
                         {t('today.done')}
                     </p>
-                ) : single ? (
-                    <FinishWorkoutButton
-                        routineId={routineId}
-                        done={doneSets}
-                        total={all.length}
-                        className={`${primaryClass} flex w-full items-center justify-center gap-2`}
-                    />
                 ) : (
                     <button
                         type="button"
@@ -409,8 +407,6 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         {started ? (
                             t('today.finish')
                         ) : (
-                            // Next to the other two buttons a phone has
-                            // room for one word, not two lines.
                             <>
                                 <span className="sm:hidden">
                                     {t(

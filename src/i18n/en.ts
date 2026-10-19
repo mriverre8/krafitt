@@ -195,7 +195,7 @@ export const en = {
     'today.changeDayIncomplete': 'Incomplete',
     'today.skipWeek': 'Skip week',
     'today.skipWeekConfirm':
-        'The days left this week stay not logged and you move on to the next one. Skip the week?',
+        'You move on to next week. Whatever is left to log this week stays blank. Skip the week?',
     'today.genericError': 'Something went wrong',
 
     'progress.link': 'History',

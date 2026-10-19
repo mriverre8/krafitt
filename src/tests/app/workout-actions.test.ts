@@ -575,16 +575,42 @@ describe('startDay', () => {
 });
 
 describe('startDay', () => {
+    const left = new Date('2026-10-01T10:00:00Z');
+    /** `week2`'s d1, closed: its one set in or not. */
+    const closed = (done: boolean) => ({
+        id: 's1',
+        completedAt: left,
+        logs: session('d1', left, done).logs,
+        workout: {
+            exercises: [
+                { id: 'e1', sets: [{ kind: 'normal', repMode: 'range' }] },
+            ],
+        },
+    });
+
     // When it was left is kept: what it had by then stays as it was.
     it('opens a picked day again, keeping when it was left', async () => {
-        const left = new Date('2026-10-01T10:00:00Z');
-        requireRoutine.mockResolvedValue({ pickedWorkoutId: 'd1' });
-        findSessionBy.mockResolvedValue({ id: 's1', completedAt: left });
-        await startDay('d1', 3);
+        week2('d1');
+        findSessionBy.mockResolvedValue(closed(false));
+        await expect(startDay('d1', 2)).resolves.toBeUndefined();
         expect(updateSessions).toHaveBeenCalledWith({
             where: { id: 's1', completedAt: left },
             data: { leftAt: left, completedAt: null },
         });
+        expect(upsertSession).not.toHaveBeenCalled();
+    });
+
+    // A stale button, or a week behind: the closed session stays as it was.
+    it.each([
+        ['done in full', true, 2],
+        ['of another week', false, 1],
+    ])('leaves a day %s closed', async (_, done, week) => {
+        week2('d1');
+        findSessionBy.mockResolvedValue(closed(done));
+        await expect(startDay('d1', week)).resolves.toEqual({
+            error: 'That day cannot be trained now',
+        });
+        expect(updateSessions).not.toHaveBeenCalled();
         expect(upsertSession).not.toHaveBeenCalled();
     });
 });

@@ -190,14 +190,14 @@ export const es: Dict = {
     'today.effortNormalShort': 'Justa',
     'today.effortEasyShort': 'Sobraba',
     'today.changeDay': 'Cambiar día',
-    'today.changeDayPending': 'Cambiar día ({count} incompletos)',
+    'today.changeDayPending': 'Cambiar día ({count} sin terminar)',
     'today.changeDayBody':
         'Elige otro día de esta semana. Los demás se quedan pendientes y siguen en su orden.',
     'today.changeDayCurrent': 'Ahora',
     'today.changeDayIncomplete': 'Incompleto',
     'today.skipWeek': 'Saltar semana',
     'today.skipWeekConfirm':
-        'Los días que te quedan esta semana se quedan sin registrar y pasas a la siguiente. ¿Saltar la semana?',
+        'Pasas a la semana siguiente. Lo que falte por registrar de esta semana se queda en blanco. ¿Saltar la semana?',
     'today.genericError': 'Algo ha fallado',
 
     'progress.link': 'Histórico',

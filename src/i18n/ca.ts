@@ -190,14 +190,14 @@ export const ca: Dict = {
     'today.effortNormalShort': 'Justa',
     'today.effortEasyShort': 'En sobrava',
     'today.changeDay': 'Canviar dia',
-    'today.changeDayPending': 'Canviar dia ({count} incomplets)',
+    'today.changeDayPending': 'Canviar dia ({count} sense acabar)',
     'today.changeDayBody':
         'Tria un altre dia d’aquesta setmana. La resta queden pendents i segueixen el seu ordre.',
     'today.changeDayCurrent': 'Ara',
     'today.changeDayIncomplete': 'Incomplet',
     'today.skipWeek': 'Saltar setmana',
     'today.skipWeekConfirm':
-        'Els dies que et queden aquesta setmana es queden sense registrar i passes a la següent. Saltar la setmana?',
+        'Passes a la setmana següent. El que falti per registrar d’aquesta setmana es queda en blanc. Saltar la setmana?',
     'today.genericError': 'Alguna cosa ha fallat',
 
     'progress.link': 'Històric',
