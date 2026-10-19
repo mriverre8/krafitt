@@ -418,6 +418,19 @@ describe('todayWorkout', () => {
         });
     });
 
+    // Emptied by an edit of the plan: nothing to train, so not one to pick,
+    // nor one left to take up again.
+    it('leaves a day with no sets out of the days to pick', async () => {
+        const routine = picked();
+        routine.workouts[0] = { ...routine.workouts[0], exercises: [] };
+        findActive.mockResolvedValueOnce(routine);
+        findSession.mockResolvedValueOnce(null);
+
+        const today = await todayWorkout('ada');
+        expect(today).toMatchObject({ choices: [{ id: 'w2', index: 1 }] });
+        expect(today && 'choices' in today && today.choices).toHaveLength(1);
+    });
+
     // The cursor steps over it once it gets there, already complete.
     it('drops the pick once done and leaves the cursor where it was', async () => {
         findActive.mockResolvedValueOnce(picked()).mockResolvedValueOnce(null);

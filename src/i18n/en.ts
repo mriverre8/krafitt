@@ -33,6 +33,7 @@ export const en = {
     'toast.workoutFinished': 'Workout finished',
     'toast.workoutCancelled': 'Workout called off',
     'toast.weekSkipped': 'Week skipped',
+    'toast.routineFinished': 'Routine finished',
 
     'pagination.label': 'Pagination',
     'pagination.previous': 'Previous',
@@ -194,6 +195,9 @@ export const en = {
     'today.changeDayCurrent': 'Now',
     'today.changeDayIncomplete': 'Incomplete',
     'today.skipWeek': 'Skip week',
+    'today.finishRoutine': 'Finish routine',
+    'today.finishRoutineConfirm':
+        'This is the last week: whatever is left to log stays blank and the routine ends. Finish the routine?',
     'today.skipWeekConfirm':
         'You move on to next week. Whatever is left to log this week stays blank. Skip the week?',
     'today.genericError': 'Something went wrong',

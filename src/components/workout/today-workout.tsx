@@ -15,6 +15,7 @@ import {
     isSetEnabled,
     filledSets,
     isSetFilled,
+    isSessionComplete,
     type Duration,
     type Logs,
     type PreviousLogs,
@@ -33,7 +34,7 @@ import {
     Play,
     SkipForward,
 } from 'lucide-react';
-import { unstable_rethrow } from 'next/navigation';
+import { unstable_rethrow, useRouter } from 'next/navigation';
 import { useEffect, useTransition } from 'react';
 import { showModal } from '@/store/modal';
 import { toast } from '@/store/toast';
@@ -84,6 +85,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     } = props;
     const t = useT();
     const single = kind === 'workout';
+    const router = useRouter();
     const { logs, hydrate } = useSessionStore();
     const [pending, startTransition] = useTransition();
     // A routine's day is read before it is trained, and stays under way until
@@ -161,17 +163,36 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         });
     }
 
+    // The last day left of the week: once done there is nothing more to show
+    // in it, and the next fetch moves on to the next week, or ends the routine.
+    const lastOfWeek = !single && !choices.some((c) => c.id !== workout.id);
+
+    // Skipping the last week of a routine with an end is finishing it.
+    const lastWeek = totalWeeks !== null && week === totalWeeks;
+    const skipWeekLabel = t(
+        lastWeek ? 'today.finishRoutine' : 'today.skipWeek'
+    );
     // The rest of the week is left not logged, for good: asked first.
     function onSkipWeek() {
         showModal('confirm', {
-            title: t('today.skipWeek'),
-            message: t('today.skipWeekConfirm'),
-            confirmLabel: t('today.skipWeek'),
+            title: skipWeekLabel,
+            message: t(
+                lastWeek
+                    ? 'today.finishRoutineConfirm'
+                    : 'today.skipWeekConfirm'
+            ),
+            confirmLabel: skipWeekLabel,
             onConfirm: () =>
                 run(async () => {
                     const result = await skipWeek(routineId);
                     if (result) return result;
-                    toast(t('toast.weekSkipped'));
+                    toast(
+                        t(
+                            lastWeek
+                                ? 'toast.routineFinished'
+                                : 'toast.weekSkipped'
+                        )
+                    );
                 }),
         });
     }
@@ -324,6 +345,25 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                         reps,
                                         effort,
                                     });
+                                // The last set of the week's last day: on to
+                                // the next week, as finishing a workout does —
+                                // or, in the last one, the routine ends.
+                                if (
+                                    lastOfWeek &&
+                                    isSessionComplete(
+                                        workout.exercises,
+                                        useSessionStore.getState().logs
+                                    )
+                                ) {
+                                    toast(
+                                        t(
+                                            lastWeek
+                                                ? 'toast.routineFinished'
+                                                : 'toast.workoutFinished'
+                                        )
+                                    );
+                                    router.refresh();
+                                }
                             })
                         }
                     />
@@ -358,14 +398,21 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         type="button"
                         disabled={pending}
                         onClick={onSkipWeek}
-                        aria-label={t('today.skipWeek')}
-                        title={t('today.skipWeek')}
+                        aria-label={skipWeekLabel}
+                        title={skipWeekLabel}
                         className={`${ghostClass} flex shrink-0 items-center justify-center`}
                     >
-                        <SkipForward
-                            size={18}
-                            aria-hidden
-                        />
+                        {lastWeek ? (
+                            <Flag
+                                size={18}
+                                aria-hidden
+                            />
+                        ) : (
+                            <SkipForward
+                                size={18}
+                                aria-hidden
+                            />
+                        )}
                     </button>
                 )}
                 {single ? (

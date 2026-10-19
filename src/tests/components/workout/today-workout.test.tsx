@@ -6,7 +6,7 @@ import { useSessionStore } from '@/store/session';
 import { useToastStore } from '@/store/toast';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { cancelDay, logSet, skipDay, startDay } from '@/app/actions';
+import { cancelDay, logSet, skipDay, skipWeek, startDay } from '@/app/actions';
 import {
     acceptConfirm,
     confirmDialog,
@@ -19,6 +19,7 @@ vi.mock('@/app/actions', () => ({
     cancelDay: vi.fn(),
     logSet: vi.fn(),
     skipDay: vi.fn(),
+    skipWeek: vi.fn(),
     startDay: vi.fn(),
 }));
 const refresh = vi.fn();
@@ -265,6 +266,81 @@ describe('TodayWorkout', () => {
             screen.getByRole('button', { name: 'Skip week' })
         ).toBeInTheDocument();
     });
+
+    // Skipping the last week of a routine with an end finishes it.
+    it('finishes the routine instead of skipping its last week', async () => {
+        useToastStore.setState({ toasts: [] });
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    week={8}
+                    started={false}
+                />
+            )
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Skip week' })
+        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Finish routine' }));
+        expect(await openConfirm()).toHaveTextContent('the routine ends');
+        await acceptConfirm('Finish routine');
+        await waitFor(() => expect(skipWeek).toHaveBeenCalledWith('r1'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Routine finished', kind: 'success' },
+            ])
+        );
+    });
+
+    // The last set of the week's last day left: on to the next week, or the
+    // routine ends in its last one.
+    it.each([
+        ['refreshes', 2, [], 1, 'Workout finished'],
+        ['ends the routine', 8, [], 1, 'Routine finished'],
+        [
+            'stays',
+            2,
+            [{ id: 'w2', name: 'Pull A', index: 2, incomplete: true }],
+            0,
+            undefined,
+        ],
+    ])(
+        '%s once the last set of the day is logged',
+        async (_, week, others, refreshes, message) => {
+            useToastStore.setState({ toasts: [] });
+            render(
+                <TodayWorkout
+                    {...props}
+                    week={week}
+                    logs={{ e1: { 0: full.e1[0] } }}
+                    choices={[
+                        {
+                            id: 'w1',
+                            name: 'Push A',
+                            index: 1,
+                            incomplete: false,
+                        },
+                        ...others,
+                    ]}
+                />
+            );
+            fireEvent.change(screen.getByLabelText('Weight set 2'), {
+                target: { value: '60' },
+            });
+            fireEvent.change(screen.getByLabelText('Reps set 2'), {
+                target: { value: '10' },
+            });
+            fireEvent.click(screen.getByLabelText('Save set 2'));
+            fireEvent.click(screen.getByLabelText('Bank set 2'));
+            await waitFor(() => expect(logSet).toHaveBeenCalled());
+            await waitFor(() =>
+                expect(screen.getByRole('status')).toBeInTheDocument()
+            );
+            expect(refresh).toHaveBeenCalledTimes(refreshes);
+            expect(useToastStore.getState().toasts[0]?.message).toBe(message);
+        }
+    );
 
     // The days left incomplete are counted on the button that reaches them.
     it('flags the days left incomplete on the button to change day', () => {

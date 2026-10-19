@@ -37,7 +37,8 @@ export const isLockedLog = (log: { createdAt: Date }, leftAt: Date | null) =>
 /**
  * What the day on the home screen can be changed to, from this week's
  * sessions: every day not done in full, those left incomplete marked. Done
- * means every set of the plan as it stands now, like closing a day.
+ * means every set of the plan as it stands now, like closing a day. A day
+ * with no sets is never one: there is nothing in it to train.
  */
 export function weekChoices(
     cursor: number,
@@ -54,27 +55,23 @@ export function weekChoices(
             complete.add(index);
         else if (session.completedAt) closed.add(index);
     }
-    return pickableDays(cursor, workouts.length, complete, closed).map(
-        ({ index, incomplete }) => ({
+    return pickableDays(cursor, workouts.length, complete, closed)
+        .filter(({ index }) => flatSets(workouts[index].exercises).length > 0)
+        .map(({ index, incomplete }) => ({
             id: workouts[index].id,
             name: workouts[index].name,
             index,
             incomplete,
-        })
-    );
+        }));
 }
 
 /**
  * Whether this week still has days to take up again: the cursor stays on its
- * last day, done or left, until they are done or the week is skipped. A day
- * with nothing in it is never one.
+ * last day, done or left, until they are done or the week is skipped.
  */
 export const weekLeftOpen = (
     ...args: Parameters<typeof weekChoices>
-): boolean =>
-    weekChoices(...args).some(
-        (choice) => flatSets(args[1][choice.index].exercises).length > 0
-    );
+): boolean => weekChoices(...args).length > 0;
 
 /** Today's workout from the user's active routine. */
 export async function todayWorkout(userId: string) {
