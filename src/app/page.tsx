@@ -41,6 +41,7 @@ export default async function HomePage() {
             choices={today.choices}
             started={today.started}
             logs={today.logs}
+            locked={today.locked}
             previous={today.previous}
             kind={toKind(today.routine.kind)}
         />

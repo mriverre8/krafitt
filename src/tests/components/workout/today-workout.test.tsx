@@ -238,18 +238,114 @@ describe('TodayWorkout', () => {
         );
     });
 
-    // The finished day is left behind by the next fetch, so skipping it too
-    // would cost the user the day after it.
-    it('only refreshes when the day is already finished', () => {
+    // The finished day is left behind by the next fetch: there is nothing to
+    // finish, and the day can be changed or the week skipped again.
+    it('shows a day done in full, with the controls of a day being read', () => {
         render(
             <TodayWorkout
                 {...props}
                 logs={full}
+                choices={[
+                    { id: 'w1', name: 'Push A', index: 1, incomplete: false },
+                    { id: 'w2', name: 'Pull A', index: 2, incomplete: false },
+                ]}
             />
         );
-        fireEvent.click(screen.getByText('Finish workout'));
-        expect(skipDay).not.toHaveBeenCalled();
-        expect(refresh).toHaveBeenCalled();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Workout complete'
+        );
+        expect(screen.getByRole('status')).toHaveClass('bg-surge');
+        expect(
+            screen.queryByRole('button', { name: /Finish workout/ })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Change day' })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Skip week' })
+        ).toBeInTheDocument();
+    });
+
+    // The days left incomplete are counted on the button that reaches them.
+    it('flags the days left incomplete on the button to change day', () => {
+        render(
+            <TodayWorkout
+                {...props}
+                started={false}
+                choices={[
+                    { id: 'w0', name: 'Legs', index: 0, incomplete: true },
+                    { id: 'w1', name: 'Push A', index: 1, incomplete: false },
+                    { id: 'w2', name: 'Pull A', index: 2, incomplete: false },
+                ]}
+            />
+        );
+        expect(
+            screen.getByRole('button', { name: 'Change day (1 incomplete)' })
+        ).toHaveTextContent('1');
+    });
+
+    // Still on screen until the next fetch, but not one to pick.
+    it('leaves the day done in full out when changing day', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    logs={full}
+                    choices={[
+                        {
+                            id: 'w1',
+                            name: 'Push A',
+                            index: 1,
+                            incomplete: false,
+                        },
+                        {
+                            id: 'w2',
+                            name: 'Pull A',
+                            index: 2,
+                            incomplete: false,
+                        },
+                    ]}
+                />
+            )
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Change day' }));
+        expect(
+            await screen.findByRole('button', { name: /Pull A/ })
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: /Push A/ })
+        ).not.toBeInTheDocument();
+    });
+
+    // The day on screen is listed, but it is already the one shown.
+    it('lists the day being read as not to pick', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    started={false}
+                    choices={[
+                        {
+                            id: 'w1',
+                            name: 'Push A',
+                            index: 1,
+                            incomplete: false,
+                        },
+                        {
+                            id: 'w2',
+                            name: 'Pull A',
+                            index: 2,
+                            incomplete: false,
+                        },
+                    ]}
+                />
+            )
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Change day' }));
+        expect(
+            await screen.findByRole('button', { name: /Push A/ })
+        ).toBeDisabled();
+        expect(screen.getByText('Now')).toBeInTheDocument();
     });
 
     // Coming back from the history replays the payload this page was rendered
@@ -418,23 +514,19 @@ describe('TodayWorkout, for a workout', () => {
         );
     });
 
-    // Done in full there are no blanks to warn about: it simply ends.
-    it('finishes without asking once every set is in', async () => {
+    // Done in full there is nothing to finish: the next fetch ends it.
+    it('shows a workout done in full, with nothing to press', () => {
         render(
-            withModals(
-                <TodayWorkout
-                    {...workout}
-                    logs={full}
-                />
-            )
+            <TodayWorkout
+                {...workout}
+                logs={full}
+            />
         );
-        fireEvent.click(screen.getByText('Finish workout'));
-        expect(confirmDialog()).not.toBeInTheDocument();
-        await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
-        await waitFor(() =>
-            expect(useToastStore.getState().toasts).toMatchObject([
-                { message: 'Workout finished', kind: 'success' },
-            ])
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Workout complete'
         );
+        expect(
+            screen.queryByRole('button', { name: /Finish workout/ })
+        ).not.toBeInTheDocument();
     });
 });

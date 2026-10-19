@@ -117,8 +117,10 @@ describe('weekState', () => {
         expect(weekState(3, 1, 2, 3, 2)).toBe('past');
     });
 
-    it('ignores a pick behind the cursor', () => {
-        expect(weekState(4, 2, 1, 3, 0)).toBe('current');
+    // An incomplete day taken up again, the cursor on week 2's second.
+    it('makes a day picked behind the cursor the current one', () => {
+        expect(weekState(4, 2, 0, 3, 0)).toBe('current');
+        expect(weekState(4, 2, 1, 3, 0)).toBe('upcoming');
     });
 });
 
@@ -159,20 +161,32 @@ describe('positionFromCursor', () => {
 
 describe('pickableDays', () => {
     // Five days a week: cursor 7 is week 2, day 3.
-    it('offers the cursor day and the rest of its week', () => {
-        expect(pickableDays(7, 5, new Set())).toEqual([2, 3, 4]);
+    it('offers the whole week, the days behind the cursor incomplete', () => {
+        expect(pickableDays(7, 5, new Set(), new Set())).toEqual([
+            { index: 0, incomplete: true },
+            { index: 1, incomplete: true },
+            { index: 2, incomplete: false },
+            { index: 3, incomplete: false },
+            { index: 4, incomplete: false },
+        ]);
     });
 
-    it('leaves out the days already done this week', () => {
-        expect(pickableDays(7, 5, new Set([3]))).toEqual([2, 4]);
+    it('leaves out the days done in full, and marks those closed with blanks', () => {
+        expect(pickableDays(7, 5, new Set([0, 3]), new Set([4]))).toEqual([
+            { index: 1, incomplete: true },
+            { index: 2, incomplete: false },
+            { index: 4, incomplete: true },
+        ]);
     });
 
     it('starts the week over at its first day', () => {
-        expect(pickableDays(5, 5, new Set())).toEqual([0, 1, 2, 3, 4]);
+        expect(
+            pickableDays(5, 5, new Set(), new Set()).some((d) => d.incomplete)
+        ).toBe(false);
     });
 
     it('offers nothing on a routine with no days', () => {
-        expect(pickableDays(0, 0, new Set())).toEqual([]);
+        expect(pickableDays(0, 0, new Set(), new Set())).toEqual([]);
     });
 });
 

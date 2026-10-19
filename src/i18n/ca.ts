@@ -157,6 +157,9 @@ export const ca: Dict = {
     'today.done': 'Entrenament completat',
     'today.noExercises': 'Aquest entrenament encara no té exercicis.',
     'today.start': 'Començar entrenament',
+    'today.startShort': 'Començar',
+    'today.continue': 'Continuar entrenament',
+    'today.continueShort': 'Continuar',
     'today.workoutEyebrow': 'Entrenament',
     'today.run': 'Sessió {n}',
     'today.runColumn': 'Sessió',
@@ -187,9 +190,11 @@ export const ca: Dict = {
     'today.effortNormalShort': 'Justa',
     'today.effortEasyShort': 'En sobrava',
     'today.changeDay': 'Canviar dia',
+    'today.changeDayPending': 'Canviar dia ({count} incomplets)',
     'today.changeDayBody':
         'Tria un altre dia d’aquesta setmana. La resta queden pendents i segueixen el seu ordre.',
     'today.changeDayCurrent': 'Ara',
+    'today.changeDayIncomplete': 'Incomplet',
     'today.skipWeek': 'Saltar setmana',
     'today.skipWeekConfirm':
         'Els dies que et queden aquesta setmana es queden sense registrar i passes a la següent. Saltar la setmana?',
@@ -571,6 +576,8 @@ export const ca: Dict = {
     'error.dayNotAvailable': 'Aquest dia no es pot entrenar ara',
     'error.dayStarted': 'Acaba o cancel·la abans el dia començat',
     'error.fillPrevious': 'Omple abans les sèries anteriors',
+    'error.setLocked':
+        'Aquesta sèrie ja es va registrar abans i no es pot canviar',
     'error.workoutTitle': "Posa-li un nom a l'entrenament",
     'error.workoutStarted': 'Un entrenament en curs no es pot editar',
     'error.workoutInProgress': "Acaba abans l'entrenament {name}",

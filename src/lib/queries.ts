@@ -1,8 +1,14 @@
 import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from './db';
-import { toLogs, toPrevious } from './history';
+import {
+    toLogs,
+    toPrevious,
+    type SlotLog,
+    type SlottedExercise,
+} from './history';
 import { OWNER_PREVIEW_SIZE } from './pagination';
 import {
+    flatSets,
     isSessionComplete,
     pickableDays,
     shownDay,
@@ -23,6 +29,52 @@ export const planExercises = {
     orderBy: { order: 'asc' },
     include: { sets: { orderBy: { order: 'asc' } } },
 } satisfies Prisma.Workout$exercisesArgs;
+
+/** A set a day taken up again already had when it was left: kept as it was. */
+export const isLockedLog = (log: { createdAt: Date }, leftAt: Date | null) =>
+    leftAt !== null && log.createdAt <= leftAt;
+
+/**
+ * What the day on the home screen can be changed to, from this week's
+ * sessions: every day not done in full, those left incomplete marked. Done
+ * means every set of the plan as it stands now, like closing a day.
+ */
+export function weekChoices(
+    cursor: number,
+    workouts: { id: string; name: string; exercises: SlottedExercise[] }[],
+    sessions: { workoutId: string; completedAt: Date | null; logs: SlotLog[] }[]
+) {
+    const complete = new Set<number>();
+    const closed = new Set<number>();
+    for (const session of sessions) {
+        const index = workouts.findIndex((w) => w.id === session.workoutId);
+        if (index < 0) continue;
+        const { exercises } = workouts[index];
+        if (isSessionComplete(exercises, toLogs(session.logs, exercises)))
+            complete.add(index);
+        else if (session.completedAt) closed.add(index);
+    }
+    return pickableDays(cursor, workouts.length, complete, closed).map(
+        ({ index, incomplete }) => ({
+            id: workouts[index].id,
+            name: workouts[index].name,
+            index,
+            incomplete,
+        })
+    );
+}
+
+/**
+ * Whether this week still has days to take up again: the cursor stays on its
+ * last day, done or left, until they are done or the week is skipped. A day
+ * with nothing in it is never one.
+ */
+export const weekLeftOpen = (
+    ...args: Parameters<typeof weekChoices>
+): boolean =>
+    weekChoices(...args).some(
+        (choice) => flatSets(args[1][choice.index].exercises).length > 0
+    );
 
 /** Today's workout from the user's active routine. */
 export async function todayWorkout(userId: string) {
@@ -46,7 +98,7 @@ export async function todayWorkout(userId: string) {
 
     const week = position.week;
     const single = toKind(routine.kind) === 'workout';
-    // A day picked ahead of the cursor's takes its place until it is done.
+    // A picked day takes the cursor's place until it is done.
     const day = shownDay(
         routine.cursor,
         routine.workouts.length,
@@ -54,7 +106,7 @@ export async function todayWorkout(userId: string) {
     );
     const workout = routine.workouts[day];
 
-    const [session, previousSessions, doneThisWeek] = await Promise.all([
+    const [session, previousSessions, thisWeek] = await Promise.all([
         prisma.workoutSession.findUnique({
             where: {
                 userId_workoutId_week: { userId, workoutId: workout.id, week },
@@ -70,13 +122,8 @@ export async function todayWorkout(userId: string) {
         single
             ? []
             : prisma.workoutSession.findMany({
-                  where: {
-                      userId,
-                      routineId: routine.id,
-                      week,
-                      completedAt: { not: null },
-                  },
-                  select: { workoutId: true },
+                  where: { userId, routineId: routine.id, week },
+                  include: { logs: true },
               }),
     ]);
 
@@ -94,60 +141,77 @@ export async function todayWorkout(userId: string) {
     //
     // A picked day leaves the cursor where it is: it goes back to the day it
     // stood on, and steps over this one when it gets here, already complete.
-    // Moving the cursor drops the pick, so none outlives its week.
+    // Moving the cursor drops the pick, so none outlives its week. One picked
+    // to be taken up again, closed with its blanks, is read until started.
+    //
+    // The last day of a week with days still to take up again does not leave
+    // it: it stays on screen, done in full or to be taken up again itself,
+    // until they are done or the week is skipped.
+    const complete = isSessionComplete(workout.exercises, logs);
     if (
         session &&
-        (session.completedAt || isSessionComplete(workout.exercises, logs))
+        (complete || (session.completedAt && day === position.workoutIndex))
     ) {
+        const stays =
+            !single &&
+            day === position.workoutIndex &&
+            day === routine.workouts.length - 1 &&
+            weekLeftOpen(routine.cursor, routine.workouts, [
+                ...thisWeek.filter((s) => s.workoutId !== workout.id),
+                session,
+            ]);
         await prisma.$transaction([
             prisma.workoutSession.updateMany({
                 where: { id: session.id, completedAt: null },
                 data: { completedAt: new Date() },
             }),
-            day !== position.workoutIndex
-                ? prisma.routine.updateMany({
-                      where: { id: routine.id, pickedWorkoutId: workout.id },
-                      data: { pickedWorkoutId: null },
-                  })
-                : prisma.routine.updateMany({
-                      where: { id: routine.id, cursor: routine.cursor },
-                      data: {
-                          cursor: { increment: 1 },
-                          isActive: single ? false : undefined,
-                          pickedWorkoutId: null,
-                      },
-                  }),
+            ...(stays
+                ? []
+                : [
+                      day !== position.workoutIndex
+                          ? prisma.routine.updateMany({
+                                where: {
+                                    id: routine.id,
+                                    pickedWorkoutId: workout.id,
+                                },
+                                data: { pickedWorkoutId: null },
+                            })
+                          : prisma.routine.updateMany({
+                                where: {
+                                    id: routine.id,
+                                    cursor: routine.cursor,
+                                },
+                                data: {
+                                    cursor: { increment: 1 },
+                                    isActive: single ? false : undefined,
+                                    pickedWorkoutId: null,
+                                },
+                            }),
+                  ]),
         ]);
-        if (single) return null;
-        return todayWorkout(userId);
+        if (!stays) {
+            if (single) return null;
+            return todayWorkout(userId);
+        }
     }
-
-    const done = new Set(doneThisWeek.map((s) => s.workoutId));
-    const choices = pickableDays(
-        routine.cursor,
-        routine.workouts.length,
-        new Set(
-            routine.workouts.flatMap((w, index) =>
-                done.has(w.id) ? [index] : []
-            )
-        )
-    ).map((index) => ({
-        id: routine.workouts[index].id,
-        name: routine.workouts[index].name,
-        index,
-    }));
 
     return {
         routine,
         finished: false as const,
         workout,
         day,
-        choices,
+        choices: weekChoices(routine.cursor, routine.workouts, thisWeek),
         week,
         // A session is opened by starting the day (`startDay`) or by its
-        // first set: either way, the day is under way.
-        started: session !== null,
+        // first set: either way, the day is under way — unless it was closed.
+        // One done in full stays shown as done.
+        started: session !== null && (!session.completedAt || complete),
         logs,
+        locked: toLogs(
+            session?.logs.filter((log) => isLockedLog(log, session.leftAt)) ??
+                [],
+            workout.exercises
+        ),
         previous: toPrevious(previousSessions, workout.exercises),
     };
 }

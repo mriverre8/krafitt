@@ -14,19 +14,26 @@ import {
     flatSets,
     isSetEnabled,
     filledSets,
+    isSetFilled,
     type Duration,
     type Logs,
     type PreviousLogs,
     type RoutineKind,
 } from '@/lib/progress';
-import { ghostClass, primaryClass, stickyBarClass } from '@/lib/ui';
+import { doneClass, ghostClass, primaryClass, stickyBarClass } from '@/lib/ui';
 import { HistoryLink } from '@/components/ui/history-link';
 import { ExercisePreview } from '@/components/workout/exercise-preview';
 import { FinishWorkoutButton } from '@/components/workout/finish-workout-button';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
-import { ArrowLeftRight, Flag, Play, SkipForward } from 'lucide-react';
-import { unstable_rethrow, useRouter } from 'next/navigation';
+import {
+    ArrowLeftRight,
+    CircleCheck,
+    Flag,
+    Play,
+    SkipForward,
+} from 'lucide-react';
+import { unstable_rethrow } from 'next/navigation';
 import { useEffect, useTransition } from 'react';
 import { showModal } from '@/store/modal';
 import { toast } from '@/store/toast';
@@ -47,9 +54,17 @@ export type TodayWorkoutProps = {
         is started from here, a workout on its page. */
     started?: boolean;
     logs: Logs;
+    /** The sets a day taken up again had when it was left: shown, not
+        edited, and not counted as done this time. */
+    locked?: Logs;
     previous: PreviousLogs;
     /** The days of this week that can be trained instead, this one among them. */
-    choices?: { id: string; name: string; index: number }[];
+    choices?: {
+        id: string;
+        name: string;
+        index: number;
+        incomplete: boolean;
+    }[];
     /** A workout is one day done again and again: its "week" is which time
         this is, and it is finished rather than skipped. */
     kind?: RoutineKind;
@@ -64,11 +79,11 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         workout,
         day,
         previous,
+        locked = {},
         kind = 'routine',
     } = props;
     const t = useT();
     const single = kind === 'workout';
-    const router = useRouter();
     const { logs, hydrate } = useSessionStore();
     const [pending, startTransition] = useTransition();
     // A routine's day is read before it is trained, and stays under way until
@@ -116,12 +131,31 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         run(() => startDay(workout.id, week));
     }
 
-    // Only before starting: a day under way is finished or called off first.
+    // A day done in full is behind us as it stands: the next fetch moves the
+    // cursor past it, so there is nothing to finish, only to show.
+    const done = started && complete;
+    // Only before starting or once done: a day under way is finished or called
+    // off first.
+    const idle = !started || done;
     const choices = props.choices ?? [];
-    const canChangeDay = !started && choices.length > 1;
+    // A day done in full is left out of the days to pick once it is closed.
+    const canChangeDay = idle && choices.some((c) => c.id !== workout.id);
+    // A day left incomplete is taken up again rather than started afresh.
+    const incomplete = choices.some((c) => c.id === workout.id && c.incomplete);
+    // The other days left incomplete, flagged on the button that reaches them.
+    const pendingDays = choices.filter(
+        (c) => c.id !== workout.id && c.incomplete
+    ).length;
+    const changeDayLabel =
+        pendingDays > 0
+            ? t('today.changeDayPending', { count: pendingDays })
+            : t('today.changeDay');
     function onChangeDay() {
         showModal('pickDay', {
-            choices,
+            // A day done in full is not one to pick, the one on screen neither.
+            choices: done
+                ? choices.filter((c) => c.id !== workout.id)
+                : choices,
             current: workout.id,
             onPick: (workoutId) => run(() => pickDay(routineId, workoutId)),
         });
@@ -142,19 +176,16 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         });
     }
 
-    // A finished day is already behind us: the next fetch moves the cursor past
-    // it on its own, so skipping it too would cost the user the day after.
     // With nothing logged there is nothing to end: once confirmed, it goes back
     // to being read. Anything else moves on, and the sets left blank are lost
     // for good. A workout has its own button, shared with its page.
     function onFinish() {
-        if (complete) {
-            toast(t('toast.workoutFinished'));
-            return router.refresh();
-        }
         // A day with no sets could never be logged, so it is moved past instead
-        // of being read for ever.
-        if (doneSets === 0 && all.length > 0) {
+        // of being read for ever. A day taken up again counts only what is new.
+        if (
+            doneSets === filledSets(workout.exercises, locked) &&
+            all.length > 0
+        ) {
             return showModal('confirm', {
                 title: t('today.finish'),
                 message: t('today.finishEmptyConfirm'),
@@ -265,6 +296,8 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         previous={previous[exercise.id] ?? {}}
                         isSetEnabled={(setIndex) =>
                             !pending &&
+                            !done &&
+                            !isSetFilled(locked, exercise.id, setIndex) &&
                             isSetEnabled(
                                 workout.exercises,
                                 logs,
@@ -297,7 +330,58 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                 ))}
 
             <div className={stickyBarClass}>
-                {single ? (
+                {canChangeDay && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={onChangeDay}
+                        aria-label={changeDayLabel}
+                        title={changeDayLabel}
+                        className={`${ghostClass} relative flex shrink-0 items-center justify-center`}
+                    >
+                        <ArrowLeftRight
+                            size={18}
+                            aria-hidden
+                        />
+                        {pendingDays > 0 && (
+                            <span
+                                aria-hidden
+                                className="bg-volt text-on-volt absolute -top-1.5 -right-1.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[0.625rem] leading-none"
+                            >
+                                {pendingDays}
+                            </span>
+                        )}
+                    </button>
+                )}
+                {!single && idle && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={onSkipWeek}
+                        aria-label={t('today.skipWeek')}
+                        title={t('today.skipWeek')}
+                        className={`${ghostClass} flex shrink-0 items-center justify-center`}
+                    >
+                        <SkipForward
+                            size={18}
+                            aria-hidden
+                        />
+                    </button>
+                )}
+                {done ? (
+                    // Where the button to finish was: green, and nothing to
+                    // press.
+                    <p
+                        role="status"
+                        className={`${doneClass} flex w-full items-center justify-center gap-2`}
+                    >
+                        <CircleCheck
+                            size={16}
+                            aria-hidden
+                        />
+                        {t('today.done')}
+                    </p>
+                ) : single ? (
                     <FinishWorkoutButton
                         routineId={routineId}
                         done={doneSets}
@@ -305,57 +389,46 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         className={`${primaryClass} flex w-full items-center justify-center gap-2`}
                     />
                 ) : (
-                    <>
-                        {canChangeDay && (
-                            <button
-                                type="button"
-                                disabled={pending}
-                                onClick={onChangeDay}
-                                aria-label={t('today.changeDay')}
-                                title={t('today.changeDay')}
-                                className={`${ghostClass} flex shrink-0 items-center justify-center`}
-                            >
-                                <ArrowLeftRight
-                                    size={18}
-                                    aria-hidden
-                                />
-                            </button>
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={started ? onFinish : onStart}
+                        className={`${primaryClass} flex w-full items-center justify-center gap-2`}
+                    >
+                        {started ? (
+                            <Flag
+                                size={16}
+                                aria-hidden
+                            />
+                        ) : (
+                            <Play
+                                size={16}
+                                aria-hidden
+                            />
                         )}
-                        {!started && (
-                            <button
-                                type="button"
-                                disabled={pending}
-                                onClick={onSkipWeek}
-                                aria-label={t('today.skipWeek')}
-                                title={t('today.skipWeek')}
-                                className={`${ghostClass} flex shrink-0 items-center justify-center`}
-                            >
-                                <SkipForward
-                                    size={18}
-                                    aria-hidden
-                                />
-                            </button>
+                        {started ? (
+                            t('today.finish')
+                        ) : (
+                            // Next to the other two buttons a phone has
+                            // room for one word, not two lines.
+                            <>
+                                <span className="sm:hidden">
+                                    {t(
+                                        incomplete
+                                            ? 'today.continueShort'
+                                            : 'today.startShort'
+                                    )}
+                                </span>
+                                <span className="hidden sm:inline">
+                                    {t(
+                                        incomplete
+                                            ? 'today.continue'
+                                            : 'today.start'
+                                    )}
+                                </span>
+                            </>
                         )}
-                        <button
-                            type="button"
-                            disabled={pending}
-                            onClick={started ? onFinish : onStart}
-                            className={`${primaryClass} flex w-full items-center justify-center gap-2`}
-                        >
-                            {started ? (
-                                <Flag
-                                    size={16}
-                                    aria-hidden
-                                />
-                            ) : (
-                                <Play
-                                    size={16}
-                                    aria-hidden
-                                />
-                            )}
-                            {t(started ? 'today.finish' : 'today.start')}
-                        </button>
-                    </>
+                    </button>
                 )}
             </div>
         </div>

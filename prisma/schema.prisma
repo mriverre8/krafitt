@@ -195,6 +195,7 @@ model WorkoutSession {
   week        Int
   startedAt   DateTime  @default(now())
   completedAt DateTime?
+  leftAt      DateTime?
 
   logs SetLog[]
 
@@ -212,6 +213,7 @@ model SetLog {
   weight     Float
   reps       Int
   effort     String   @default("normal")
+  createdAt  DateTime @default(now())
 
   @@unique([sessionId, exerciseId, slot])
 }

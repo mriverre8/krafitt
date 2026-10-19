@@ -71,34 +71,38 @@ export function positionFromCursor(
 }
 
 /**
- * The days that can be trained now instead of the cursor's: its own and the
- * rest of its week, less those already done. Days behind the cursor were due
- * and are left as they were — done, skipped or missed.
+ * The days of the cursor's week that can be trained now instead of its own:
+ * every one not done in full. One closed with its blanks, or due before the
+ * cursor, was left incomplete and can be taken up again; the rest are still
+ * to come. `complete` and `closed` hold day indexes.
  */
 export function pickableDays(
     cursor: number,
     workoutCount: number,
-    done: ReadonlySet<number>
-): number[] {
+    complete: ReadonlySet<number>,
+    closed: ReadonlySet<number>
+): { index: number; incomplete: boolean }[] {
     if (workoutCount <= 0) return [];
     const from = Math.max(cursor, 0) % workoutCount;
-    return Array.from(
-        { length: workoutCount - from },
-        (_, i) => from + i
-    ).filter((index) => !done.has(index));
+    return Array.from({ length: workoutCount }, (_, index) => index)
+        .filter((index) => !complete.has(index))
+        .map((index) => ({
+            index,
+            incomplete: closed.has(index) || index < from,
+        }));
 }
 
 /**
- * The day of the cursor's week being trained: a day picked ahead of the
- * cursor's takes its place; one at or behind it is stale and changes nothing.
- * `picked` is its index, -1 for none.
+ * The day of the cursor's week being trained: a picked day takes the place of
+ * the cursor's, ahead of it or left incomplete behind it. Every move of the
+ * cursor drops the pick, so none is stale. `picked` is its index, -1 for none.
  */
 export function shownDay(
     cursor: number,
     workoutCount: number,
     picked: number
 ): number {
-    return Math.max(Math.max(cursor, 0) % workoutCount, picked);
+    return picked >= 0 ? picked : Math.max(cursor, 0) % workoutCount;
 }
 
 /** How many weeks of an open-ended routine the history holds at once. */

@@ -98,6 +98,12 @@ export const primaryClass =
     'tracking-wide text-on-volt hover:bg-volt2 disabled:pointer-events-none ' +
     'disabled:opacity-40';
 
+/** What stands in for the "go" button once there is nothing left to do: its
+    shape, in surge, the colour of a set logged, and nothing to press. */
+export const doneClass =
+    'rounded-md bg-surge px-5 py-3 font-display text-lg font-extrabold uppercase ' +
+    'tracking-wide text-on-surge';
+
 /** The filled button for a move nothing brings back. Same geometry as the ghost
     it stands next to, so a pair of them ends on one line and one height —
     danger is the only difference, and the only place the app fills with it. */
