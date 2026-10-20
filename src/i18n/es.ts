@@ -34,6 +34,8 @@ export const es: Dict = {
     'toast.receivedWorkout': '{routine} ya está en tus entrenamientos',
     'toast.workoutFinished': 'Entrenamiento finalizado',
     'toast.workoutCancelled': 'Entrenamiento cancelado',
+    'toast.weekSkipped': 'Semana saltada',
+    'toast.routineFinished': 'Rutina finalizada',
 
     'pagination.label': 'Paginación',
     'pagination.previous': 'Anterior',
@@ -156,6 +158,9 @@ export const es: Dict = {
     'today.done': 'Entrenamiento completado',
     'today.noExercises': 'Este entrenamiento aún no tiene ejercicios.',
     'today.start': 'Empezar entrenamiento',
+    'today.startShort': 'Empezar',
+    'today.continue': 'Continuar entrenamiento',
+    'today.continueShort': 'Continuar',
     'today.workoutEyebrow': 'Entrenamiento',
     'today.run': 'Sesión {n}',
     'today.runColumn': 'Sesión',
@@ -185,6 +190,18 @@ export const es: Dict = {
     'today.effortHardShort': 'Dura',
     'today.effortNormalShort': 'Justa',
     'today.effortEasyShort': 'Sobraba',
+    'today.changeDay': 'Cambiar día',
+    'today.changeDayPending': 'Cambiar día ({count} sin terminar)',
+    'today.changeDayBody':
+        'Elige otro día de esta semana. Los demás se quedan pendientes y siguen en su orden.',
+    'today.changeDayCurrent': 'Ahora',
+    'today.changeDayIncomplete': 'Incompleto',
+    'today.skipWeek': 'Saltar semana',
+    'today.finishRoutine': 'Finalizar rutina',
+    'today.finishRoutineConfirm':
+        'Es la última semana: lo que falte por registrar se queda en blanco y la rutina termina. ¿Finalizar la rutina?',
+    'today.skipWeekConfirm':
+        'Pasas a la semana siguiente. Lo que falte por registrar de esta semana se queda en blanco. ¿Saltar la semana?',
     'today.genericError': 'Algo ha fallado',
 
     'progress.link': 'Histórico',
@@ -559,7 +576,10 @@ export const es: Dict = {
     'error.planChanged':
         'La rutina ha cambiado: recarga para verla como está ahora',
     'error.activeDayIncomplete': '{where}: {what}',
+    'error.dayNotAvailable': 'Ese día no se puede entrenar ahora',
+    'error.dayStarted': 'Termina o cancela antes el día empezado',
     'error.fillPrevious': 'Rellena antes las series anteriores',
+    'error.setLocked': 'Esta serie ya se registró antes y no se puede cambiar',
     'error.workoutTitle': 'Ponle un nombre al entrenamiento',
     'error.workoutStarted': 'Un entrenamiento en curso no se puede editar',
     'error.workoutInProgress': 'Termina antes el entrenamiento {name}',

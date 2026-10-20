@@ -38,8 +38,10 @@ export default async function HomePage() {
             totalWeeks={today.routine.durationWeeks}
             workout={today.workout}
             day={today.day}
+            choices={today.choices}
             started={today.started}
             logs={today.logs}
+            locked={today.locked}
             previous={today.previous}
             kind={toKind(today.routine.kind)}
         />

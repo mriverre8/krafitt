@@ -5,6 +5,7 @@ import {
     isRoutineLocked,
     isSessionComplete,
     isSetEnabled,
+    pickableDays,
     positionFromCursor,
     profileRoutines,
     routineStatus,
@@ -108,6 +109,19 @@ describe('weekState', () => {
     it('puts every week behind a routine that is over', () => {
         expect(weekState(6, 3, 1, 2)).toBe('past');
     });
+
+    // Three days a week, the cursor on week 2's first and its third picked.
+    it('makes the picked day the current one, the cursor day still to come', () => {
+        expect(weekState(3, 2, 2, 3, 2)).toBe('current');
+        expect(weekState(3, 2, 0, 3, 2)).toBe('upcoming');
+        expect(weekState(3, 1, 2, 3, 2)).toBe('past');
+    });
+
+    // An incomplete day taken up again, the cursor on week 2's second.
+    it('makes a day picked behind the cursor the current one', () => {
+        expect(weekState(4, 2, 0, 3, 0)).toBe('current');
+        expect(weekState(4, 2, 1, 3, 0)).toBe('upcoming');
+    });
 });
 
 describe('positionFromCursor', () => {
@@ -142,6 +156,37 @@ describe('positionFromCursor', () => {
         });
         expect(positionFromCursor(999, 2, null)).not.toBeNull();
         expect(positionFromCursor(0, 0, null)).toBeNull();
+    });
+});
+
+describe('pickableDays', () => {
+    // Five days a week: cursor 7 is week 2, day 3.
+    it('offers the whole week, the days behind the cursor incomplete', () => {
+        expect(pickableDays(7, 5, new Set(), new Set())).toEqual([
+            { index: 0, incomplete: true },
+            { index: 1, incomplete: true },
+            { index: 2, incomplete: false },
+            { index: 3, incomplete: false },
+            { index: 4, incomplete: false },
+        ]);
+    });
+
+    it('leaves out the days done in full, and marks those closed with blanks', () => {
+        expect(pickableDays(7, 5, new Set([0, 3]), new Set([4]))).toEqual([
+            { index: 1, incomplete: true },
+            { index: 2, incomplete: false },
+            { index: 4, incomplete: true },
+        ]);
+    });
+
+    it('starts the week over at its first day', () => {
+        expect(
+            pickableDays(5, 5, new Set(), new Set()).some((d) => d.incomplete)
+        ).toBe(false);
+    });
+
+    it('offers nothing on a routine with no days', () => {
+        expect(pickableDays(0, 0, new Set(), new Set())).toEqual([]);
     });
 });
 

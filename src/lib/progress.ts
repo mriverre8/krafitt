@@ -70,6 +70,41 @@ export function positionFromCursor(
     };
 }
 
+/**
+ * The days of the cursor's week that can be trained now instead of its own:
+ * every one not done in full. One closed with its blanks, or due before the
+ * cursor, was left incomplete and can be taken up again; the rest are still
+ * to come. `complete` and `closed` hold day indexes.
+ */
+export function pickableDays(
+    cursor: number,
+    workoutCount: number,
+    complete: ReadonlySet<number>,
+    closed: ReadonlySet<number>
+): { index: number; incomplete: boolean }[] {
+    if (workoutCount <= 0) return [];
+    const from = Math.max(cursor, 0) % workoutCount;
+    return Array.from({ length: workoutCount }, (_, index) => index)
+        .filter((index) => !complete.has(index))
+        .map((index) => ({
+            index,
+            incomplete: closed.has(index) || index < from,
+        }));
+}
+
+/**
+ * The day of the cursor's week being trained: a picked day takes the place of
+ * the cursor's, ahead of it or left incomplete behind it. Every move of the
+ * cursor drops the pick, so none is stale. `picked` is its index, -1 for none.
+ */
+export function shownDay(
+    cursor: number,
+    workoutCount: number,
+    picked: number
+): number {
+    return picked >= 0 ? picked : Math.max(cursor, 0) % workoutCount;
+}
+
 /** How many weeks of an open-ended routine the history holds at once. */
 export const HISTORY_WINDOW = 10;
 
@@ -186,11 +221,18 @@ export function weekState(
     cursor: number,
     week: number,
     workoutIndex: number,
-    workoutCount: number
+    workoutCount: number,
+    picked = -1
 ): WeekState {
     const position = (week - 1) * workoutCount + workoutIndex;
-    if (cursor > position) return 'past';
-    return cursor === position ? 'current' : 'upcoming';
+    // The day being trained is the picked one, when there is one: the
+    // cursor's own is then still to come.
+    const here =
+        cursor +
+        shownDay(cursor, workoutCount, picked) -
+        (cursor % workoutCount);
+    if (position === here) return 'current';
+    return cursor > position ? 'past' : 'upcoming';
 }
 
 /** Every workout of every week is behind the cursor. An empty routine is never

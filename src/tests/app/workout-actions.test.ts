@@ -3,11 +3,13 @@ import {
     duplicateRoutine,
     cancelDay,
     logSet,
+    pickDay,
     renameWorkout,
     saveRoutine,
     sendRoutine,
     setActiveRoutine,
     skipDay,
+    skipWeek,
     startDay,
 } from '@/app/actions';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -20,6 +22,12 @@ const transaction = vi.fn();
 const countLogs = vi.fn();
 const upsertSession = vi.fn();
 const deleteSessions = vi.fn();
+const findSessions = vi.fn();
+const countSessions = vi.fn();
+const updateSessions = vi.fn();
+const findSession = vi.fn();
+const findSessionBy = vi.fn();
+const findWorkouts = vi.fn();
 const upsertRequest = vi.fn();
 const requireRoutine = vi.fn();
 const routineDetail = vi.fn();
@@ -41,9 +49,15 @@ vi.mock('@/lib/db', () => ({
             create: (...args: unknown[]) => create(...args),
         },
         setLog: { count: (...args: unknown[]) => countLogs(...args) },
+        workout: { findMany: (...args: unknown[]) => findWorkouts(...args) },
         workoutSession: {
             upsert: (...args: unknown[]) => upsertSession(...args),
             deleteMany: (...args: unknown[]) => deleteSessions(...args),
+            findMany: (...args: unknown[]) => findSessions(...args),
+            count: (...args: unknown[]) => countSessions(...args),
+            updateMany: (...args: unknown[]) => updateSessions(...args),
+            findFirst: (...args: unknown[]) => findSession(...args),
+            findUnique: (...args: unknown[]) => findSessionBy(...args),
         },
         routineRequest: {
             upsert: (...args: unknown[]) => upsertRequest(...args),
@@ -56,7 +70,9 @@ vi.mock('@/lib/access', () => ({
     requireEditableRoutine: (...args: unknown[]) => requireRoutine(...args),
     routineIdOfWorkout: async () => 'r2',
 }));
-vi.mock('@/lib/queries', () => ({
+// The real `weekChoices`: what can be picked is the rule under test.
+vi.mock('@/lib/queries', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/queries')>()),
     routineDetail: (...args: unknown[]) => routineDetail(...args),
     isMember: async () => false,
 }));
@@ -104,6 +120,12 @@ beforeEach(() => {
         countLogs,
         upsertSession,
         deleteSessions,
+        findSessions,
+        countSessions,
+        updateSessions,
+        findSession,
+        findSessionBy,
+        findWorkouts,
         upsertRequest,
         requireRoutine,
         routineDetail,
@@ -165,7 +187,11 @@ describe('skipDay', () => {
         });
         expect(updateMany).toHaveBeenCalledWith({
             where: { id: 'r2', cursor: 2, isActive: true },
-            data: { cursor: { increment: 1 }, isActive: false },
+            data: {
+                cursor: { increment: 1 },
+                isActive: false,
+                pickedWorkoutId: null,
+            },
         });
     });
 
@@ -210,17 +236,264 @@ describe('skipDay', () => {
         await skipDay('r2');
         expect(updateMany).toHaveBeenCalledWith({
             where: { id: 'r2', cursor: 2, isActive: true },
-            data: { cursor: undefined, isActive: false },
+            data: {
+                cursor: undefined,
+                isActive: false,
+                pickedWorkoutId: null,
+            },
         });
     });
 
+    // The cursor steps over it later, its session already complete.
+    it('closes a picked day with its blanks, the cursor left alone', async () => {
+        week2('d3');
+        findSessions.mockResolvedValue([]);
+        updateSessions.mockReturnValue('close');
+        updateMany.mockReturnValue('unpick');
+        await skipDay('r2');
+        expect(updateSessions).toHaveBeenCalledWith({
+            where: {
+                userId: 'ada',
+                workoutId: 'd3',
+                week: 2,
+                completedAt: null,
+            },
+            data: { completedAt: expect.any(Date), leftAt: null },
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', pickedWorkoutId: 'd3' },
+            data: { pickedWorkoutId: null },
+        });
+        expect(transaction).toHaveBeenCalledWith(['close', 'unpick']);
+    });
+
+    // The cursor's day is behind us already — the last of a week kept open:
+    // the day just left stays on screen rather than going back to it.
+    it('keeps a picked day on screen when the cursor day is closed', async () => {
+        week2('d3');
+        findSessions.mockResolvedValue([session('d0', new Date(), true)]);
+        updateSessions.mockReturnValue('close');
+        await skipDay('r2');
+        expect(updateMany).not.toHaveBeenCalled();
+        expect(transaction).toHaveBeenCalledWith(['close']);
+    });
+
     it('leaves a routine active on its next day', async () => {
-        requireRoutine.mockResolvedValue({ kind: 'routine', cursor: 5 });
+        week2();
+        findSessions.mockResolvedValue([]);
         await skipDay('r2');
         expect(updateMany).toHaveBeenCalledWith({
             where: { id: 'r2', cursor: 5 },
-            data: { cursor: { increment: 1 }, isActive: undefined },
+            data: {
+                cursor: { increment: 1 },
+                isActive: undefined,
+                pickedWorkoutId: null,
+            },
         });
+    });
+});
+
+describe('skipDay, on the last day of a week', () => {
+    // Left with blanks, it is one more day to take up again: the cursor stays
+    // in its week until they are done or the week is skipped.
+    it('closes the day and leaves the cursor in its week', async () => {
+        week2();
+        requireRoutine.mockResolvedValue({
+            kind: 'routine',
+            isActive: true,
+            cursor: 9,
+            durationWeeks: 4,
+            pickedWorkoutId: null,
+        });
+        findSessions.mockResolvedValue([session('d4', null, false)]);
+        await skipDay('r2');
+        expect(updateSessions).toHaveBeenCalledWith({
+            where: {
+                userId: 'ada',
+                workoutId: 'd4',
+                week: 2,
+                completedAt: null,
+            },
+            data: { completedAt: expect.any(Date), leftAt: null },
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+});
+
+/** Five days a week, the cursor on week 2's first: d0 is the day in order. */
+const week2 = (pickedWorkoutId: string | null = null) => {
+    requireRoutine.mockResolvedValue({
+        kind: 'routine',
+        isActive: true,
+        cursor: 5,
+        durationWeeks: 4,
+        pickedWorkoutId,
+    });
+    findWorkouts.mockResolvedValue(
+        ['d0', 'd1', 'd2', 'd3', 'd4'].map((id) => ({
+            id,
+            name: id,
+            exercises: [
+                { id: 'e1', sets: [{ kind: 'normal', repMode: 'range' }] },
+            ],
+        }))
+    );
+};
+
+/** A session of this week on one of `week2`'s days, its one set in or not. */
+const session = (
+    workoutId: string,
+    completedAt: Date | null,
+    done: boolean
+) => ({
+    workoutId,
+    completedAt,
+    logs: done
+        ? [
+              {
+                  exerciseId: 'e1',
+                  slot: '1',
+                  weight: 60,
+                  reps: 8,
+                  effort: 'normal',
+              },
+          ]
+        : [],
+});
+
+describe('pickDay', () => {
+    it('puts another day of the week on screen, the cursor left alone', async () => {
+        week2();
+        findSessions.mockResolvedValue([]);
+        await expect(pickDay('r2', 'd3')).resolves.toBeUndefined();
+        expect(requireRoutine).toHaveBeenCalledWith('r2', 'ada', 'routine');
+        expect(findSessions.mock.calls[0][0].where).toEqual({
+            userId: 'ada',
+            routineId: 'r2',
+            week: 2,
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { pickedWorkoutId: 'd3' },
+        });
+    });
+
+    it("goes back to the order on the cursor's own day", async () => {
+        week2('d3');
+        findSessions.mockResolvedValue([]);
+        await pickDay('r2', 'd0');
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { pickedWorkoutId: null },
+        });
+    });
+
+    it('refuses a day already done this week', async () => {
+        week2();
+        findSessions.mockResolvedValue([session('d3', new Date(), true)]);
+        await expect(pickDay('r2', 'd3')).resolves.toEqual({
+            error: 'That day cannot be trained now',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    // Finished with blanks on the cursor, then left open behind it: closed,
+    // so it is read before it is taken up again.
+    it('takes up a day left incomplete behind the cursor', async () => {
+        week2();
+        requireRoutine.mockResolvedValue({
+            kind: 'routine',
+            isActive: true,
+            cursor: 7,
+            durationWeeks: 4,
+            pickedWorkoutId: null,
+        });
+        findSessions.mockResolvedValue([session('d0', null, false)]);
+        await expect(pickDay('r2', 'd0')).resolves.toBeUndefined();
+        expect(updateSessions).toHaveBeenCalledWith({
+            where: {
+                userId: 'ada',
+                workoutId: 'd0',
+                week: 2,
+                completedAt: null,
+            },
+            data: { completedAt: expect.any(Date) },
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 7 },
+            data: { pickedWorkoutId: 'd0' },
+        });
+    });
+
+    it('takes up a day closed with its blanks', async () => {
+        week2();
+        findSessions.mockResolvedValue([session('d3', new Date(), false)]);
+        await expect(pickDay('r2', 'd3')).resolves.toBeUndefined();
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { pickedWorkoutId: 'd3' },
+        });
+    });
+
+    it('refuses a day that is not one of the routine', async () => {
+        week2();
+        await expect(pickDay('r2', 'other')).resolves.toEqual({
+            error: 'That day cannot be trained now',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses while the day on screen is under way', async () => {
+        week2('d2');
+        findSessions.mockResolvedValue([session('d2', null, false)]);
+        await expect(pickDay('r2', 'd3')).resolves.toEqual({
+            error: 'Finish or call off the day under way first',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+});
+
+describe('skipWeek', () => {
+    // Cursor 5 on five days a week is week 2's first: week 3 starts at 10.
+    it("moves the cursor to next week's first day and drops a pick", async () => {
+        week2('d3');
+        countSessions.mockResolvedValue(0);
+        await expect(skipWeek('r2')).resolves.toBeUndefined();
+        expect(requireRoutine).toHaveBeenCalledWith('r2', 'ada', 'routine');
+        // The day on screen is the picked one.
+        expect(countSessions.mock.calls[0][0].where).toMatchObject({
+            workoutId: 'd3',
+            week: 2,
+            completedAt: null,
+        });
+        expect(updateMany).toHaveBeenCalledWith({
+            where: { id: 'r2', cursor: 5 },
+            data: { cursor: 10, pickedWorkoutId: null },
+        });
+    });
+
+    it('refuses while the day on screen is under way', async () => {
+        week2();
+        countSessions.mockResolvedValue(1);
+        await expect(skipWeek('r2')).resolves.toEqual({
+            error: 'Finish or call off the day under way first',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    it('refuses a routine that is over', async () => {
+        week2();
+        requireRoutine.mockResolvedValue({
+            kind: 'routine',
+            isActive: true,
+            cursor: 20,
+            durationWeeks: 4,
+            pickedWorkoutId: null,
+        });
+        await expect(skipWeek('r2')).resolves.toEqual({
+            error: 'This routine is already finished',
+        });
+        expect(updateMany).not.toHaveBeenCalled();
     });
 });
 
@@ -253,6 +526,34 @@ describe('logSet', () => {
         });
         expect(upsertSession).not.toHaveBeenCalled();
     });
+
+    // What a day taken up again had when it was left is kept as it was.
+    it('refuses a set logged before the day was left', async () => {
+        const left = new Date('2026-10-01T10:00:00Z');
+        upsertSession.mockResolvedValue({
+            id: 's1',
+            completedAt: null,
+            leftAt: left,
+            logs: [
+                {
+                    exerciseId: 'e1',
+                    slot: '1',
+                    weight: 60,
+                    reps: 8,
+                    effort: 'normal',
+                    createdAt: new Date('2026-10-01T09:30:00Z'),
+                },
+            ],
+            workout: {
+                exercises: [
+                    { id: 'e1', sets: [{ kind: 'normal', repMode: 'range' }] },
+                ],
+            },
+        });
+        await expect(logSet('d1', 2, 'e1', '1', 70, 8)).resolves.toEqual({
+            error: 'This set was logged before and cannot be changed',
+        });
+    });
 });
 
 describe('startDay', () => {
@@ -273,6 +574,47 @@ describe('startDay', () => {
     });
 });
 
+describe('startDay', () => {
+    const left = new Date('2026-10-01T10:00:00Z');
+    /** `week2`'s d1, closed: its one set in or not. */
+    const closed = (done: boolean) => ({
+        id: 's1',
+        completedAt: left,
+        logs: session('d1', left, done).logs,
+        workout: {
+            exercises: [
+                { id: 'e1', sets: [{ kind: 'normal', repMode: 'range' }] },
+            ],
+        },
+    });
+
+    // When it was left is kept: what it had by then stays as it was.
+    it('opens a picked day again, keeping when it was left', async () => {
+        week2('d1');
+        findSessionBy.mockResolvedValue(closed(false));
+        await expect(startDay('d1', 2)).resolves.toBeUndefined();
+        expect(updateSessions).toHaveBeenCalledWith({
+            where: { id: 's1', completedAt: left },
+            data: { leftAt: left, completedAt: null },
+        });
+        expect(upsertSession).not.toHaveBeenCalled();
+    });
+
+    // A stale button, or a week behind: the closed session stays as it was.
+    it.each([
+        ['done in full', true, 2],
+        ['of another week', false, 1],
+    ])('leaves a day %s closed', async (_, done, week) => {
+        week2('d1');
+        findSessionBy.mockResolvedValue(closed(done));
+        await expect(startDay('d1', week)).resolves.toEqual({
+            error: 'That day cannot be trained now',
+        });
+        expect(updateSessions).not.toHaveBeenCalled();
+        expect(upsertSession).not.toHaveBeenCalled();
+    });
+});
+
 describe('cancelDay', () => {
     // A set logged from another screen keeps the day under way.
     it('drops the session only while nothing is logged in it', async () => {
@@ -286,6 +628,22 @@ describe('cancelDay', () => {
                 logs: { none: {} },
             },
         });
+    });
+
+    // Taken up again with nothing new: closed again as it was left.
+    it('closes a day taken up again with only what it had', async () => {
+        const left = new Date('2026-10-01T10:00:00Z');
+        findSession.mockResolvedValue({ id: 's1', leftAt: left });
+        await cancelDay('d1', 3);
+        expect(updateSessions).toHaveBeenCalledWith({
+            where: {
+                id: 's1',
+                completedAt: null,
+                logs: { none: { createdAt: { gt: left } } },
+            },
+            data: { completedAt: left, leftAt: null },
+        });
+        expect(deleteSessions).not.toHaveBeenCalled();
     });
 });
 

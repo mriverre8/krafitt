@@ -229,6 +229,7 @@ describe('todayWorkout', () => {
         // Its one set is in: this time is over.
         findSession.mockReset().mockResolvedValue({
             id: 's3',
+            workoutId: 'w1',
             completedAt: null,
             logs: [
                 {
@@ -254,7 +255,11 @@ describe('todayWorkout', () => {
         });
         expect(moveRoutine).toHaveBeenCalledWith({
             where: { id: 'r1', cursor: 2 },
-            data: { cursor: { increment: 1 }, isActive: false },
+            data: {
+                cursor: { increment: 1 },
+                isActive: false,
+                pickedWorkoutId: null,
+            },
         });
         expect(transaction).toHaveBeenCalledWith(['close', 'move']);
         // No next time is put in its place.
@@ -269,9 +274,229 @@ describe('todayWorkout', () => {
         await todayWorkout('ada');
         expect(moveRoutine).toHaveBeenCalledWith({
             where: { id: 'r1', cursor: 2 },
-            data: { cursor: { increment: 1 }, isActive: undefined },
+            data: {
+                cursor: { increment: 1 },
+                isActive: undefined,
+                pickedWorkoutId: null,
+            },
         });
         expect(findActive).toHaveBeenCalledTimes(2);
+    });
+
+    // Two days a week, the cursor on week 2's last.
+    const lastDay = () => {
+        const routine = active('routine');
+        return {
+            ...routine,
+            cursor: 3,
+            pickedWorkoutId: null,
+            workouts: [
+                routine.workouts[0],
+                { ...routine.workouts[0], id: 'w2', name: 'Push' },
+            ],
+        };
+    };
+    const w1 = (logs: unknown[]) => ({
+        workoutId: 'w1',
+        completedAt: new Date(),
+        logs,
+    });
+
+    // The week still has a day to take up again: done, the last day stays
+    // on screen as done, and the cursor in its week.
+    it('keeps the last day of a week with days left incomplete', async () => {
+        findActive.mockResolvedValueOnce(lastDay());
+        findSession.mockResolvedValueOnce({
+            id: 's3',
+            workoutId: 'w2',
+            completedAt: null,
+            logs: [
+                {
+                    exerciseId: 'e1',
+                    slot: '1',
+                    weight: 60,
+                    reps: 8,
+                    effort: 'normal',
+                },
+            ],
+        });
+        // w2 is the one on screen, its one set just in.
+        findSessions.mockResolvedValue([
+            w1([]),
+            {
+                workoutId: 'w2',
+                completedAt: null,
+                logs: [
+                    {
+                        exerciseId: 'e1',
+                        slot: '1',
+                        weight: 60,
+                        reps: 8,
+                        effort: 'normal',
+                    },
+                ],
+            },
+        ]);
+
+        const today = await todayWorkout('ada');
+        expect(moveRoutine).not.toHaveBeenCalled();
+        expect(closeSession).toHaveBeenCalled();
+        expect(today).toMatchObject({
+            workout: { id: 'w2' },
+            started: true,
+            choices: [{ id: 'w1', incomplete: true }],
+        });
+    });
+
+    it('moves on from the last day once the week is done in full', async () => {
+        findActive.mockResolvedValueOnce(lastDay()).mockResolvedValueOnce(null);
+        findSession.mockResolvedValueOnce({
+            id: 's3',
+            workoutId: 'w2',
+            completedAt: null,
+            logs: [
+                {
+                    exerciseId: 'e1',
+                    slot: '1',
+                    weight: 60,
+                    reps: 8,
+                    effort: 'normal',
+                },
+            ],
+        });
+        findSessions.mockResolvedValue([
+            w1([
+                {
+                    exerciseId: 'e1',
+                    slot: '1',
+                    weight: 60,
+                    reps: 8,
+                    effort: 'normal',
+                },
+            ]),
+        ]);
+
+        await todayWorkout('ada');
+        expect(moveRoutine).toHaveBeenCalledWith({
+            where: { id: 'r1', cursor: 3 },
+            data: {
+                cursor: { increment: 1 },
+                isActive: undefined,
+                pickedWorkoutId: null,
+            },
+        });
+    });
+
+    // Two days a week, the cursor on week 2's first and its second picked.
+    const picked = () => {
+        const routine = active('routine');
+        return {
+            ...routine,
+            pickedWorkoutId: 'w2',
+            workouts: [
+                routine.workouts[0],
+                { ...routine.workouts[0], id: 'w2', name: 'Push' },
+            ],
+        };
+    };
+
+    it('puts the picked day on screen, with the days left to pick', async () => {
+        findActive.mockResolvedValueOnce(picked());
+        findSession.mockResolvedValueOnce(null);
+
+        const today = await todayWorkout('ada');
+        expect(findSession.mock.calls[0][0].where).toEqual({
+            userId_workoutId_week: { userId: 'ada', workoutId: 'w2', week: 2 },
+        });
+        expect(today).toMatchObject({
+            day: 1,
+            workout: { id: 'w2' },
+            choices: [
+                { id: 'w1', name: 'Legs', index: 0 },
+                { id: 'w2', name: 'Push', index: 1 },
+            ],
+        });
+    });
+
+    // Emptied by an edit of the plan: nothing to train, so not one to pick,
+    // nor one left to take up again.
+    it('leaves a day with no sets out of the days to pick', async () => {
+        const routine = picked();
+        routine.workouts[0] = { ...routine.workouts[0], exercises: [] };
+        findActive.mockResolvedValueOnce(routine);
+        findSession.mockResolvedValueOnce(null);
+
+        const today = await todayWorkout('ada');
+        expect(today).toMatchObject({ choices: [{ id: 'w2', index: 1 }] });
+        expect(today && 'choices' in today && today.choices).toHaveLength(1);
+    });
+
+    // The cursor steps over it once it gets there, already complete.
+    it('drops the pick once done and leaves the cursor where it was', async () => {
+        findActive.mockResolvedValueOnce(picked()).mockResolvedValueOnce(null);
+
+        await todayWorkout('ada');
+        expect(moveRoutine).toHaveBeenCalledTimes(1);
+        expect(moveRoutine).toHaveBeenCalledWith({
+            where: { id: 'r1', pickedWorkoutId: 'w2' },
+            data: { pickedWorkoutId: null },
+        });
+        expect(findActive).toHaveBeenCalledTimes(2);
+    });
+
+    // Closed with its blanks and picked to be taken up again: read until
+    // started, and marked in what the day can be changed to.
+    it('shows a picked day left incomplete, not under way', async () => {
+        const closed = { workoutId: 'w2', completedAt: new Date(), logs: [] };
+        findActive.mockResolvedValueOnce(picked());
+        findSession.mockResolvedValueOnce({ id: 's2', ...closed });
+        findSessions.mockResolvedValue([closed]);
+
+        const today = await todayWorkout('ada');
+        expect(moveRoutine).not.toHaveBeenCalled();
+        expect(today).toMatchObject({
+            workout: { id: 'w2' },
+            started: false,
+            choices: [
+                { id: 'w1', incomplete: false },
+                { id: 'w2', incomplete: true },
+            ],
+        });
+    });
+
+    // What it had when it was left is handed over, not to be edited; what
+    // went in since is not.
+    it('hands over what a day taken up again had when it was left', async () => {
+        const routine = picked();
+        const set = { kind: 'normal', repMode: 'range' };
+        routine.workouts[1] = {
+            ...routine.workouts[1],
+            exercises: [{ id: 'e1', sets: [set, set, set] }],
+        };
+        const log = (slot: string, at: string) => ({
+            exerciseId: 'e1',
+            slot,
+            weight: 60,
+            reps: 8,
+            effort: 'normal',
+            createdAt: new Date(at),
+        });
+        findActive.mockResolvedValueOnce(routine);
+        findSession.mockResolvedValueOnce({
+            id: 's2',
+            completedAt: null,
+            leftAt: new Date('2026-10-01T10:00:00Z'),
+            logs: [
+                log('1', '2026-10-01T09:30:00Z'),
+                log('2', '2026-10-02T18:00:00Z'),
+            ],
+        });
+
+        const today = await todayWorkout('ada');
+        expect(today).toMatchObject({ started: true });
+        expect(today && 'locked' in today && today.locked).toEqual({
+            e1: { 0: { weight: 60, reps: 8, effort: 'normal' } },
+        });
     });
 });
 

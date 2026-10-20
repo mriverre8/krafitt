@@ -94,6 +94,10 @@ model Routine {
   /// leaves the home screen each time it is done: every "week" of it is one
   /// more time it was trained, and the cursor counts them.
   kind          String   @default("routine")
+  /// A day of the current week trained ahead of the cursor's: shown on the
+  /// home screen instead of it until done. The cursor stays put and steps over
+  /// the day once it gets there, since its session is already complete.
+  pickedWorkoutId String?
 
   workouts Workout[]
   sessions WorkoutSession[]
@@ -191,6 +195,9 @@ model WorkoutSession {
   week        Int
   startedAt   DateTime  @default(now())
   completedAt DateTime?
+  /// When a day taken up again had been closed: its sets from before stay as
+  /// they were. Kept once it is done, so it is not read as one sitting.
+  leftAt      DateTime?
 
   logs SetLog[]
 
@@ -208,6 +215,7 @@ model SetLog {
   weight     Float
   reps       Int
   effort     String   @default("normal")
+  createdAt  DateTime @default(now())
 
   @@unique([sessionId, exerciseId, slot])
 }

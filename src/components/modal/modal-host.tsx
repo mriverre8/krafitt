@@ -11,6 +11,9 @@ const modals = {
     duration: dynamic(() =>
         import('./duration-modal').then((m) => m.DurationModal)
     ),
+    pickDay: dynamic(() =>
+        import('./pick-day-modal').then((m) => m.PickDayModal)
+    ),
     rename: dynamic(() =>
         import('./rename-routine-modal').then((m) => m.RenameRoutineModal)
     ),

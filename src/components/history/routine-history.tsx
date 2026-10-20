@@ -12,6 +12,7 @@ export function RoutineHistory({
     days,
     durationWeeks,
     cursor,
+    picked = -1,
     initialDay = 0,
     weeks,
     period,
@@ -19,6 +20,9 @@ export function RoutineHistory({
     days: HistoryDay[];
     durationWeeks: Duration;
     cursor: number;
+    /** The day of this week picked ahead of the cursor's, -1 for none: it is
+        the one being trained. */
+    picked?: number;
     /** The day tab to open on, counted from 0. Past the last day means the last. */
     initialDay?: number;
     /** The rows to draw. Left out, they are a routine's: worked out from its
@@ -56,7 +60,13 @@ export function RoutineHistory({
                     day={day}
                     rows={rows.map((week) => ({
                         week,
-                        state: weekState(cursor, week, position, days.length),
+                        state: weekState(
+                            cursor,
+                            week,
+                            position,
+                            days.length,
+                            picked
+                        ),
                         logs: day.weeks[week] ?? {},
                     }))}
                     id={`${baseId}-panel-${position}`}

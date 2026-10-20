@@ -1,24 +1,39 @@
 'use client';
 
-import { cancelDay, logSet, skipDay, startDay } from '@/app/actions';
+import {
+    cancelDay,
+    logSet,
+    pickDay,
+    skipDay,
+    skipWeek,
+    startDay,
+} from '@/app/actions';
 import { useT } from '@/i18n/use-t';
 import { setSlots } from '@/lib/history';
 import {
     flatSets,
     isSetEnabled,
     filledSets,
+    isSetFilled,
+    isSessionComplete,
     type Duration,
     type Logs,
     type PreviousLogs,
     type RoutineKind,
 } from '@/lib/progress';
-import { primaryClass, stickyBarClass } from '@/lib/ui';
+import { doneClass, ghostClass, primaryClass, stickyBarClass } from '@/lib/ui';
 import { HistoryLink } from '@/components/ui/history-link';
 import { ExercisePreview } from '@/components/workout/exercise-preview';
 import { FinishWorkoutButton } from '@/components/workout/finish-workout-button';
 import { ProgressLadder } from '@/components/ui/progress-ladder';
 import { useSessionStore } from '@/store/session';
-import { Flag, Play } from 'lucide-react';
+import {
+    ArrowLeftRight,
+    CircleCheck,
+    Flag,
+    Play,
+    SkipForward,
+} from 'lucide-react';
 import { unstable_rethrow, useRouter } from 'next/navigation';
 import { useEffect, useTransition } from 'react';
 import { showModal } from '@/store/modal';
@@ -40,7 +55,17 @@ export type TodayWorkoutProps = {
         is started from here, a workout on its page. */
     started?: boolean;
     logs: Logs;
+    /** The sets a day taken up again had when it was left: shown, not
+        edited, and not counted as done this time. */
+    locked?: Logs;
     previous: PreviousLogs;
+    /** The days of this week that can be trained instead, this one among them. */
+    choices?: {
+        id: string;
+        name: string;
+        index: number;
+        incomplete: boolean;
+    }[];
     /** A workout is one day done again and again: its "week" is which time
         this is, and it is finished rather than skipped. */
     kind?: RoutineKind;
@@ -55,6 +80,7 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         workout,
         day,
         previous,
+        locked = {},
         kind = 'routine',
     } = props;
     const t = useT();
@@ -107,19 +133,80 @@ export function TodayWorkout(props: TodayWorkoutProps) {
         run(() => startDay(workout.id, week));
     }
 
-    // A finished day is already behind us: the next fetch moves the cursor past
-    // it on its own, so skipping it too would cost the user the day after.
+    // A day done in full is behind us as it stands: the next fetch moves the
+    // cursor past it, so there is nothing to finish, only to show.
+    const done = started && complete;
+    // Only before starting or once done: a day under way is finished or called
+    // off first.
+    const idle = !started || done;
+    const choices = props.choices ?? [];
+    // A day done in full is left out of the days to pick once it is closed.
+    const canChangeDay = idle && choices.some((c) => c.id !== workout.id);
+    // A day left incomplete is taken up again rather than started afresh.
+    const incomplete = choices.some((c) => c.id === workout.id && c.incomplete);
+    // The other days left incomplete, flagged on the button that reaches them.
+    const pendingDays = choices.filter(
+        (c) => c.id !== workout.id && c.incomplete
+    ).length;
+    const changeDayLabel =
+        pendingDays > 0
+            ? t('today.changeDayPending', { count: pendingDays })
+            : t('today.changeDay');
+    function onChangeDay() {
+        showModal('pickDay', {
+            // A day done in full is not one to pick, the one on screen neither.
+            choices: done
+                ? choices.filter((c) => c.id !== workout.id)
+                : choices,
+            current: workout.id,
+            onPick: (workoutId) => run(() => pickDay(routineId, workoutId)),
+        });
+    }
+
+    // The last day left of the week: once done there is nothing more to show
+    // in it, and the next fetch moves on to the next week, or ends the routine.
+    const lastOfWeek = !single && !choices.some((c) => c.id !== workout.id);
+
+    // Skipping the last week of a routine with an end is finishing it.
+    const lastWeek = totalWeeks !== null && week === totalWeeks;
+    const skipWeekLabel = t(
+        lastWeek ? 'today.finishRoutine' : 'today.skipWeek'
+    );
+    // The rest of the week is left not logged, for good: asked first.
+    function onSkipWeek() {
+        showModal('confirm', {
+            title: skipWeekLabel,
+            message: t(
+                lastWeek
+                    ? 'today.finishRoutineConfirm'
+                    : 'today.skipWeekConfirm'
+            ),
+            confirmLabel: skipWeekLabel,
+            onConfirm: () =>
+                run(async () => {
+                    const result = await skipWeek(routineId);
+                    if (result) return result;
+                    toast(
+                        t(
+                            lastWeek
+                                ? 'toast.routineFinished'
+                                : 'toast.weekSkipped'
+                        )
+                    );
+                }),
+        });
+    }
+
     // With nothing logged there is nothing to end: once confirmed, it goes back
     // to being read. Anything else moves on, and the sets left blank are lost
     // for good. A workout has its own button, shared with its page.
     function onFinish() {
-        if (complete) {
-            toast(t('toast.workoutFinished'));
-            return router.refresh();
-        }
         // A day with no sets could never be logged, so it is moved past instead
-        // of being read for ever.
-        if (doneSets === 0 && all.length > 0) {
+        // of being read for ever. A day taken up again counts only what is new.
+        if (
+            doneSets === filledSets(workout.exercises, locked) &&
+            all.length > 0
+        ) {
             return showModal('confirm', {
                 title: t('today.finish'),
                 message: t('today.finishEmptyConfirm'),
@@ -230,6 +317,8 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         previous={previous[exercise.id] ?? {}}
                         isSetEnabled={(setIndex) =>
                             !pending &&
+                            !done &&
+                            !isSetFilled(locked, exercise.id, setIndex) &&
                             isSetEnabled(
                                 workout.exercises,
                                 logs,
@@ -256,12 +345,76 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                         reps,
                                         effort,
                                     });
+                                // The last set of the week's last day: on to
+                                // the next week, as finishing a workout does —
+                                // or, in the last one, the routine ends.
+                                if (
+                                    lastOfWeek &&
+                                    isSessionComplete(
+                                        workout.exercises,
+                                        useSessionStore.getState().logs
+                                    )
+                                ) {
+                                    toast(
+                                        t(
+                                            lastWeek
+                                                ? 'toast.routineFinished'
+                                                : 'toast.workoutFinished'
+                                        )
+                                    );
+                                    router.refresh();
+                                }
                             })
                         }
                     />
                 ))}
 
             <div className={stickyBarClass}>
+                {canChangeDay && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={onChangeDay}
+                        aria-label={changeDayLabel}
+                        title={changeDayLabel}
+                        className={`${ghostClass} relative flex shrink-0 items-center justify-center`}
+                    >
+                        <ArrowLeftRight
+                            size={18}
+                            aria-hidden
+                        />
+                        {pendingDays > 0 && (
+                            <span
+                                aria-hidden
+                                className="bg-volt text-on-volt absolute -top-1.5 -right-1.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[0.625rem] leading-none"
+                            >
+                                {pendingDays}
+                            </span>
+                        )}
+                    </button>
+                )}
+                {!single && idle && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={onSkipWeek}
+                        aria-label={skipWeekLabel}
+                        title={skipWeekLabel}
+                        className={`${ghostClass} flex shrink-0 items-center justify-center`}
+                    >
+                        {lastWeek ? (
+                            <Flag
+                                size={18}
+                                aria-hidden
+                            />
+                        ) : (
+                            <SkipForward
+                                size={18}
+                                aria-hidden
+                            />
+                        )}
+                    </button>
+                )}
                 {single ? (
                     <FinishWorkoutButton
                         routineId={routineId}
@@ -269,6 +422,17 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                         total={all.length}
                         className={`${primaryClass} flex w-full items-center justify-center gap-2`}
                     />
+                ) : done ? (
+                    <p
+                        role="status"
+                        className={`${doneClass} flex w-full items-center justify-center gap-2`}
+                    >
+                        <CircleCheck
+                            size={16}
+                            aria-hidden
+                        />
+                        {t('today.done')}
+                    </p>
                 ) : (
                     <button
                         type="button"
@@ -287,7 +451,26 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                                 aria-hidden
                             />
                         )}
-                        {t(started ? 'today.finish' : 'today.start')}
+                        {started ? (
+                            t('today.finish')
+                        ) : (
+                            <>
+                                <span className="sm:hidden">
+                                    {t(
+                                        incomplete
+                                            ? 'today.continueShort'
+                                            : 'today.startShort'
+                                    )}
+                                </span>
+                                <span className="hidden sm:inline">
+                                    {t(
+                                        incomplete
+                                            ? 'today.continue'
+                                            : 'today.start'
+                                    )}
+                                </span>
+                            </>
+                        )}
                     </button>
                 )}
             </div>

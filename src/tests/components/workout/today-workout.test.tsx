@@ -6,7 +6,7 @@ import { useSessionStore } from '@/store/session';
 import { useToastStore } from '@/store/toast';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { cancelDay, logSet, skipDay, startDay } from '@/app/actions';
+import { cancelDay, logSet, skipDay, skipWeek, startDay } from '@/app/actions';
 import {
     acceptConfirm,
     confirmDialog,
@@ -19,6 +19,7 @@ vi.mock('@/app/actions', () => ({
     cancelDay: vi.fn(),
     logSet: vi.fn(),
     skipDay: vi.fn(),
+    skipWeek: vi.fn(),
     startDay: vi.fn(),
 }));
 const refresh = vi.fn();
@@ -238,18 +239,189 @@ describe('TodayWorkout', () => {
         );
     });
 
-    // The finished day is left behind by the next fetch, so skipping it too
-    // would cost the user the day after it.
-    it('only refreshes when the day is already finished', () => {
+    // The finished day is left behind by the next fetch: there is nothing to
+    // finish, and the day can be changed or the week skipped again.
+    it('shows a day done in full, with the controls of a day being read', () => {
         render(
             <TodayWorkout
                 {...props}
                 logs={full}
+                choices={[
+                    { id: 'w1', name: 'Push A', index: 1, incomplete: false },
+                    { id: 'w2', name: 'Pull A', index: 2, incomplete: false },
+                ]}
             />
         );
-        fireEvent.click(screen.getByText('Finish workout'));
-        expect(skipDay).not.toHaveBeenCalled();
-        expect(refresh).toHaveBeenCalled();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Workout complete'
+        );
+        expect(screen.getByRole('status')).toHaveClass('bg-surge');
+        expect(
+            screen.queryByRole('button', { name: /Finish workout/ })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Change day' })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Skip week' })
+        ).toBeInTheDocument();
+    });
+
+    // Skipping the last week of a routine with an end finishes it.
+    it('finishes the routine instead of skipping its last week', async () => {
+        useToastStore.setState({ toasts: [] });
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    week={8}
+                    started={false}
+                />
+            )
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Skip week' })
+        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Finish routine' }));
+        expect(await openConfirm()).toHaveTextContent('the routine ends');
+        await acceptConfirm('Finish routine');
+        await waitFor(() => expect(skipWeek).toHaveBeenCalledWith('r1'));
+        await waitFor(() =>
+            expect(useToastStore.getState().toasts).toMatchObject([
+                { message: 'Routine finished', kind: 'success' },
+            ])
+        );
+    });
+
+    // The last set of the week's last day left: on to the next week, or the
+    // routine ends in its last one.
+    it.each([
+        ['refreshes', 2, [], 1, 'Workout finished'],
+        ['ends the routine', 8, [], 1, 'Routine finished'],
+        [
+            'stays',
+            2,
+            [{ id: 'w2', name: 'Pull A', index: 2, incomplete: true }],
+            0,
+            undefined,
+        ],
+    ])(
+        '%s once the last set of the day is logged',
+        async (_, week, others, refreshes, message) => {
+            useToastStore.setState({ toasts: [] });
+            render(
+                <TodayWorkout
+                    {...props}
+                    week={week}
+                    logs={{ e1: { 0: full.e1[0] } }}
+                    choices={[
+                        {
+                            id: 'w1',
+                            name: 'Push A',
+                            index: 1,
+                            incomplete: false,
+                        },
+                        ...others,
+                    ]}
+                />
+            );
+            fireEvent.change(screen.getByLabelText('Weight set 2'), {
+                target: { value: '60' },
+            });
+            fireEvent.change(screen.getByLabelText('Reps set 2'), {
+                target: { value: '10' },
+            });
+            fireEvent.click(screen.getByLabelText('Save set 2'));
+            fireEvent.click(screen.getByLabelText('Bank set 2'));
+            await waitFor(() => expect(logSet).toHaveBeenCalled());
+            await waitFor(() =>
+                expect(screen.getByRole('status')).toBeInTheDocument()
+            );
+            expect(refresh).toHaveBeenCalledTimes(refreshes);
+            expect(useToastStore.getState().toasts[0]?.message).toBe(message);
+        }
+    );
+
+    // The days left incomplete are counted on the button that reaches them.
+    it('flags the days left incomplete on the button to change day', () => {
+        render(
+            <TodayWorkout
+                {...props}
+                started={false}
+                choices={[
+                    { id: 'w0', name: 'Legs', index: 0, incomplete: true },
+                    { id: 'w1', name: 'Push A', index: 1, incomplete: false },
+                    { id: 'w2', name: 'Pull A', index: 2, incomplete: false },
+                ]}
+            />
+        );
+        expect(
+            screen.getByRole('button', { name: 'Change day (1 incomplete)' })
+        ).toHaveTextContent('1');
+    });
+
+    // Still on screen until the next fetch, but not one to pick.
+    it('leaves the day done in full out when changing day', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    logs={full}
+                    choices={[
+                        {
+                            id: 'w1',
+                            name: 'Push A',
+                            index: 1,
+                            incomplete: false,
+                        },
+                        {
+                            id: 'w2',
+                            name: 'Pull A',
+                            index: 2,
+                            incomplete: false,
+                        },
+                    ]}
+                />
+            )
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Change day' }));
+        expect(
+            await screen.findByRole('button', { name: /Pull A/ })
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: /Push A/ })
+        ).not.toBeInTheDocument();
+    });
+
+    // The day on screen is listed, but it is already the one shown.
+    it('lists the day being read as not to pick', async () => {
+        render(
+            withModals(
+                <TodayWorkout
+                    {...props}
+                    started={false}
+                    choices={[
+                        {
+                            id: 'w1',
+                            name: 'Push A',
+                            index: 1,
+                            incomplete: false,
+                        },
+                        {
+                            id: 'w2',
+                            name: 'Pull A',
+                            index: 2,
+                            incomplete: false,
+                        },
+                    ]}
+                />
+            )
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Change day' }));
+        expect(
+            await screen.findByRole('button', { name: /Push A/ })
+        ).toBeDisabled();
+        expect(screen.getByText('Now')).toBeInTheDocument();
     });
 
     // Coming back from the history replays the payload this page was rendered
@@ -418,8 +590,9 @@ describe('TodayWorkout, for a workout', () => {
         );
     });
 
-    // Done in full there are no blanks to warn about: it simply ends.
-    it('finishes without asking once every set is in', async () => {
+    // Done in full it is still finished by hand, without asking: until then
+    // it stays active, and no other can be started.
+    it('finishes a workout done in full with one press', async () => {
         render(
             withModals(
                 <TodayWorkout
@@ -428,13 +601,8 @@ describe('TodayWorkout, for a workout', () => {
                 />
             )
         );
-        fireEvent.click(screen.getByText('Finish workout'));
-        expect(confirmDialog()).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Finish workout/ }));
         await waitFor(() => expect(skipDay).toHaveBeenCalledWith('r1'));
-        await waitFor(() =>
-            expect(useToastStore.getState().toasts).toMatchObject([
-                { message: 'Workout finished', kind: 'success' },
-            ])
-        );
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 });

@@ -32,6 +32,8 @@ export const en = {
     'toast.receivedWorkout': '{routine} is now in your workouts',
     'toast.workoutFinished': 'Workout finished',
     'toast.workoutCancelled': 'Workout called off',
+    'toast.weekSkipped': 'Week skipped',
+    'toast.routineFinished': 'Routine finished',
 
     'pagination.label': 'Pagination',
     'pagination.previous': 'Previous',
@@ -154,6 +156,9 @@ export const en = {
     'today.done': 'Workout complete',
     'today.noExercises': 'This workout has no exercises yet.',
     'today.start': 'Start workout',
+    'today.startShort': 'Start',
+    'today.continue': 'Continue workout',
+    'today.continueShort': 'Continue',
     'today.workoutEyebrow': 'Workout',
     'today.run': 'Session {n}',
     'today.runColumn': 'Session',
@@ -183,6 +188,18 @@ export const en = {
     'today.effortHardShort': 'Tough',
     'today.effortNormalShort': 'On plan',
     'today.effortEasyShort': 'Had more',
+    'today.changeDay': 'Change day',
+    'today.changeDayPending': 'Change day ({count} incomplete)',
+    'today.changeDayBody':
+        'Pick another day of this week. The rest stay pending, in their order.',
+    'today.changeDayCurrent': 'Now',
+    'today.changeDayIncomplete': 'Incomplete',
+    'today.skipWeek': 'Skip week',
+    'today.finishRoutine': 'Finish routine',
+    'today.finishRoutineConfirm':
+        'This is the last week: whatever is left to log stays blank and the routine ends. Finish the routine?',
+    'today.skipWeekConfirm':
+        'You move on to next week. Whatever is left to log this week stays blank. Skip the week?',
     'today.genericError': 'Something went wrong',
 
     'progress.link': 'History',
@@ -551,7 +568,10 @@ export const en = {
     'error.planChanged':
         'The routine has changed: reload to see it as it is now',
     'error.activeDayIncomplete': '{where}: {what}',
+    'error.dayNotAvailable': 'That day cannot be trained now',
+    'error.dayStarted': 'Finish or call off the day under way first',
     'error.fillPrevious': 'Fill in the previous sets first',
+    'error.setLocked': 'This set was logged before and cannot be changed',
     'error.workoutTitle': 'Give the workout a name',
     'error.workoutStarted': 'A workout in progress cannot be edited',
     'error.workoutInProgress': 'Finish the workout {name} first',
