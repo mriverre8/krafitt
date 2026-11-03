@@ -304,7 +304,12 @@ export function HistoryExercise({
                                                                 'weight'
                                                             )}
                                                         >
-                                                            {value.weight}×
+                                                            {value.weight === 0
+                                                                ? t(
+                                                                      'progress.bodyweight'
+                                                                  )
+                                                                : value.weight}
+                                                            ×
                                                         </span>
                                                         <span
                                                             className={tone(

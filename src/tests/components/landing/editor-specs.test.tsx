@@ -37,7 +37,7 @@ describe('EditorSpecs', () => {
             'Warm-up set',
             'Straight sets',
             'Drop set −20%',
-            'Rest-pause set 15s',
+            'Rest-pause set 15 s',
         ]) {
             expect(screen.getByText(chip)).toBeInTheDocument();
         }

@@ -290,6 +290,29 @@ h3 {
   animation: slot-in 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* A number box that reads its number back inside itself — seconds as minutes,
+   0 kg as bodyweight: the number lifts and the note rises in underneath, on
+   the same axis, so the two read as one figure rather than a note pinned to a
+   corner. Unlayered on purpose, so it wins over the padding the field
+   utilities set. Only the note moves: the padding swap is instant, not a
+   layout tween. */
+.note-box:has(> [data-note]) > input {
+  padding-top: 0;
+  padding-bottom: 0.875rem;
+}
+.note-box:has(> input:disabled) > [data-note] {
+  opacity: 0.3;
+}
+@keyframes note-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+.note-box > [data-note] {
+  animation: note-in 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 /* A modal arrives rather than blinks into place: 140ms is short enough that it
    never reads as waiting, long enough to say where it came from. Opacity and
    transform only, so it stays on the compositor. There is no exit animation —

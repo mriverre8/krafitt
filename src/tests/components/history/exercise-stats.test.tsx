@@ -28,6 +28,18 @@ describe('ExerciseStats', () => {
         expect(screen.queryByText(/Stalled/)).not.toBeInTheDocument();
     });
 
+    it('shows a best set at 0 kg as bodyweight', () => {
+        render(
+            <ExerciseStats
+                exercise={exercise}
+                weeks={{ 1: week(0, 10), 2: week(0, 12) }}
+            />
+        );
+        expect(screen.getByText('BW×12')).toBeInTheDocument();
+        // No kilos on the bar, no max to estimate from them.
+        expect(screen.queryByText(/estimated/i)).not.toBeInTheDocument();
+    });
+
     it('flags an exercise that has not moved in three weeks', () => {
         render(
             <ExerciseStats

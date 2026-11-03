@@ -66,35 +66,40 @@ export function ExerciseStats({
                             {t('progress.stats.best')}
                         </dt>
                         <dd className="figure text-ink mt-1 text-2xl leading-none">
-                            {kilos.format(stats.best.weight)}×{stats.best.reps}
+                            {stats.best.weight === 0
+                                ? t('progress.bodyweight')
+                                : kilos.format(stats.best.weight)}
+                            ×{stats.best.reps}
                         </dd>
                         <dd className="text-muted mt-1 text-xs">
                             {t(words.label, { n: stats.best.week })}
                         </dd>
                     </div>
-                    <div>
-                        <dt className={labelClass}>
-                            {t('progress.stats.e1rm')}
-                        </dt>
-                        <dd className="figure text-ink mt-1 text-2xl leading-none">
-                            {kilos.format(stats.best.e1rm)} kg
-                        </dd>
-                        {stats.change !== null && (
-                            <dd
-                                className={`mt-1 text-xs font-semibold ${
-                                    stats.change > 0
-                                        ? 'text-surge-ink'
-                                        : stats.change < 0
-                                          ? 'text-danger'
-                                          : 'text-muted'
-                                }`}
-                            >
-                                {t(words.sinceFirst, {
-                                    change: signed.format(stats.change),
-                                })}
+                    {stats.best.weight > 0 && (
+                        <div>
+                            <dt className={labelClass}>
+                                {t('progress.stats.e1rm')}
+                            </dt>
+                            <dd className="figure text-ink mt-1 text-2xl leading-none">
+                                {kilos.format(stats.best.e1rm)} kg
                             </dd>
-                        )}
-                    </div>
+                            {stats.change !== null && (
+                                <dd
+                                    className={`mt-1 text-xs font-semibold ${
+                                        stats.change > 0
+                                            ? 'text-surge-ink'
+                                            : stats.change < 0
+                                              ? 'text-danger'
+                                              : 'text-muted'
+                                    }`}
+                                >
+                                    {t(words.sinceFirst, {
+                                        change: signed.format(stats.change),
+                                    })}
+                                </dd>
+                            )}
+                        </div>
+                    )}
                 </dl>
             )}
 

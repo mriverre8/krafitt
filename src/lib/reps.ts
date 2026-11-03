@@ -82,7 +82,7 @@ export function formatReps(set: RepSpec, t: Translate): string {
         case 'unspecifiedTime':
             return t('reps.unspecifiedTime');
         case 'time':
-            return t('reps.seconds', { n: set.repMin! });
+            return formatSeconds(set.repMin!, t);
         case 'fixed':
             return t('today.setPlanFixed', { reps: set.repMin! });
         default:
@@ -93,5 +93,16 @@ export function formatReps(set: RepSpec, t: Translate): string {
 /** What a logged set did, in the unit its mode counts in: the log keeps
     seconds for a timed set in the same column as reps. */
 export function formatLogged(repMode: string, reps: number, t: Translate) {
-    return isTimed(repMode) ? t('reps.seconds', { n: reps }) : String(reps);
+    return isTimed(repMode) ? formatSeconds(reps, t) : String(reps);
+}
+
+/** Seconds as they are read: `45 s` under a minute, `1 min` or `1:30 min`
+    from one up. */
+export function formatSeconds(seconds: number, t: Translate): string {
+    if (seconds < 60) return t('reps.seconds', { n: seconds });
+    const minutes = Math.floor(seconds / 60);
+    const rest = seconds % 60;
+    return t('reps.minutes', {
+        m: rest ? `${minutes}:${String(rest).padStart(2, '0')}` : minutes,
+    });
 }

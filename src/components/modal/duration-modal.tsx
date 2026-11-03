@@ -7,7 +7,7 @@ import { ghostClass, inputClass, primaryClass } from '@/lib/ui';
 import { Modal } from '@/components/modal/modal';
 import { FormError } from '@/components/ui/form-error';
 import { toast } from '@/store/toast';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useEffectEvent, useState } from 'react';
 
 export type DurationModalProps = {
     durationWeeks: number;
@@ -33,11 +33,15 @@ export function DurationModal({
         weeks >= min &&
         weeks <= WEEKS.max;
 
-    useEffect(() => {
-        if (!state.ok) return;
+    // Answers the save alone: a fresh `t` or `onClose` from a re-render is
+    // read here, never a reason to close and toast again.
+    const done = useEffectEvent(() => {
         onClose();
         toast(t('toast.durationChanged'));
-    }, [state.ok, onClose, t]);
+    });
+    useEffect(() => {
+        if (state.ok) done();
+    }, [state.ok]);
 
     return (
         <Modal

@@ -31,6 +31,7 @@ import { Plus, Trash } from 'lucide-react';
 import { DropPercentMenu } from '@/components/workout/drop-percent-menu';
 import { ExerciseNameField } from '@/components/workout/exercise-name-field';
 import { RepModeSelect } from '@/components/workout/rep-mode-select';
+import { MinutesHint } from '@/components/workout/minutes-hint';
 import { RepsFields } from '@/components/workout/reps-fields';
 import { RemoveSubButton } from '@/components/workout/remove-sub-button';
 import { RowHead } from '@/components/workout/row-head';
@@ -287,34 +288,46 @@ export function ExerciseFields({
                                                 }
                                             />
                                         ) : (
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                value={sub.value}
-                                                onChange={(event) =>
-                                                    updateSet(subIndex, {
-                                                        // Digits only, as in `RepsFields`.
-                                                        value: event.target.value
-                                                            .replace(/\D/g, '')
-                                                            .slice(
-                                                                0,
-                                                                limit.digits
-                                                            ),
-                                                    })
-                                                }
-                                                placeholder={t('set.restUnit')}
-                                                aria-label={t(
-                                                    'exercise.setValue',
-                                                    {
-                                                        exercise:
-                                                            exerciseNumber,
-                                                        label: subName,
+                                            <div
+                                                className={`note-box relative ${valueSlotClass}`}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={sub.value}
+                                                    onChange={(event) =>
+                                                        updateSet(subIndex, {
+                                                            // Digits only, as in `RepsFields`.
+                                                            value: event.target.value
+                                                                .replace(
+                                                                    /\D/g,
+                                                                    ''
+                                                                )
+                                                                .slice(
+                                                                    0,
+                                                                    limit.digits
+                                                                ),
+                                                        })
                                                     }
-                                                )}
-                                                className={`${numberClass(
-                                                    subWrong.value
-                                                )} ${valueSlotClass}`}
-                                            />
+                                                    placeholder={t(
+                                                        'set.restUnit'
+                                                    )}
+                                                    aria-label={t(
+                                                        'exercise.setValue',
+                                                        {
+                                                            exercise:
+                                                                exerciseNumber,
+                                                            label: subName,
+                                                        }
+                                                    )}
+                                                    className={`${numberClass(
+                                                        subWrong.value
+                                                    )} w-full`}
+                                                />
+                                                <MinutesHint
+                                                    seconds={sub.value}
+                                                />
+                                            </div>
                                         )}
                                     </div>
                                 </div>

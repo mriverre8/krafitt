@@ -4,6 +4,7 @@ import { useT } from '@/i18n/use-t';
 import { REPS } from '@/lib/constants';
 import { hasNoReps, type RepMode } from '@/lib/reps';
 import { numberClass, rowFieldClass } from '@/lib/ui';
+import { MinutesHint } from '@/components/workout/minutes-hint';
 
 const repsSlotClass =
     'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2';
@@ -72,20 +73,23 @@ export function RepsFields({
 
     return (
         <div className={repsSlotClass}>
-            <input
-                type="text"
-                inputMode="numeric"
-                value={repMin}
-                onChange={(event) =>
-                    onChange({ repMin: digits(event.target.value) })
-                }
-                placeholder={t(timed ? 'today.seconds' : 'today.reps')}
-                aria-label={t(timed ? 'exercise.seconds' : 'exercise.repMin', {
-                    exercise: exerciseNumber,
-                    set: setLabel,
-                })}
-                className={`${numberClass(wrong.min)} flex-1`}
-            />
+            <div className="note-box relative flex min-w-0 flex-1">
+                <input
+                    type="text"
+                    inputMode="numeric"
+                    value={repMin}
+                    onChange={(event) =>
+                        onChange({ repMin: digits(event.target.value) })
+                    }
+                    placeholder={t(timed ? 'today.seconds' : 'today.reps')}
+                    aria-label={t(
+                        timed ? 'exercise.seconds' : 'exercise.repMin',
+                        { exercise: exerciseNumber, set: setLabel }
+                    )}
+                    className={`${numberClass(wrong.min)} w-full`}
+                />
+                {timed && <MinutesHint seconds={repMin} />}
+            </div>
             {mode === 'range' && (
                 <>
                     <span

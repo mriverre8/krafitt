@@ -53,7 +53,10 @@ describe('setFullLabel', () => {
             'Drop set −20%'
         );
         expect(setFullLabel({ kind: 'rest', value: 15 }, t)).toBe(
-            'Rest-pause set 15s'
+            'Rest-pause set 15 s'
+        );
+        expect(setFullLabel({ kind: 'rest', value: 60 }, t)).toBe(
+            'Rest-pause set 1 min'
         );
     });
 

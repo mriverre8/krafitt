@@ -123,6 +123,13 @@ describe('RepsFields', () => {
             target: { value: '45' },
         });
         expect(onChange).toHaveBeenCalledWith({ repMin: '45' });
+        // Under a minute there is nothing to add.
+        expect(screen.queryByText(/min/)).not.toBeInTheDocument();
+    });
+
+    it('reads a timed set as minutes from one minute up', () => {
+        reps({ mode: 'time', repMin: '90' });
+        expect(screen.getByText('1:30 min')).toBeInTheDocument();
     });
 
     it('reads N/A time as a readout, like N/A reps', () => {

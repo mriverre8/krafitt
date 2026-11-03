@@ -409,6 +409,16 @@ describe('SetRow', () => {
         expect(onSave).toHaveBeenCalledWith(60, 10, 'easy');
     });
 
+    it('reads 0 kg back as bodyweight, and nothing else', () => {
+        render(<SetRow {...base} />);
+        const weight = screen.getByLabelText('Weight set 1');
+        expect(screen.queryByText('Bodyweight')).not.toBeInTheDocument();
+        fireEvent.change(weight, { target: { value: '0' } });
+        expect(screen.getByText('Bodyweight')).toBeInTheDocument();
+        fireEvent.change(weight, { target: { value: '0.5' } });
+        expect(screen.queryByText('Bodyweight')).not.toBeInTheDocument();
+    });
+
     it('translates its labels', () => {
         renderWithLocale(<SetRow {...base} />, 'es');
         expect(screen.getByLabelText('Peso serie 1')).toBeInTheDocument();
