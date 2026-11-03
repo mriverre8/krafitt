@@ -81,6 +81,24 @@ describe('HistoryExercise', () => {
         expect(shown).toContain('82.5×5');
     });
 
+    it('shows 0 kg as bodyweight', () => {
+        show({
+            rows: [
+                {
+                    week: 1,
+                    state: 'past',
+                    sets: { 0: { weight: 0, reps: 12 } },
+                },
+            ],
+        });
+        const shown = screen
+            .getAllByRole('cell')
+            .map(
+                (cell) => cell.querySelector('span[aria-hidden]')?.textContent
+            );
+        expect(shown).toContain('BW×12');
+    });
+
     // Weight, then reps, then how it felt: a set answers on the first of those
     // that moved, and everything under it is carried by that answer.
     it('colours from the part that moved downwards', () => {

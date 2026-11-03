@@ -1,5 +1,6 @@
 import type { Translate } from '@/i18n/config';
 import { EXERCISES, SETS, WEEKS as WEEK_LIMIT } from '@/lib/constants';
+import { formatSeconds } from '@/lib/reps';
 import type {
     Effort,
     PreviousValue,
@@ -73,7 +74,7 @@ export function editorSpecs(t: Translate): readonly Spec[] {
             body: t('landing.spec6Body'),
             chips: [
                 t('set.dropWith', { value: 20 }),
-                t('set.restWith', { value: 15 }),
+                t('set.restWith', { value: formatSeconds(15, t) }),
             ],
         },
     ];

@@ -187,8 +187,16 @@ export async function routineWorkbook(
     return new Uint8Array(await book.xlsx.writeBuffer());
 }
 
+/** Seconds the way a sheet writes time: `45''`, `2'`, `1' 30''`. */
+function clock(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const rest = seconds % 60;
+    if (!minutes) return `${rest}''`;
+    return rest ? `${minutes}' ${rest}''` : `${minutes}'`;
+}
+
 /** The bare numbers: the column header already says reps, and seconds carry
-    the sheet's own `"`. A set left unfinished says so, as the app does. */
+    the sheet's own marks. A set left unfinished says so, as the app does. */
 function repRange(set: RepSpec, t: Translate): string {
     if (!isSetComplete(set)) return formatReps(set, t);
     switch (set.repMode) {
@@ -197,7 +205,7 @@ function repRange(set: RepSpec, t: Translate): string {
         case 'fixed':
             return String(set.repMin);
         case 'time':
-            return `${set.repMin}"`;
+            return clock(set.repMin!);
         default:
             return formatReps(set, t);
     }
@@ -209,7 +217,7 @@ function technique(set: PlannedSet): string {
         case 'drop':
             return set.value == null ? 'D.S.' : `D.S. (${set.value}%)`;
         case 'rest':
-            return `R.P. (${set.value}")`;
+            return set.value == null ? 'R.P.' : `R.P. (${clock(set.value)})`;
         default: {
             const written = set.technique?.trim() ?? '';
             return SHORT.get(written.toLowerCase()) ?? written;
@@ -233,9 +241,9 @@ const EFFORT_MARK: Partial<Record<Effort, string>> = {
     easy: '⁺',
 };
 
-/** `82.5/8`, seconds as `45"`, and the effort raised after: `82.5/8ˣ`. */
+/** `82.5/8`, seconds as `45''`, and the effort raised after: `82.5/8ˣ`. */
 function logged(value: SetValue, repMode: string): string {
-    const reps = isTimed(repMode) ? `${value.reps}"` : value.reps;
+    const reps = isTimed(repMode) ? clock(value.reps) : value.reps;
     const mark = (value.effort && EFFORT_MARK[value.effort]) ?? '';
     return `${value.weight}/${reps}${mark}`;
 }

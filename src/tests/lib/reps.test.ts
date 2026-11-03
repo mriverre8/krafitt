@@ -1,6 +1,12 @@
 import { createT } from '@/i18n/config';
 import { en } from '@/i18n/en';
-import { formatLogged, formatReps, isRepMode, isSetComplete } from '@/lib/reps';
+import {
+    formatLogged,
+    formatReps,
+    formatSeconds,
+    isRepMode,
+    isSetComplete,
+} from '@/lib/reps';
 import { describe, expect, it } from 'vitest';
 
 const t = createT(en);
@@ -93,5 +99,15 @@ describe('reps', () => {
         expect(formatLogged('range', 8, t)).toBe('8');
         expect(formatLogged('time', 52, t)).toBe('52 s');
         expect(formatLogged('unspecifiedTime', 52, t)).toBe('52 s');
+    });
+
+    it('reads seconds as minutes from one minute up', () => {
+        expect(formatSeconds(59, t)).toBe('59 s');
+        expect(formatSeconds(60, t)).toBe('1 min');
+        expect(formatSeconds(61, t)).toBe('1:01 min');
+        expect(formatSeconds(90, t)).toBe('1:30 min');
+        expect(
+            formatReps({ repMode: 'time', repMin: 120, repMax: null }, t)
+        ).toBe('2 min');
     });
 });

@@ -32,6 +32,7 @@ import {
     startTransition,
     useActionState,
     useEffect,
+    useEffectEvent,
     useState,
     type ReactNode,
 } from 'react';
@@ -126,11 +127,15 @@ export function WorkoutEditor({
     // The save bar goes away on success and nothing else on screen says so;
     // a refused save is the server's word on the whole day, not one field's.
     // An effect, unlike the above: the toast lives in another component's
-    // store, and that may not be written to mid-render.
-    useEffect(() => {
-        if (state.saved) toast(t('toast.daySaved'));
-        if (state.error) toast(state.error, 'error');
-    }, [state, t]);
+    // store, and that may not be written to mid-render. It answers the save
+    // and nothing else — `t` is read, not watched: every revalidation hands
+    // the layout a fresh dictionary, and every day already saved would toast
+    // again with it.
+    const announce = useEffectEvent((answer: typeof state) => {
+        if (answer.saved) toast(t('toast.daySaved'));
+        if (answer.error) toast(answer.error, 'error');
+    });
+    useEffect(() => announce(state), [state]);
 
     // Leaving edit mode throws unsaved work away, having asked first — the
     // routine does the asking, since it is the whole set of days that is in

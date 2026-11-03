@@ -49,7 +49,7 @@ describe('routineWorkbook', () => {
                                         },
                                         {
                                             repMode: 'time',
-                                            repMin: 40,
+                                            repMin: 90,
                                             repMax: null,
                                         },
                                         {
@@ -99,9 +99,9 @@ describe('routineWorkbook', () => {
         expect(cells(sheet, 8)).toEqual(['CURL', 4, '7-10', 'S.S.']);
         expect(cells(sheet, 9).slice(2, 4)).toEqual(['7-10', 'D.S. (20%)']);
         expect(sheet.getCell('C10').value).toBe('AMRAP');
-        expect(sheet.getCell('C11').value).toBe('40"');
+        expect(sheet.getCell('C11').value).toBe("1' 30''");
         expect(sheet.getCell('C12').value).toBe('12');
-        expect(cells(sheet, 13).slice(2, 4)).toEqual(['3', 'R.P. (20")']);
+        expect(cells(sheet, 13).slice(2, 4)).toEqual(['3', "R.P. (20'')"]);
         expect(sheet.getCell('G13').border.bottom?.style).toBe('thin');
         expect(cells(sheet, 14)).toEqual([]);
         // Taller rows to write in by hand, the gaps between exercises
@@ -236,7 +236,7 @@ describe('routineWorkbook', () => {
         expect(sheet.getCell('F4').value).toBeNull();
         // How it felt, raised over the reps; a normal set has no mark.
         expect(sheet.getCell('E8').value).toBe('82.5/8ˣ');
-        expect(cells(sheet, 9).slice(4)).toEqual(['0/45"']);
+        expect(cells(sheet, 9).slice(4)).toEqual(["0/45''"]);
     });
 
     it('gives an open-ended routine as many weeks as it has trained', async () => {

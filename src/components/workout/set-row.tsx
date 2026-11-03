@@ -12,6 +12,8 @@ import { isTimed } from '@/lib/reps';
 import { inputClass } from '@/lib/ui';
 import { EffortMark } from '@/components/workout/effort-mark';
 import { EffortSelector } from '@/components/workout/effort-selector';
+import { BoxNote } from '@/components/workout/box-note';
+import { MinutesHint } from '@/components/workout/minutes-hint';
 import { ArrowRight, Check, Layers, LayersPlus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -149,24 +151,31 @@ export function SetRow({
                     />
                 ) : (
                     <>
-                        <input
-                            type="text"
-                            inputMode="decimal"
-                            placeholder={`${previous?.weight ?? ''} ${t(
-                                'today.kg'
-                            )}`.trim()}
-                            aria-label={t('today.weightLabel', { n: number })}
-                            disabled={!enabled}
-                            value={weight}
-                            onChange={(event) =>
-                                setDraft({
-                                    weight: kilos(event.target.value),
-                                    reps,
-                                })
-                            }
-                            className={`${inputClass} figure h-12 text-center text-lg`}
-                        />
-                        <div className="relative w-full min-w-0">
+                        <div className="note-box relative w-full min-w-0">
+                            <input
+                                type="text"
+                                inputMode="decimal"
+                                placeholder={`${previous?.weight ?? ''} ${t(
+                                    'today.kg'
+                                )}`.trim()}
+                                aria-label={t('today.weightLabel', {
+                                    n: number,
+                                })}
+                                disabled={!enabled}
+                                value={weight}
+                                onChange={(event) =>
+                                    setDraft({
+                                        weight: kilos(event.target.value),
+                                        reps,
+                                    })
+                                }
+                                className={`${inputClass} figure h-12 text-center text-lg`}
+                            />
+                            {weight !== '' && Number(weight) === 0 && (
+                                <BoxNote>{t('today.bodyweight')}</BoxNote>
+                            )}
+                        </div>
+                        <div className="note-box relative w-full min-w-0">
                             <input
                                 type="text"
                                 inputMode="numeric"
@@ -193,6 +202,7 @@ export function SetRow({
                                 }
                                 className={`${inputClass} figure h-12 text-center text-lg`}
                             />
+                            {isTimed(repMode) && <MinutesHint seconds={reps} />}
                             {done && saved?.effort ? (
                                 <EffortMark effort={saved.effort} />
                             ) : !reps && previous?.effort ? (

@@ -11,6 +11,7 @@
 
 import type { Translate } from '@/i18n/config';
 import { DROP_PERCENT, maxDigits, REST_SECONDS } from './constants';
+import { formatSeconds } from './reps';
 
 export const SET_KINDS = ['normal', 'drop', 'rest'] as const;
 export type SetKind = (typeof SET_KINDS)[number];
@@ -81,7 +82,9 @@ export function setFullLabel(set: KindedSet, t: Translate): string {
     if (kind === 'drop') {
         return value == null ? t('set.drop') : t('set.dropWith', { value });
     }
-    return value == null ? t('set.rest') : t('set.restWith', { value });
+    return value == null
+        ? t('set.rest')
+        : t('set.restWith', { value: formatSeconds(value, t) });
 }
 
 /**

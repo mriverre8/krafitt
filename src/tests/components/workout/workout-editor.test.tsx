@@ -11,6 +11,8 @@ import {
     waitFor,
     within,
 } from '@testing-library/react';
+import { en } from '@/i18n/en';
+import { I18nProvider } from '@/i18n/i18n-provider';
 import { useToastStore } from '@/store/toast';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -29,20 +31,20 @@ const toasts = () =>
 /** The editor lives inside a routine that is read-only until Edit is pressed,
     and every test below is about what editing can do. Read mode has its own
     tests at the end, which render without this. */
-const render = (ui: ReactNode) =>
-    rtlRender(
-        <EditModeContext
-            value={{
-                editing: true,
-                toggle: () => {},
-                discarded: 0,
-                dirtyDays: new Set<string>(),
-                setDirty: () => {},
-            }}
-        >
-            {withModals(ui)}
-        </EditModeContext>
-    );
+const inEditMode = (ui: ReactNode) => (
+    <EditModeContext
+        value={{
+            editing: true,
+            toggle: () => {},
+            discarded: 0,
+            dirtyDays: new Set<string>(),
+            setDirty: () => {},
+        }}
+    >
+        {withModals(ui)}
+    </EditModeContext>
+);
+const render = (ui: ReactNode) => rtlRender(inEditMode(ui));
 
 const workout = {
     id: 'w1',
@@ -387,6 +389,35 @@ describe('WorkoutEditor', () => {
         fireEvent.click(save());
         await waitFor(() => expect(technique).toHaveValue(''));
         expect(noBar()).toBeNull();
+        expect(toasts()).toEqual(['Changes saved']);
+    });
+
+    // Every revalidation hands the layout a fresh dictionary — same words, new
+    // object. A day that was saved earlier must not take that as a second save.
+    it('says the day was saved once, however often the page refreshes', async () => {
+        const editor = (dict: typeof en) => (
+            <I18nProvider
+                locale="en"
+                dict={dict}
+            >
+                <WorkoutEditor
+                    {...base}
+                    saveExercises={async () => ({
+                        ok: true as const,
+                        saved: workout.exercises,
+                    })}
+                />
+            </I18nProvider>
+        );
+        const { rerender } = render(editor(en));
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(save());
+        await waitFor(() => expect(toasts()).toEqual(['Changes saved']));
+
+        rerender(inEditMode(editor({ ...en })));
+        rerender(inEditMode(editor({ ...en })));
         expect(toasts()).toEqual(['Changes saved']);
     });
 
