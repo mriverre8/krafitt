@@ -10,6 +10,7 @@ import {
     sendRoutine,
     renameRoutine,
     renameWorkout,
+    reorderWorkouts,
     saveExercises,
     setActiveRoutine,
     setRoutineDuration,
@@ -336,6 +337,11 @@ export default async function RoutinePage({
                     saveExercises={saveExercises}
                     renameWorkout={renameWorkout}
                     onDeleteWorkout={locked ? undefined : deleteWorkout}
+                    reorderDays={
+                        locked || !owner
+                            ? undefined
+                            : reorderWorkouts.bind(null, routine.id)
+                    }
                 />
             </div>
         </EditModeProvider>

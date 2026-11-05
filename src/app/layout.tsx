@@ -64,7 +64,10 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                     locale={locale}
                     dict={dict}
                 >
-                    <header className="border-line bg-bg/80 sticky top-0 z-20 border-b backdrop-blur-md">
+                    <header
+                        data-chrome="top"
+                        className="border-line bg-bg/80 sticky top-0 z-20 border-b backdrop-blur-md"
+                    >
                         <NavBar
                             userId={user?.id ?? null}
                             userName={user?.name ?? null}

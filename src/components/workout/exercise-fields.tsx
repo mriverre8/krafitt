@@ -1,13 +1,7 @@
 'use client';
 
 import { useT } from '@/i18n/use-t';
-import {
-    DROP_PERCENT,
-    NAME_MAX,
-    REPS,
-    REST_SECONDS,
-    SETS,
-} from '@/lib/constants';
+import { NAME_MAX, SETS } from '@/lib/constants';
 import { emptySet, type ExerciseDraft, type SetDraft } from '@/lib/drafts';
 import {
     groupAt,
@@ -18,34 +12,26 @@ import {
 } from '@/lib/sets';
 import { isTimed, type RepMode } from '@/lib/reps';
 import type { ExerciseFault } from '@/lib/validate';
-import {
-    cardClass,
-    dashedActionClass,
-    numberClass,
-    removeButtonClass,
-    titleInputClass,
-    valueSlotClass,
-    wrongTitleInputClass,
-} from '@/lib/ui';
-import { Plus, Trash } from 'lucide-react';
-import { DropPercentMenu } from '@/components/workout/drop-percent-menu';
+import { cardClass, titleInputClass, wrongTitleInputClass } from '@/lib/ui';
+import { ExerciseFoot } from '@/components/workout/exercise-foot';
 import { ExerciseNameField } from '@/components/workout/exercise-name-field';
 import { RepModeSelect } from '@/components/workout/rep-mode-select';
-import { MinutesHint } from '@/components/workout/minutes-hint';
 import { RepsFields } from '@/components/workout/reps-fields';
-import { RemoveSubButton } from '@/components/workout/remove-sub-button';
 import { RowHead } from '@/components/workout/row-head';
 import { SetMenu } from '@/components/workout/set-menu';
+import { SubSetRow } from '@/components/workout/sub-set-row';
 import { TechniqueField } from '@/components/workout/technique-field';
+import { TechniqueInput } from '@/components/workout/technique-input';
+import { useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 const noFault = { min: false, max: false, value: false, technique: false };
 
-const valueLimits = { drop: DROP_PERCENT, rest: REST_SECONDS, normal: REPS };
-
 /**
- * One exercise of the day, in a card of its own. Holds no state: the whole day
- * is a single form, and its draft lives in the editor above so one Save covers
- * all of them. Every field can be left blank — the routine is validated as a
+ * One exercise of the day, in a card of its own. Holds none of the plan: the
+ * whole day is a single form, and its draft lives in the editor above so one
+ * Save covers all of them — all the card keeps is which set, if any, is having
+ * a custom technique written. Every field can be left blank — the routine is validated as a
  * whole before it can be activated.
  *
  * Two layers and only two: the fields, and one menu per row for everything you
@@ -68,6 +54,8 @@ export function ExerciseFields({
     onChange,
     onRemove,
     canRemove,
+    onMove,
+    isLast,
     suggestions = [],
 }: {
     exercise: ExerciseDraft;
@@ -81,6 +69,9 @@ export function ExerciseFields({
     onChange: (patch: Partial<ExerciseDraft>) => void;
     onRemove: () => void;
     canRemove: boolean;
+    /** One place up (-1) or down (1) the day. */
+    onMove: (step: -1 | 1) => void;
+    isLast: boolean;
 }) {
     const t = useT();
     // Labels carry the exercise number too: a day holds several of these, and
@@ -89,6 +80,32 @@ export function ExerciseFields({
     const places = setPlaces(exercise.sets);
     const groups = groupsOf(places);
     const full = exercise.sets.length >= SETS.max;
+    // The name the set Add would make gets: one group per working set, and
+    // drops and rest-pauses take no number of their own.
+    const nextSet = groups.length + 1;
+    // The set whose custom technique is being written, in place of its fields.
+    // Kept here rather than in the draft: nothing reaches the day until the
+    // name is confirmed.
+    const [writing, setWriting] = useState<{
+        at: number;
+        start: string;
+    } | null>(null);
+    const card = useRef<HTMLDivElement>(null);
+
+    /** Puts the set's fields back, taking the name if one was confirmed, and
+        hands the focus back to the technique beside the set — the input it
+        was in is gone. */
+    function stopWriting(setIndex: number, patch?: Partial<SetDraft>) {
+        flushSync(() => {
+            setWriting(null);
+            if (patch) updateSet(setIndex, patch);
+        });
+        card.current
+            ?.querySelector<HTMLButtonElement>(
+                `[data-set="${setIndex}"] button`
+            )
+            ?.focus();
+    }
 
     function updateSet(setIndex: number, patch: Partial<SetDraft>) {
         onChange({
@@ -116,6 +133,8 @@ export function ExerciseFields({
      * one shape `readPlan` refuses outright.
      */
     function removeSet(setIndex: number, count: number) {
+        // The rows shift up behind it, so what was being written goes too.
+        setWriting(null);
         onChange({
             sets: exercise.sets.filter(
                 (_, i) => i < setIndex || i >= setIndex + count
@@ -142,7 +161,8 @@ export function ExerciseFields({
 
     return (
         <div
-            className={`${cardClass} ${wrongAnywhere ? 'border-l-danger' : ''}`}
+            ref={card}
+            className={`${cardClass} pb-2 md:pb-3 ${wrongAnywhere ? 'border-l-danger' : ''}`}
         >
             <div className="relative mb-4">
                 <ExerciseNameField
@@ -156,23 +176,8 @@ export function ExerciseFields({
                     maxLength={NAME_MAX}
                     className={`${
                         fault?.name ? wrongTitleInputClass : titleInputClass
-                    } display pr-12 text-2xl md:pr-10 [&::-webkit-search-cancel-button]:appearance-none`}
+                    } display text-2xl [&::-webkit-search-cancel-button]:appearance-none`}
                 />
-                <button
-                    type="button"
-                    disabled={!canRemove}
-                    onClick={onRemove}
-                    aria-label={t('exercise.delete', {
-                        exercise: exerciseNumber,
-                    })}
-                    title={t('exercise.removeShort')}
-                    className={`${removeButtonClass} absolute top-1/2 right-0 -translate-y-1/2`}
-                >
-                    <Trash
-                        size={16}
-                        aria-hidden
-                    />
-                </button>
             </div>
 
             {groups.map((group, position) => {
@@ -186,11 +191,33 @@ export function ExerciseFields({
                 return (
                     <div
                         key={setIndex}
-                        className={
-                            position > 0 ? 'border-line mt-5 border-t pt-2' : ''
-                        }
+                        data-set={setIndex}
+                        className={position > 0 ? 'mt-6' : ''}
                     >
-                        <RowHead label={t('today.set', { n: setLabel })}>
+                        <RowHead
+                            label={t('today.set', { n: setLabel })}
+                            beside={
+                                <TechniqueField
+                                    exerciseNumber={exerciseNumber}
+                                    setLabel={setLabel}
+                                    technique={set.technique}
+                                    wrong={wrong.technique}
+                                    onChange={(technique) =>
+                                        // A preset, or none, picked while a
+                                        // name was being written ends that.
+                                        writing?.at === setIndex
+                                            ? stopWriting(setIndex, {
+                                                  technique,
+                                              })
+                                            : updateSet(setIndex, { technique })
+                                    }
+                                    onWrite={(start) =>
+                                        setWriting({ at: setIndex, start })
+                                    }
+                                    writing={writing?.at === setIndex}
+                                />
+                            }
+                        >
                             <SetMenu
                                 exerciseNumber={exerciseNumber}
                                 setLabel={setLabel}
@@ -201,157 +228,73 @@ export function ExerciseFields({
                                 onRemove={() => removeSet(setIndex, count)}
                             />
                         </RowHead>
-                        <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                            <RepModeSelect
-                                exerciseNumber={exerciseNumber}
-                                setLabel={setLabel}
-                                mode={set.mode}
-                                onChange={(mode) => setMode(setIndex, mode)}
-                            />
-                            <RepsFields
-                                exerciseNumber={exerciseNumber}
-                                setLabel={setLabel}
-                                mode={set.mode}
-                                repMin={set.repMin}
-                                repMax={set.repMax}
-                                wrong={wrong}
-                                onChange={(patch) => updateSet(setIndex, patch)}
-                            />
-                            <TechniqueField
-                                exerciseNumber={exerciseNumber}
-                                setLabel={setLabel}
-                                technique={set.technique}
-                                wrong={wrong.technique}
-                                onChange={(technique) =>
-                                    updateSet(setIndex, { technique })
-                                }
-                            />
+                        <div className="mt-2.5">
+                            {writing?.at === setIndex ? (
+                                <TechniqueInput
+                                    exerciseNumber={exerciseNumber}
+                                    setLabel={setLabel}
+                                    start={writing.start}
+                                    onConfirm={(technique) =>
+                                        stopWriting(setIndex, { technique })
+                                    }
+                                    onCancel={() => stopWriting(setIndex)}
+                                />
+                            ) : (
+                                <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                                    <RepModeSelect
+                                        exerciseNumber={exerciseNumber}
+                                        setLabel={setLabel}
+                                        mode={set.mode}
+                                        onChange={(mode) =>
+                                            setMode(setIndex, mode)
+                                        }
+                                    />
+                                    <RepsFields
+                                        exerciseNumber={exerciseNumber}
+                                        setLabel={setLabel}
+                                        mode={set.mode}
+                                        repMin={set.repMin}
+                                        repMax={set.repMax}
+                                        wrong={wrong}
+                                        onChange={(patch) =>
+                                            updateSet(setIndex, patch)
+                                        }
+                                    />
+                                </div>
+                            )}
                         </div>
 
-                        {group.subs.map((subIndex) => {
-                            const sub = exercise.sets[subIndex];
-                            const place = places[subIndex];
-                            const subWrong = fault?.sets[subIndex] ?? noFault;
-                            const subName = setName(place);
-                            const limit = valueLimits[place.kind];
-
-                            return (
-                                <div
-                                    key={subIndex}
-                                    className="mt-1"
-                                >
-                                    <RowHead
-                                        label={t(
-                                            place.kind === 'drop'
-                                                ? 'set.drop'
-                                                : 'set.rest'
-                                        )}
-                                        sub
-                                    >
-                                        <RemoveSubButton
-                                            exerciseNumber={exerciseNumber}
-                                            setLabel={subName}
-                                            onRemove={() =>
-                                                removeSet(subIndex, 1)
-                                            }
-                                        />
-                                    </RowHead>
-                                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                                        <RepModeSelect
-                                            exerciseNumber={exerciseNumber}
-                                            setLabel={subName}
-                                            mode={sub.mode}
-                                            onChange={(mode) =>
-                                                setMode(subIndex, mode)
-                                            }
-                                        />
-                                        <RepsFields
-                                            exerciseNumber={exerciseNumber}
-                                            setLabel={subName}
-                                            mode={sub.mode}
-                                            repMin={sub.repMin}
-                                            repMax={sub.repMax}
-                                            wrong={subWrong}
-                                            onChange={(patch) =>
-                                                updateSet(subIndex, patch)
-                                            }
-                                        />
-                                        {place.kind === 'drop' ? (
-                                            <DropPercentMenu
-                                                exerciseNumber={exerciseNumber}
-                                                setLabel={subName}
-                                                value={sub.value}
-                                                onChange={(value) =>
-                                                    updateSet(subIndex, {
-                                                        value,
-                                                    })
-                                                }
-                                            />
-                                        ) : (
-                                            <div
-                                                className={`note-box relative ${valueSlotClass}`}
-                                            >
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={sub.value}
-                                                    onChange={(event) =>
-                                                        updateSet(subIndex, {
-                                                            // Digits only, as in `RepsFields`.
-                                                            value: event.target.value
-                                                                .replace(
-                                                                    /\D/g,
-                                                                    ''
-                                                                )
-                                                                .slice(
-                                                                    0,
-                                                                    limit.digits
-                                                                ),
-                                                        })
-                                                    }
-                                                    placeholder={t(
-                                                        'set.restUnit'
-                                                    )}
-                                                    aria-label={t(
-                                                        'exercise.setValue',
-                                                        {
-                                                            exercise:
-                                                                exerciseNumber,
-                                                            label: subName,
-                                                        }
-                                                    )}
-                                                    className={`${numberClass(
-                                                        subWrong.value
-                                                    )} w-full`}
-                                                />
-                                                <MinutesHint
-                                                    seconds={sub.value}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {group.subs.map((subIndex) => (
+                            <SubSetRow
+                                key={subIndex}
+                                exerciseNumber={exerciseNumber}
+                                // Only drops and rest-pauses hang off a set.
+                                kind={places[subIndex].kind as SubKind}
+                                name={setName(places[subIndex])}
+                                set={exercise.sets[subIndex]}
+                                wrong={fault?.sets[subIndex] ?? noFault}
+                                onMode={(mode) => setMode(subIndex, mode)}
+                                onChange={(patch) => updateSet(subIndex, patch)}
+                                onRemove={() => removeSet(subIndex, 1)}
+                            />
+                        ))}
                     </div>
                 );
             })}
 
-            <button
-                type="button"
-                disabled={full}
-                onClick={() => onChange({ sets: [...exercise.sets, emptySet] })}
-                aria-label={t('exercise.addSetLabel', {
-                    exercise: exerciseNumber,
-                })}
-                className={`${dashedActionClass} mt-8 w-full py-3.5`}
-            >
-                <Plus
-                    size={14}
-                    aria-hidden
-                />
-                {t('exercise.addSet')}
-            </button>
+            <ExerciseFoot
+                exerciseNumber={exerciseNumber}
+                nextSet={nextSet}
+                full={full}
+                onAddSet={() =>
+                    onChange({ sets: [...exercise.sets, emptySet] })
+                }
+                isFirst={index === 0}
+                isLast={isLast}
+                onMove={onMove}
+                canRemove={canRemove}
+                onRemove={onRemove}
+            />
         </div>
     );
 }

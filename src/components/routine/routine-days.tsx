@@ -24,6 +24,7 @@ export function RoutineDays({
     saveExercises,
     renameWorkout,
     onDeleteWorkout,
+    reorderDays,
 }: {
     days: RoutineDay[];
     addDay?: FormAction;
@@ -35,13 +36,37 @@ export function RoutineDays({
     ) => Promise<FormState>;
     /** Absent once the routine has started: its days are fixed from then on. */
     onDeleteWorkout?: (workoutId: string) => Promise<void>;
+    /** Same: the cursor walks the days in their order. */
+    reorderDays?: (ids: string[]) => Promise<void>;
 }) {
     const baseId = useId();
     const dirtyDays = useDirtyDays();
     const [selected, setSelected] = useState(0);
+
+    // A day just added is the one to fill in, so it comes up on screen as
+    // soon as the page brings it back. Adjusted while rendering rather than in
+    // an effect, so there is no frame with the old day still showing.
+    const ids = days.map((day) => day.id).join();
+    const [lastIds, setLastIds] = useState(ids);
+    if (ids !== lastIds) {
+        setLastIds(ids);
+        const before = lastIds.split(',');
+        const added = days.findIndex((day) => !before.includes(day.id));
+        if (added >= 0) setSelected(added);
+    }
+
     const index = Math.min(selected, Math.max(days.length - 1, 0));
 
     if (days.length === 0) return null;
+
+    // The day on screen stays on screen once the days are moved, wherever it
+    // has gone — the tabs are by position, and that position now holds another.
+    const onReorder =
+        reorderDays &&
+        (async (ids: string[]) => {
+            await reorderDays(ids);
+            setSelected(Math.max(ids.indexOf(days[index].id), 0));
+        });
 
     return (
         <div className="space-y-6">
@@ -55,6 +80,7 @@ export function RoutineDays({
                 index={index}
                 baseId={baseId}
                 addDay={addDay}
+                onReorder={onReorder}
                 onSelect={setSelected}
             />
 

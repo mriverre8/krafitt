@@ -5,6 +5,7 @@ import {
     logSet,
     pickDay,
     renameWorkout,
+    reorderWorkouts,
     saveRoutine,
     sendRoutine,
     setActiveRoutine,
@@ -28,6 +29,8 @@ const updateSessions = vi.fn();
 const findSession = vi.fn();
 const findSessionBy = vi.fn();
 const findWorkouts = vi.fn();
+const updateWorkout = vi.fn();
+const requireUnstarted = vi.fn();
 const upsertRequest = vi.fn();
 const requireRoutine = vi.fn();
 const routineDetail = vi.fn();
@@ -49,7 +52,10 @@ vi.mock('@/lib/db', () => ({
             create: (...args: unknown[]) => create(...args),
         },
         setLog: { count: (...args: unknown[]) => countLogs(...args) },
-        workout: { findMany: (...args: unknown[]) => findWorkouts(...args) },
+        workout: {
+            findMany: (...args: unknown[]) => findWorkouts(...args),
+            update: (...args: unknown[]) => updateWorkout(...args),
+        },
         workoutSession: {
             upsert: (...args: unknown[]) => upsertSession(...args),
             deleteMany: (...args: unknown[]) => deleteSessions(...args),
@@ -68,6 +74,7 @@ vi.mock('@/lib/db', () => ({
 vi.mock('@/lib/access', () => ({
     requireRoutine: (...args: unknown[]) => requireRoutine(...args),
     requireEditableRoutine: (...args: unknown[]) => requireRoutine(...args),
+    requireUnstartedRoutine: (...args: unknown[]) => requireUnstarted(...args),
     routineIdOfWorkout: async () => 'r2',
 }));
 // The real `weekChoices`: what can be picked is the rule under test.
@@ -126,6 +133,8 @@ beforeEach(() => {
         findSession,
         findSessionBy,
         findWorkouts,
+        updateWorkout,
+        requireUnstarted,
         upsertRequest,
         requireRoutine,
         routineDetail,
@@ -739,5 +748,49 @@ describe('saveRoutine', () => {
             kind: 'workout',
             creatorId: 'ada',
         });
+    });
+});
+
+describe('reorderWorkouts', () => {
+    beforeEach(() => {
+        findWorkouts.mockResolvedValue([
+            { id: 'w1' },
+            { id: 'w2' },
+            { id: 'w3' },
+        ]);
+        updateWorkout.mockImplementation((args: unknown) => args);
+    });
+
+    // The cursor walks the days by their order, so they move only before the
+    // routine has started — the same guard adding or deleting one goes through.
+    it('asks for a routine not yet started', async () => {
+        requireUnstarted.mockRejectedValue(new Error('started'));
+        await expect(reorderWorkouts('r2', ['w2', 'w1', 'w3'])).rejects.toThrow(
+            'started'
+        );
+        expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('numbers every day 0..n-1 in the order given, in one go', async () => {
+        await reorderWorkouts('r2', ['w3', 'w1', 'w2']);
+        expect(requireUnstarted).toHaveBeenCalledWith('r2', 'ada');
+        expect(transaction).toHaveBeenCalledWith([
+            { where: { id: 'w3' }, data: { order: 0 } },
+            { where: { id: 'w1' }, data: { order: 1 } },
+            { where: { id: 'w2' }, data: { order: 2 } },
+        ]);
+    });
+
+    // A day added or deleted from another screen since the list was drawn:
+    // the whole order is turned away rather than half of it saved.
+    it("turns away a list that is not the routine's days exactly", async () => {
+        for (const ids of [
+            ['w1', 'w2'],
+            ['w1', 'w2', 'w9'],
+            ['w1', 'w1', 'w2'],
+            ['w1', 'w2', 'w3', 'w4'],
+        ])
+            await expect(reorderWorkouts('r2', ids)).rejects.toThrow();
+        expect(transaction).not.toHaveBeenCalled();
     });
 });

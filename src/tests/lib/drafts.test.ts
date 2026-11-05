@@ -1,4 +1,4 @@
-import { emptyExercise, emptySet, toDrafts } from '@/lib/drafts';
+import { emptyExercise, emptySet, moveExercise, toDrafts } from '@/lib/drafts';
 import { describe, expect, it } from 'vitest';
 
 describe('toDrafts', () => {
@@ -110,5 +110,21 @@ describe('toDrafts', () => {
                 },
             ])[0].sets[0].mode
         ).toBe('range');
+    });
+});
+
+describe('moveExercise', () => {
+    const day = ['A', 'B', 'C'].map((name) => ({ ...emptyExercise, name }));
+    const names = (drafts: typeof day) => drafts.map((draft) => draft.name);
+
+    it('moves one exercise up or down, the rest closing ranks', () => {
+        expect(names(moveExercise(day, 2, 1))).toEqual(['A', 'C', 'B']);
+        expect(names(moveExercise(day, 0, 1))).toEqual(['B', 'A', 'C']);
+        expect(names(moveExercise(day, 0, 2))).toEqual(['B', 'C', 'A']);
+    });
+
+    it('leaves the day alone when the move runs off either end', () => {
+        expect(moveExercise(day, 0, -1)).toBe(day);
+        expect(moveExercise(day, 2, 3)).toBe(day);
     });
 });

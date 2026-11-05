@@ -4,7 +4,7 @@ import { useT } from '@/i18n/use-t';
 import type { FormAction } from '@/lib/forms';
 import { dashedActionClass, iconButtonClass } from '@/lib/ui';
 import { showModal } from '@/store/modal';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRef } from 'react';
 import { useEditMode } from '@/components/routine/edit-mode';
 
@@ -20,12 +20,15 @@ export function DaySwitcher({
     index,
     baseId,
     addDay,
+    onReorder,
     onSelect,
 }: {
     days: DayTab[];
     index: number;
     baseId: string;
     addDay?: FormAction;
+    /** Absent once the routine has started: its days are fixed from then on. */
+    onReorder?: (ids: string[]) => Promise<void>;
     onSelect: (index: number) => void;
 }) {
     const t = useT();
@@ -61,6 +64,28 @@ export function DaySwitcher({
                     {t('routine.workouts')}
                 </h2>
                 <div className="flex items-center">
+                    {editing && onReorder && days.length > 1 && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                showModal('reorderDays', {
+                                    days: days.map(({ id, name }) => ({
+                                        id,
+                                        name,
+                                    })),
+                                    onSave: onReorder,
+                                })
+                            }
+                            aria-label={t('routine.reorderDays')}
+                            title={t('routine.reorderDays')}
+                            className={iconButtonClass}
+                        >
+                            <ArrowUpDown
+                                size={18}
+                                aria-hidden
+                            />
+                        </button>
+                    )}
                     <button
                         type="button"
                         disabled={index === 0}

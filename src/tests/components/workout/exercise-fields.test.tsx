@@ -40,6 +40,8 @@ const fields = (props: Partial<Parameters<typeof ExerciseFields>[0]> = {}) =>
             onChange={() => {}}
             onRemove={() => {}}
             canRemove
+            onMove={() => {}}
+            isLast={false}
             {...props}
         />
     );
@@ -128,7 +130,7 @@ describe('ExerciseFields', () => {
         const onChange = vi.fn();
         fields({ onChange });
         fireEvent.click(
-            screen.getByRole('button', { name: 'Add set to exercise 1' })
+            screen.getByRole('button', { name: 'Add set 3 to exercise 1' })
         );
         expect(onChange.mock.calls[0][0].sets).toHaveLength(3);
 
@@ -137,6 +139,24 @@ describe('ExerciseFields', () => {
             screen.getByRole('button', { name: 'Exercise 1, remove set 2' })
         );
         expect(onChange.mock.calls[1][0].sets).toEqual([draft.sets[0]]);
+    });
+
+    // Add says which set it would make. A drop or rest-pause is no set of its
+    // own, so one hanging off set 2 leaves the next one still 3.
+    it('names the set it would add, counting working sets only', () => {
+        const add = () =>
+            screen.getByRole('button', { name: /^Add set \d+ to exercise 1$/ });
+        const { unmount } = fields();
+        expect(add()).toHaveTextContent('Add set 3');
+        unmount();
+
+        fields({
+            exercise: {
+                ...draft,
+                sets: [...draft.sets, { ...emptySet, kind: 'drop' }],
+            },
+        });
+        expect(add()).toHaveTextContent('Add set 3');
     });
 
     // One mark per row, in the same place on every one of them — the working
@@ -412,8 +432,27 @@ describe('ExerciseFields', () => {
         expect(screen.getByText('to')).toBeInTheDocument();
     });
 
-    // Delete is all this card can be told, so it is a mark on the name rather
-    // than a menu holding one row.
+    // Moving and deleting sit side by side at the foot of the card, one press
+    // each, so the name keeps the whole width of the head.
+    it('moves the card up or down, never off either end of the day', () => {
+        const onMove = vi.fn();
+        const button = (name: string) => screen.getByRole('button', { name });
+
+        const { unmount } = fields({ index: 1, onMove });
+        fireEvent.click(button('Move exercise 2 up'));
+        fireEvent.click(button('Move exercise 2 down'));
+        expect(onMove.mock.calls).toEqual([[-1], [1]]);
+        unmount();
+
+        fields({ index: 1, isLast: true });
+        expect(button('Move exercise 2 up')).toBeEnabled();
+        expect(button('Move exercise 2 down')).toBeDisabled();
+        cleanup();
+
+        fields({ index: 0 });
+        expect(button('Move exercise 1 up')).toBeDisabled();
+    });
+
     it('removes the whole exercise, unless it is the only one', () => {
         const onRemove = vi.fn();
         const del = () =>
@@ -484,113 +523,103 @@ describe('ExerciseFields', () => {
             ...draft,
             sets: [{ ...draft.sets[0], technique }],
         });
-        // The slot is always on the row, and the row's own menu no longer
-        // carries any of this: the field itself is the way in.
-        const openMenu = () => openTechnique('1');
+        // Picked beside the set's name, not from a slot on its row.
+        const pick = (name: string) => {
+            openTechnique('1');
+            fireEvent.click(screen.getByRole('button', { name }));
+        };
+        const box = () =>
+            screen.queryByLabelText('Exercise 1, technique set 1');
+        const reps = () =>
+            screen.queryByLabelText('Exercise 1, min reps set 1');
 
-        it('holds a slot on the row even when the set has none', () => {
+        it('offers to add one on the line the set is named on', () => {
             fields({ exercise: one(null) });
-            expect(
-                screen.getByRole('button', {
-                    name: 'Exercise 1, set 1 technique',
-                })
-            ).toHaveTextContent('Unspecified technique');
-            expect(
-                screen.queryByLabelText('Exercise 1, technique set 1')
-            ).not.toBeInTheDocument();
-
-            // Nothing to take off yet, so the list stops at Custom.
-            openMenu();
-            expect(rowsOf('Exercise 1, set 1 technique')).toEqual([
-                'Warm-up set',
-                'Straight sets',
-                'Top set',
-                'Back off',
-                'Custom',
-            ]);
+            const add = screen.getByRole('button', {
+                name: 'Exercise 1, set 1 technique',
+            });
+            expect(add).toHaveTextContent('Add technique');
+            expect(screen.getByText('Set 1').parentElement).toContainElement(
+                add
+            );
+            expect(box()).not.toBeInTheDocument();
         });
 
-        it('takes what the menu was asked for, Custom taking nothing', () => {
-            const onChange = vi.fn();
-            fields({ exercise: one(null), onChange });
-            openMenu();
-            fireEvent.click(screen.getByRole('button', { name: 'Top set' }));
-            expect(onChange.mock.calls[0][0].sets[0].technique).toBe('Top set');
-
-            openMenu();
-            fireEvent.click(screen.getByRole('button', { name: 'Custom' }));
-            expect(onChange.mock.calls[1][0].sets[0].technique).toBe('');
-        });
-
-        // One off the list is shown on the slot itself; anything else is a
-        // field to write in, and Custom opens one by handing the set a blank.
-        it('shows a listed one and gives a written one a field', () => {
-            const { unmount } = fields({ exercise: one('Top set') });
-            expect(
-                screen.getByRole('button', {
-                    name: 'Exercise 1, set 1 technique',
-                })
-            ).toHaveTextContent('Top set');
-            expect(
-                screen.queryByLabelText('Exercise 1, technique set 1')
-            ).not.toBeInTheDocument();
-            unmount();
-
-            fields({ exercise: one('My own') });
-            expect(
-                screen.getByLabelText('Exercise 1, technique set 1')
-            ).toHaveValue('My own');
-            expect(
-                screen.queryByRole('button', {
-                    name: 'Exercise 1, set 1 technique',
-                })
-            ).not.toBeInTheDocument();
-        });
-
-        // Swapping one is picking again from the same list, and the way off
-        // the set only appears once there is one to take off.
-        it('swaps or drops a listed one from the same menu', () => {
+        it('takes a listed one, or takes it off again', () => {
             const onChange = vi.fn();
             fields({ exercise: one('Top set'), onChange });
-
-            openMenu();
-            // The same word the drop's per cent uses for the same move: back
-            // to nothing, which destroys nothing.
-            expect(rowsOf('Exercise 1, set 1 technique')).toContain(
-                'Unspecified'
-            );
-
-            fireEvent.click(screen.getByRole('button', { name: 'Back off' }));
+            pick('Back off');
             expect(onChange.mock.calls[0][0].sets[0].technique).toBe(
                 'Back off'
             );
 
-            openMenu();
-            fireEvent.click(
-                screen.getByRole('button', {
-                    name: 'Exercise 1, remove technique set 1',
-                })
-            );
+            pick('Exercise 1, remove technique set 1');
             expect(onChange).toHaveBeenLastCalledWith({
                 sets: [{ ...draft.sets[0], technique: null }],
             });
         });
 
-        it('hands a written one back to the empty slot from its own mark', () => {
+        // Custom swaps the set's fields for one box and a confirm, and the set
+        // only gets its technique once the name is confirmed.
+        it('writes a custom one in place of the reps, then puts them back', () => {
             const onChange = vi.fn();
-            fields({ exercise: one('My own'), onChange });
+            fields({ exercise: one(null), onChange });
+            pick('Custom');
+            expect(reps()).not.toBeInTheDocument();
+            expect(box()).toHaveFocus();
+            expect(onChange).not.toHaveBeenCalled();
+
+            fireEvent.change(box()!, { target: { value: 'Cluster' } });
             fireEvent.click(
                 screen.getByRole('button', {
-                    name: 'Exercise 1, remove technique set 1',
+                    name: 'Exercise 1, confirm technique set 1',
                 })
             );
-            expect(onChange).toHaveBeenLastCalledWith({
-                sets: [{ ...draft.sets[0], technique: null }],
-            });
+            expect(onChange.mock.calls[0][0].sets[0].technique).toBe('Cluster');
+            expect(box()).not.toBeInTheDocument();
+            expect(reps()).toBeInTheDocument();
+            // The box it was in is gone: the focus goes back to the technique.
+            expect(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, set 1 technique',
+                })
+            ).toHaveFocus();
         });
 
-        // Saving a blank one is allowed; it is the routine that reports it.
-        it('is marked once it has been added and left blank', () => {
+        it('says Custom while writing, and ends it on picking a preset', () => {
+            const onChange = vi.fn();
+            fields({ exercise: one(null), onChange });
+            pick('Custom');
+            expect(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, set 1 technique',
+                })
+            ).toHaveTextContent('Custom');
+
+            pick('Top set');
+            expect(onChange.mock.calls[0][0].sets[0].technique).toBe('Top set');
+            expect(box()).not.toBeInTheDocument();
+            expect(reps()).toBeInTheDocument();
+        });
+
+        it('lets a custom one go without touching the set', () => {
+            const onChange = vi.fn();
+            fields({ exercise: one('Top set'), onChange });
+            pick('Custom');
+            expect(box()).toHaveValue('');
+            fireEvent.change(box()!, { target: { value: 'Cluster' } });
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: 'Exercise 1, cancel technique set 1',
+                })
+            );
+            expect(onChange).not.toHaveBeenCalled();
+            expect(reps()).toBeInTheDocument();
+        });
+
+        // A blank one can still come from a save made before Custom asked for
+        // a name; the routine reports it and the technique is marked.
+        it('is marked once the routine reports it', () => {
             fields({
                 exercise: one(''),
                 fault: {
@@ -606,8 +635,10 @@ describe('ExerciseFields', () => {
                 },
             });
             expect(
-                screen.getByLabelText('Exercise 1, technique set 1')
-            ).toHaveClass('border-danger');
+                screen.getByRole('button', {
+                    name: 'Exercise 1, set 1 technique',
+                })
+            ).toHaveClass('text-danger');
         });
     });
 

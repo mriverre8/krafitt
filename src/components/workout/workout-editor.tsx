@@ -8,45 +8,36 @@ import {
     type ExerciseFault,
     type Problem,
 } from '@/lib/validate';
-import {
-    cardClass,
-    dashedActionClass,
-    ghostClass,
-    labelClass,
-    menuDangerClass,
-    menuItemClass,
-    primaryClass,
-    stickyBarClass,
-} from '@/lib/ui';
-import { showModal } from '@/store/modal';
-import {
-    Ellipsis,
-    Plus,
-    Save,
-    Trash,
-    TriangleAlert,
-    Type,
-    Undo2,
-} from 'lucide-react';
+import { dashedActionClass } from '@/lib/ui';
+import { Plus } from 'lucide-react';
 import {
     startTransition,
     useActionState,
     useEffect,
     useEffectEvent,
+    useRef,
     useState,
     type ReactNode,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { sameExercise } from '@/lib/history';
 import { toast } from '@/store/toast';
-import { ActionButton } from '@/components/ui/action-button';
-import { Dropdown } from '@/components/ui/dropdown';
 import { useDiscardSignal, useEditMode } from '@/components/routine/edit-mode';
-import { emptyExercise, toDrafts, type ExerciseDraft } from '@/lib/drafts';
+import {
+    emptyExercise,
+    moveExercise,
+    toDrafts,
+    type ExerciseDraft,
+} from '@/lib/drafts';
+import { swap } from '@/lib/swap';
+import { DayHeader } from '@/components/workout/day-header';
 import { ExerciseFields } from '@/components/workout/exercise-fields';
 import {
     blankExercise,
     ExercisePreview,
 } from '@/components/workout/exercise-preview';
+import { ProblemsCard } from '@/components/workout/problems-card';
+import { SaveBar } from '@/components/workout/save-bar';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 /**
@@ -101,9 +92,7 @@ export function WorkoutEditor({
         (name) => !drafts.some((draft) => sameExercise(draft.name, name))
     );
     const [highlight, setHighlight] = useState(false);
-    const toggleLabel = t(
-        highlight ? 'validate.hideFields' : 'validate.showFields'
-    );
+    const list = useRef<HTMLDivElement>(null);
 
     const showProblems = editing && problems.length > 0;
 
@@ -162,6 +151,53 @@ export function WorkoutEditor({
             : undefined;
     }
 
+    /**
+     * The cards are keyed by position, so after a move the focus would stay
+     * on the button in the slot it was pressed in, now on someone else's card.
+     * The new order is committed at once and the focus taken to the card that
+     * moved — onto its other arrow when it has reached the end of the day and
+     * this one has gone dead. The page itself stays where it is: the focus
+     * moves without scrolling, and the card slides away from under the
+     * pointer rather than the page jumping after it.
+     *
+     * The two cards slide past each other (`swap`). Being keyed by position,
+     * they cannot carry a name of their own exercise, so the pair is named by
+     * hand: the moving one's name passes from its old slot to its new one, and
+     * the names go once the slide is over.
+     */
+    function move(index: number, step: -1 | 1) {
+        const to = index + step;
+        const cards = list.current?.children;
+        const name = (at: number, value: string) => {
+            const card = cards?.[at] as HTMLElement | undefined;
+            card?.style.setProperty('view-transition-name', value);
+            card?.style.setProperty('view-transition-class', value && 'swap');
+        };
+        name(index, 'exercise-moving');
+        name(to, 'exercise-other');
+
+        swap(() => {
+            flushSync(() =>
+                setDrafts((current) => moveExercise(current, index, to))
+            );
+            name(to, 'exercise-moving');
+            name(index, 'exercise-other');
+
+            const arrows = step < 0 ? ['up', 'down'] : ['down', 'up'];
+            const button = arrows
+                .map((arrow) =>
+                    cards?.[to]?.querySelector<HTMLButtonElement>(
+                        `[data-move="${arrow}"]`
+                    )
+                )
+                .find((button) => button && !button.disabled);
+            button?.focus({ preventScroll: true });
+        }).then(() => {
+            name(index, '');
+            name(to, '');
+        });
+    }
+
     function update(index: number, patch: Partial<ExerciseDraft>) {
         setDrafts((current) =>
             current.map((draft, i) =>
@@ -190,109 +226,29 @@ export function WorkoutEditor({
     return (
         <div>
             {onRenameWorkout && (
-                <div className="flex items-center justify-between gap-3">
-                    <h3 className="display line-clamp-2 min-w-0 text-4xl leading-none">
-                        {workout.name}
-                    </h3>
-                    {editing && (
-                        <Dropdown
-                            label={t('routine.dayOptions')}
-                            icon={
-                                <Ellipsis
-                                    size={18}
-                                    aria-hidden
-                                />
-                            }
-                        >
-                            {(close) => (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            close();
-                                            showModal('rename', {
-                                                name: workout.name,
-                                                rename: onRenameWorkout,
-                                                title: t('routine.renameDay'),
-                                                label: t('routine.dayLabel'),
-                                            });
-                                        }}
-                                        className={menuItemClass}
-                                    >
-                                        <Type
-                                            size={14}
-                                            aria-hidden
-                                        />
-                                        {t('routine.renameDay')}
-                                    </button>
-                                    {onDeleteWorkout && (
-                                        <ActionButton
-                                            action={() =>
-                                                onDeleteWorkout(workout.id)
-                                            }
-                                            confirm={{
-                                                title: t('routine.deleteDay'),
-                                                message: t(
-                                                    'routine.deleteDayConfirm',
-                                                    { name: workout.name }
-                                                ),
-                                            }}
-                                            className={menuDangerClass}
-                                        >
-                                            <Trash
-                                                size={14}
-                                                aria-hidden
-                                            />
-                                            {t('routine.deleteDay')}
-                                        </ActionButton>
-                                    )}
-                                </>
-                            )}
-                        </Dropdown>
-                    )}
-                </div>
+                <DayHeader
+                    name={workout.name}
+                    editing={editing}
+                    onRename={onRenameWorkout}
+                    onDelete={
+                        onDeleteWorkout && (() => onDeleteWorkout(workout.id))
+                    }
+                />
             )}
 
             {showProblems && (
-                <div
-                    className={`${cardClass} border-l-danger ${onRenameWorkout ? 'mt-4' : ''}`}
-                >
-                    <div className="text-danger flex items-center gap-2">
-                        <TriangleAlert
-                            size={16}
-                            aria-hidden
-                            className="shrink-0"
-                        />
-                        <p className="eyebrow">
-                            {problems.length === 1
-                                ? t('validate.problem')
-                                : t('validate.problems', {
-                                      n: problems.length,
-                                  })}
-                        </p>
-                        <button
-                            type="button"
-                            onClick={() => setHighlight((shown) => !shown)}
-                            aria-pressed={highlight}
-                            className={`${labelClass} hover:text-pulse ml-auto shrink-0 py-1 transition-colors`}
-                        >
-                            {toggleLabel}
-                        </button>
-                    </div>
-                    <ul className="text-muted mt-3 space-y-1.5 text-sm">
-                        {problems.map(({ where, what }, index) => (
-                            <li key={index}>
-                                <span className="text-ink font-semibold">
-                                    {where}
-                                </span>
-                                : {what}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <ProblemsCard
+                    problems={problems}
+                    highlight={highlight}
+                    onToggle={() => setHighlight((shown) => !shown)}
+                    className={onRenameWorkout ? 'mt-4' : ''}
+                />
             )}
 
-            <div className="mt-4 space-y-4">
+            <div
+                ref={list}
+                className="mt-4 space-y-4"
+            >
                 {editing
                     ? drafts.map((draft, index) => (
                           <ExerciseFields
@@ -308,6 +264,8 @@ export function WorkoutEditor({
                                   )
                               }
                               canRemove={drafts.length > 1}
+                              onMove={(step) => move(index, step)}
+                              isLast={index === drafts.length - 1}
                           />
                       ))
                     : server.map((exercise) => (
@@ -340,38 +298,11 @@ export function WorkoutEditor({
             </div>
 
             {editing && dirty && (
-                <div className={stickyBarClass}>
-                    <button
-                        type="button"
-                        disabled={pending}
-                        onClick={() => setDrafts(fresh(workout.exercises))}
-                        aria-label={t('exercise.undo')}
-                        className={`${ghostClass} flex flex-1 items-center justify-center gap-1.5`}
-                    >
-                        <Undo2
-                            size={14}
-                            aria-hidden
-                        />
-                        <span className="md:hidden">
-                            {t('exercise.undoShort')}
-                        </span>
-                        <span className="hidden md:inline">
-                            {t('exercise.undo')}
-                        </span>
-                    </button>
-                    <button
-                        type="button"
-                        disabled={pending}
-                        onClick={save}
-                        className={`${primaryClass} flex flex-2 items-center justify-center gap-2`}
-                    >
-                        <Save
-                            size={16}
-                            aria-hidden
-                        />
-                        {t('exercise.saveChanges')}
-                    </button>
-                </div>
+                <SaveBar
+                    pending={pending}
+                    onUndo={() => setDrafts(fresh(workout.exercises))}
+                    onSave={save}
+                />
             )}
         </div>
     );

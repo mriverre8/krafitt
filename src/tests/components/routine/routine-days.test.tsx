@@ -8,8 +8,8 @@ import {
 } from '@/components/routine/routine-days';
 import { ModalHost } from '@/components/modal/modal-host';
 import { closeModal } from '@/store/modal';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { noopAction } from '@/tests/setup-helpers';
 import type { Problem } from '@/lib/validate';
 
@@ -128,6 +128,84 @@ describe('RoutineDays', () => {
         expect(
             screen.queryByRole('button', { name: 'Save' })
         ).not.toBeInTheDocument();
+    });
+
+    // Beside the chevrons, while editing a routine whose days can still move.
+    it('offers to reorder the days in edit mode, keeping the day on screen', async () => {
+        const reorderDays = vi.fn().mockResolvedValue(undefined);
+        const { rerender } = renderEditing({ reorderDays });
+        const reorder = () =>
+            screen.queryByRole('button', { name: 'Reorder days' });
+        expect(reorder()).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+        fireEvent.click(reorder()!);
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'Move Push A down' })
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+        await waitFor(() =>
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        );
+        expect(reorderDays).toHaveBeenCalledWith(['w2', 'w1', 'w3']);
+
+        // The page comes back with the days in their new order, and Push A —
+        // the day that was on screen — is still the one shown, now second.
+        rerender(
+            <EditModeProvider>
+                <EditModeToggle />
+                <RoutineDays
+                    {...base}
+                    days={[days[1], days[0], days[2]]}
+                    reorderDays={reorderDays}
+                />
+                <ModalHost />
+            </EditModeProvider>
+        );
+        expect(panelOf('Push A')).toBeVisible();
+        expect(tab(2)).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('has nothing to reorder once the days are fixed, or with one day', () => {
+        const { unmount } = renderEditing();
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+        expect(
+            screen.queryByRole('button', { name: 'Reorder days' })
+        ).not.toBeInTheDocument();
+        unmount();
+
+        renderEditing({ days: [days[0]], reorderDays: async () => {} });
+        fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+        expect(
+            screen.queryByRole('button', { name: 'Reorder days' })
+        ).not.toBeInTheDocument();
+    });
+
+    // The page comes back with the new day at the end of the rack, and it is
+    // the one to fill in — but only a day that was not there before counts.
+    it('puts a day just added on screen', () => {
+        const { rerender } = render(<RoutineDays {...base} />);
+        expect(panelOf('Push A')).toBeVisible();
+
+        rerender(
+            <RoutineDays
+                {...base}
+                days={[...days, day('w4', 'Arms')]}
+            />
+        );
+        expect(panelOf('Arms')).toBeVisible();
+        expect(tab(4)).toHaveAttribute('aria-selected', 'true');
+
+        // Moving or deleting days adds none: the day on screen stays put.
+        fireEvent.click(tab(2));
+        rerender(
+            <RoutineDays
+                {...base}
+                days={[days[1], days[0], days[2]]}
+            />
+        );
+        expect(tab(2)).toHaveAttribute('aria-selected', 'true');
     });
 
     it('moves with the arrow keys too', () => {

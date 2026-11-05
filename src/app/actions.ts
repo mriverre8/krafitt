@@ -731,6 +731,39 @@ export async function renameWorkout(
     return { ok: true };
 }
 
+/**
+ * The routine's days in a new order, every one of them by id. Only before the
+ * routine has started, like adding or deleting one: the cursor walks the days
+ * by their order, so moving them after would change which day is today.
+ *
+ * The list has to be the routine's days exactly — a day deleted or added from
+ * another screen since the modal opened turns the whole order away rather
+ * than saving half of it. Writing 0..n-1 also closes any gaps a deletion left.
+ */
+export async function reorderWorkouts(routineId: string, ids: string[]) {
+    const user = await requireUser();
+    await requireUnstartedRoutine(routineId, user.id);
+
+    const days = await prisma.workout.findMany({
+        where: { routineId },
+        select: { id: true },
+    });
+    const same =
+        ids.length === days.length &&
+        new Set(ids).size === ids.length &&
+        days.every((day) => ids.includes(day.id));
+    if (!same) throw new Error((await getT())('error.workoutNotFound'));
+
+    await prisma.$transaction(
+        ids.map((id, order) =>
+            prisma.workout.update({ where: { id }, data: { order } })
+        )
+    );
+    revalidatePath(`/routines/${routineId}`);
+    // An active routine not yet started already shows its first day there.
+    revalidatePath('/');
+}
+
 export async function deleteWorkout(workoutId: string) {
     const user = await requireUser();
     const routineId = await routineIdOfWorkout(workoutId);

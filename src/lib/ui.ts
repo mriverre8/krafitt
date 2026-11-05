@@ -113,10 +113,13 @@ export const dangerClass =
     'disabled:opacity-40';
 
 /** The bar a screen's one main move sits in, pinned to the bottom edge so it
-    is in reach however far the page is scrolled. */
+    is in reach however far the page is scrolled. It pins one pixel past the
+    edge so useLiftNav can tell pinned from resting; installed, it clears the
+    home indicator itself. */
 export const stickyBarClass =
-    'sticky bottom-0 z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t border-line ' +
-    'bg-bg/85 px-4 py-3 backdrop-blur-md';
+    'sticky -bottom-px z-10 -mx-4 mt-4 flex items-stretch gap-2 border-t border-line ' +
+    'bg-bg/85 px-4 py-3 backdrop-blur-md ' +
+    'standalone:pb-[max(0.75rem,env(safe-area-inset-bottom))]';
 
 export const ghostClass =
     'lift rounded-md border-2 border-line px-4 py-2.5 font-display text-sm font-bold uppercase ' +
