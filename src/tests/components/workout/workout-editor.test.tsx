@@ -266,6 +266,41 @@ describe('WorkoutEditor', () => {
         expect(noBar()).toBeNull();
     });
 
+    describe('a technique being written', () => {
+        const writeCustom = (e: number) => {
+            fireEvent.click(button(`Exercise ${e}, set 1 technique`));
+            fireEvent.click(button('Custom'));
+            fireEvent.change(
+                screen.getByLabelText(`Exercise ${e}, technique set 1`),
+                { target: { value: 'Cluster' } }
+            );
+        };
+        const box = (e: number) =>
+            screen.queryByLabelText(`Exercise ${e}, technique set 1`);
+
+        it('goes with its exercise when the cards move', () => {
+            render(<WorkoutEditor {...base} />);
+            fireEvent.click(addExercise());
+            writeCustom(1);
+
+            fireEvent.click(button('Move exercise 1 down'));
+            expect(box(1)).toBeNull();
+            expect(box(2)).toHaveValue('Cluster');
+            expect(screen.getByLabelText('Exercise 2 name')).toHaveValue(
+                'Bench press'
+            );
+        });
+
+        it('goes with its exercise when the card is deleted', () => {
+            render(<WorkoutEditor {...base} />);
+            fireEvent.click(addExercise());
+            writeCustom(1);
+
+            fireEvent.click(deleteExercise(1));
+            expect(box(1)).toBeNull();
+        });
+    });
+
     it('sends the day in the order the cards were left in', async () => {
         const saveExercises = vi.fn().mockResolvedValue({ ok: true as const });
         render(

@@ -74,15 +74,12 @@ export function toDrafts(
 /**
  * The day with one exercise taken out and put back in at `to`. The order the
  * cards end up in is the order saved: `saveExercises` numbers them as it goes.
- * A move off either end of the day changes nothing.
+ * A move off either end of the day changes nothing. Generic so the editor
+ * can move its cards, each a draft with its key.
  */
-export function moveExercise(
-    drafts: ExerciseDraft[],
-    from: number,
-    to: number
-): ExerciseDraft[] {
-    if (to < 0 || to >= drafts.length || to === from) return drafts;
-    const next = [...drafts];
+export function moveExercise<T>(cards: T[], from: number, to: number): T[] {
+    if (to < 0 || to >= cards.length || to === from) return cards;
+    const next = [...cards];
     next.splice(to, 0, ...next.splice(from, 1));
     return next;
 }

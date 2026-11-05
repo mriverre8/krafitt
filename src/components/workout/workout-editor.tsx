@@ -41,6 +41,14 @@ import { SaveBar } from '@/components/workout/save-bar';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 /**
+ * A card of the editor: its draft, and the key it is drawn under. The key
+ * stays with the exercise as cards move or go, so what a card holds of its
+ * own — a technique being written — never lands on another one. It lives here
+ * rather than in the draft, which is compared and submitted as JSON.
+ */
+type Card = { key: string; draft: ExerciseDraft };
+
+/**
  * One training day, and the whole of it is a single form: adding, editing and
  * removing exercises all happen in the draft below, and nothing reaches the
  * database until Save changes, the only thing here that talks to the server.
@@ -82,10 +90,15 @@ export function WorkoutEditor({
     const t = useT();
     const editing = useEditMode();
     const fresh = (exercises: ExerciseView[]) => toDrafts(exercises, !empty);
+    // A saved exercise is keyed by its id. The only draft `fresh` makes
+    // without one is the blank card an empty day opens on.
+    const freshCards = (exercises: ExerciseView[]): Card[] =>
+        fresh(exercises).map((draft) => ({ key: draft.id ?? 'blank', draft }));
     const [state, formAction, pending] = useActionState(saveExercises, {});
-    const [drafts, setDrafts] = useState<ExerciseDraft[]>(() =>
-        fresh(workout.exercises)
-    );
+    const [cards, setCards] = useState(() => freshCards(workout.exercises));
+    const drafts = cards.map((card) => card.draft);
+    // For the cards Add makes: counted in the click, never while rendering.
+    const added = useRef(0);
     // Only what is not on a card already: one exercise is never in a day twice
     // by being brought back.
     const suggestions = retired.filter(
@@ -110,7 +123,7 @@ export function WorkoutEditor({
     const [lastState, setLastState] = useState(state);
     if (state !== lastState) {
         setLastState(state);
-        if (state.saved) setDrafts(fresh(state.saved));
+        if (state.saved) setCards(freshCards(state.saved));
     }
 
     // The save bar goes away on success and nothing else on screen says so;
@@ -133,7 +146,7 @@ export function WorkoutEditor({
     const [lastDiscarded, setLastDiscarded] = useState(discarded);
     if (discarded !== lastDiscarded) {
         setLastDiscarded(discarded);
-        setDrafts(fresh(server));
+        setCards(freshCards(server));
     }
 
     /**
@@ -152,24 +165,21 @@ export function WorkoutEditor({
     }
 
     /**
-     * The cards are keyed by position, so after a move the focus would stay
-     * on the button in the slot it was pressed in, now on someone else's card.
-     * The new order is committed at once and the focus taken to the card that
+     * The new order is committed at once and the focus kept on the card that
      * moved — onto its other arrow when it has reached the end of the day and
      * this one has gone dead. The page itself stays where it is: the focus
      * moves without scrolling, and the card slides away from under the
      * pointer rather than the page jumping after it.
      *
-     * The two cards slide past each other (`swap`). Being keyed by position,
-     * they cannot carry a name of their own exercise, so the pair is named by
-     * hand: the moving one's name passes from its old slot to its new one, and
-     * the names go once the slide is over.
+     * The two cards slide past each other (`swap`). The pair is named by hand
+     * for the length of the slide: the moving one's name passes from its old
+     * slot to its new one, and the names go once the slide is over.
      */
     function move(index: number, step: -1 | 1) {
         const to = index + step;
-        const cards = list.current?.children;
+        const nodes = list.current?.children;
         const name = (at: number, value: string) => {
-            const card = cards?.[at] as HTMLElement | undefined;
+            const card = nodes?.[at] as HTMLElement | undefined;
             card?.style.setProperty('view-transition-name', value);
             card?.style.setProperty('view-transition-class', value && 'swap');
         };
@@ -178,7 +188,7 @@ export function WorkoutEditor({
 
         swap(() => {
             flushSync(() =>
-                setDrafts((current) => moveExercise(current, index, to))
+                setCards((current) => moveExercise(current, index, to))
             );
             name(to, 'exercise-moving');
             name(index, 'exercise-other');
@@ -186,7 +196,7 @@ export function WorkoutEditor({
             const arrows = step < 0 ? ['up', 'down'] : ['down', 'up'];
             const button = arrows
                 .map((arrow) =>
-                    cards?.[to]?.querySelector<HTMLButtonElement>(
+                    nodes?.[to]?.querySelector<HTMLButtonElement>(
                         `[data-move="${arrow}"]`
                     )
                 )
@@ -199,9 +209,11 @@ export function WorkoutEditor({
     }
 
     function update(index: number, patch: Partial<ExerciseDraft>) {
-        setDrafts((current) =>
-            current.map((draft, i) =>
-                i === index ? { ...draft, ...patch } : draft
+        setCards((current) =>
+            current.map((card, i) =>
+                i === index
+                    ? { ...card, draft: { ...card.draft, ...patch } }
+                    : card
             )
         );
     }
@@ -250,16 +262,16 @@ export function WorkoutEditor({
                 className="mt-4 space-y-4"
             >
                 {editing
-                    ? drafts.map((draft, index) => (
+                    ? cards.map(({ key, draft }, index) => (
                           <ExerciseFields
-                              key={index}
+                              key={key}
                               exercise={draft}
                               index={index}
                               suggestions={suggestions}
                               fault={faultOf(draft, index)}
                               onChange={(patch) => update(index, patch)}
                               onRemove={() =>
-                                  setDrafts((current) =>
+                                  setCards((current) =>
                                       current.filter((_, i) => i !== index)
                                   )
                               }
@@ -283,9 +295,13 @@ export function WorkoutEditor({
                     <button
                         type="button"
                         disabled={drafts.length >= EXERCISES.max}
-                        onClick={() =>
-                            setDrafts((current) => [...current, emptyExercise])
-                        }
+                        onClick={() => {
+                            const key = `added-${added.current++}`;
+                            setCards((current) => [
+                                ...current,
+                                { key, draft: emptyExercise },
+                            ]);
+                        }}
                         className={`${dashedActionClass} w-full p-5`}
                     >
                         <Plus
@@ -300,7 +316,7 @@ export function WorkoutEditor({
             {editing && dirty && (
                 <SaveBar
                     pending={pending}
-                    onUndo={() => setDrafts(fresh(workout.exercises))}
+                    onUndo={() => setCards(freshCards(workout.exercises))}
                     onSave={save}
                 />
             )}
