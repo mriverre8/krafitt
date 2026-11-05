@@ -6,8 +6,9 @@ import { hasNoReps, type RepMode } from '@/lib/reps';
 import { numberClass, rowFieldClass } from '@/lib/ui';
 import { MinutesHint } from '@/components/workout/minutes-hint';
 
-const repsSlotClass =
-    'flex min-w-0 flex-1 gap-1.5 md:w-48 md:flex-none md:gap-2';
+/** The rest of the row, at every width: the technique is picked beside the
+    set's name now, so nothing else on the row needs room from md up. */
+const repsSlotClass = 'flex min-w-0 flex-1 gap-1.5 md:gap-2';
 
 /** Digits only, so a minus sign, a decimal point or an `e` never reaches the
     draft — the server would turn the day away over them, with nothing to say
@@ -98,20 +99,24 @@ export function RepsFields({
                     >
                         {t('reps.to')}
                     </span>
-                    <input
-                        type="text"
-                        inputMode="numeric"
-                        value={repMax}
-                        onChange={(event) =>
-                            onChange({ repMax: digits(event.target.value) })
-                        }
-                        placeholder={t('today.reps')}
-                        aria-label={t('exercise.repMax', {
-                            exercise: exerciseNumber,
-                            set: setLabel,
-                        })}
-                        className={`${numberClass(wrong.max)} flex-1`}
-                    />
+                    <div className="flex min-w-0 flex-1">
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            value={repMax}
+                            onChange={(event) =>
+                                onChange({
+                                    repMax: digits(event.target.value),
+                                })
+                            }
+                            placeholder={t('today.reps')}
+                            aria-label={t('exercise.repMax', {
+                                exercise: exerciseNumber,
+                                set: setLabel,
+                            })}
+                            className={`${numberClass(wrong.max)} w-full`}
+                        />
+                    </div>
                 </>
             )}
         </div>

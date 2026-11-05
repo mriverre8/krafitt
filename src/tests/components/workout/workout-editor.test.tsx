@@ -91,10 +91,9 @@ const undo = () => screen.getByRole('button', { name: 'Undo changes' });
     at all, and only arrives once the draft has moved off the last save. */
 const noBar = () => screen.queryByRole('button', { name: /Save changes/ });
 const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
-/** Delete sits on the card's name field, as the one thing the card can be
-    told: there is no menu to open first. */
-const deleteExercise = (e: number) =>
-    screen.getByRole('button', { name: `Delete exercise ${e}` });
+/** Moving and deleting an exercise sit at the foot of its card. */
+const button = (name: string) => screen.getByRole('button', { name });
+const deleteExercise = (e: number) => button(`Delete exercise ${e}`);
 
 /** Rename and delete both live behind the day's options menu. */
 const openDayOptions = () =>
@@ -243,6 +242,92 @@ describe('WorkoutEditor', () => {
         expect(noBar()).toBeNull();
     });
 
+    it('reorders the day as a change to save, and undoes it', () => {
+        render(<WorkoutEditor {...base} />);
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+
+        fireEvent.click(button('Move exercise 2 up'));
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue('Dips');
+        expect(screen.getByLabelText('Exercise 2 name')).toHaveValue(
+            'Bench press'
+        );
+        // The focus goes with Dips, onto the arrow still live at the top.
+        expect(button('Move exercise 1 up')).toBeDisabled();
+        expect(button('Move exercise 1 down')).toHaveFocus();
+        expect(save()).toBeEnabled();
+
+        fireEvent.click(undo());
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+        expect(noBar()).toBeNull();
+    });
+
+    describe('a technique being written', () => {
+        const writeCustom = (e: number) => {
+            fireEvent.click(button(`Exercise ${e}, set 1 technique`));
+            fireEvent.click(button('Custom'));
+            fireEvent.change(
+                screen.getByLabelText(`Exercise ${e}, technique set 1`),
+                { target: { value: 'Cluster' } }
+            );
+        };
+        const box = (e: number) =>
+            screen.queryByLabelText(`Exercise ${e}, technique set 1`);
+
+        it('goes with its exercise when the cards move', () => {
+            render(<WorkoutEditor {...base} />);
+            fireEvent.click(addExercise());
+            writeCustom(1);
+
+            fireEvent.click(button('Move exercise 1 down'));
+            expect(box(1)).toBeNull();
+            expect(box(2)).toHaveValue('Cluster');
+            expect(screen.getByLabelText('Exercise 2 name')).toHaveValue(
+                'Bench press'
+            );
+        });
+
+        it('goes with its exercise when the card is deleted', () => {
+            render(<WorkoutEditor {...base} />);
+            fireEvent.click(addExercise());
+            writeCustom(1);
+
+            fireEvent.click(deleteExercise(1));
+            expect(box(1)).toBeNull();
+        });
+    });
+
+    it('sends the day in the order the cards were left in', async () => {
+        const saveExercises = vi.fn().mockResolvedValue({ ok: true as const });
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={saveExercises}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+        fireEvent.click(button('Move exercise 1 down'));
+        // Bench press is last now: down has nowhere to take it.
+        expect(button('Move exercise 2 down')).toBeDisabled();
+        expect(button('Move exercise 2 up')).toHaveFocus();
+        fireEvent.click(save());
+
+        await waitFor(() => expect(saveExercises).toHaveBeenCalled());
+        const data = saveExercises.mock.calls[0][1] as FormData;
+        const plan = JSON.parse(String(data.get('plan')));
+        expect(plan.map((exercise: { name: string }) => exercise.name)).toEqual(
+            ['Dips', 'Bench press']
+        );
+        expect(plan[1].id).toBe('e1');
+    });
+
     it('throws the unsaved changes away on undo', () => {
         render(<WorkoutEditor {...base} />);
         expect(noBar()).toBeNull();
@@ -252,7 +337,7 @@ describe('WorkoutEditor', () => {
         });
         fireEvent.click(addExercise());
         fireEvent.click(
-            screen.getByRole('button', { name: 'Add set to exercise 1' })
+            screen.getByRole('button', { name: 'Add set 2 to exercise 1' })
         );
         expect(undo()).toBeEnabled();
 
@@ -363,31 +448,25 @@ describe('WorkoutEditor', () => {
         expect(mode).toHaveValue('fixed');
     });
 
-    // A technique saved with nothing but spaces in it comes back trimmed, which
-    // can leave the day byte for byte as it was: there is nothing in the props
-    // for the editor to notice, so it has to take the answer the save came back
-    // with. The field stays — blank is a hole to fill, not a technique removed.
+    // A name saved with trailing spaces comes back trimmed, which can leave the
+    // day byte for byte as it was: there is nothing in the props for the editor
+    // to notice, so it has to take the answer the save came back with.
     it('takes back what the save trimmed', async () => {
-        const set = workout.exercises[0].sets[0];
-        const withTechnique = (technique: string) => [
-            { ...workout.exercises[0], sets: [{ ...set, technique }] },
-        ];
         render(
             <WorkoutEditor
                 {...base}
-                workout={{ ...workout, exercises: withTechnique('My own') }}
                 saveExercises={async () => ({
                     ok: true as const,
-                    saved: withTechnique(''),
+                    saved: workout.exercises,
                 })}
             />
         );
-        const technique = screen.getByLabelText('Exercise 1, technique set 1');
-        fireEvent.change(technique, { target: { value: '  ' } });
+        const name = screen.getByLabelText('Exercise 1 name');
+        fireEvent.change(name, { target: { value: 'Bench press  ' } });
         expect(save()).toBeEnabled();
 
         fireEvent.click(save());
-        await waitFor(() => expect(technique).toHaveValue(''));
+        await waitFor(() => expect(name).toHaveValue('Bench press'));
         expect(noBar()).toBeNull();
         expect(toasts()).toEqual(['Changes saved']);
     });
@@ -678,7 +757,8 @@ describe('WorkoutEditor, before Edit is pressed', () => {
             /Add exercise/,
             'Delete day',
             'Delete exercise 1',
-            'Add set to exercise 1',
+            'Move exercise 1 down',
+            /^Add set \d+ to exercise 1$/,
         ]) {
             expect(
                 screen.queryByRole('button', { name })

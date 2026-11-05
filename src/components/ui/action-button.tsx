@@ -15,6 +15,7 @@ export function ActionButton({
     confirm,
     label,
     success,
+    disabled = false,
 }: {
     action: () => Promise<unknown>;
     children: React.ReactNode;
@@ -23,6 +24,8 @@ export function ActionButton({
     label?: string;
     /** Said once the action is done, for actions nothing on screen confirms. */
     success?: string;
+    /** Shut for a reason of the caller's, on top of while it runs. */
+    disabled?: boolean;
 }) {
     const t = useT();
     const [pending, startTransition] = useTransition();
@@ -45,7 +48,7 @@ export function ActionButton({
     return (
         <button
             type="button"
-            disabled={pending}
+            disabled={pending || disabled}
             aria-label={label}
             title={label}
             className={`${className} disabled:opacity-40`}

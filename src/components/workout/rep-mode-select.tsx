@@ -32,7 +32,7 @@ export function RepModeSelect({
                 exercise: exerciseNumber,
                 set: setLabel,
             })}
-            className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-28 md:px-3`}
+            className={`${fieldClass} ${rowFieldClass} w-24 shrink-0 px-2 md:w-36 md:px-3`}
         >
             {REP_MODES.map((value) => (
                 <option

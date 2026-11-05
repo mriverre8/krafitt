@@ -335,6 +335,56 @@ dialog[open]::backdrop {
   animation: backdrop-in 140ms ease-out;
 }
 
+/* Moving a day or an exercise up or down slides it to its new place (a view
+   transition, started by lib/swap.ts). Short and eased out, the same curve a
+   modal arrives on, so a row answers the tap rather than drifting. The page
+   around it is not part of the move: the old picture of it is dropped and the
+   new one shown at once, with no cross-fade to flicker through — the save bar
+   arriving with the first move, say. */
+::view-transition-group(.swap) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html[data-swap]::view-transition-old(root) {
+  display: none;
+}
+html[data-swap]::view-transition-new(root) {
+  animation: none;
+}
+
+/* The moving rows are drawn on a layer above the whole page, so a card sliding
+   under the sticky header or the save bar would cross over them until it
+   lands. Both bars join the move as pictures of their own, stacked above the
+   rows and shown as they are: no slide, no fade — the save bar may only just
+   be arriving. Not while a modal is open: its rows already sit above the
+   bars, and a bar lifted out of the page would skip the modal's backdrop. */
+html[data-swap]:not(:has(dialog[open])) [data-chrome='top'] {
+  view-transition-name: chrome-top;
+}
+html[data-swap]:not(:has(dialog[open])) [data-chrome='bottom'] {
+  view-transition-name: chrome-bottom;
+}
+::view-transition-group(chrome-top),
+::view-transition-group(chrome-bottom) {
+  z-index: 1;
+  animation: none;
+}
+/* The browser lifts a captured element's backdrop blur onto its group. The
+   save bar goes away with the move that puts the day back as it was saved,
+   and its group would stay behind as a blurred box with nothing in it. The
+   bar is mostly opaque, so for the length of a slide it does without. */
+::view-transition-group(chrome-bottom) {
+  backdrop-filter: none;
+}
+::view-transition-old(chrome-top),
+::view-transition-old(chrome-bottom) {
+  display: none;
+}
+::view-transition-new(chrome-top),
+::view-transition-new(chrome-bottom) {
+  animation: none;
+}
+
 /* A toast pops in with a little overshoot — it is news, not a page change —
    and leaves faster than it came, going soft as it goes. Only then does its
    row close up, so the ones below never jump: the row is a one-track grid

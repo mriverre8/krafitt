@@ -35,7 +35,8 @@ import {
     SkipForward,
 } from 'lucide-react';
 import { unstable_rethrow, useRouter } from 'next/navigation';
-import { useEffect, useTransition } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
+import { useLiftNav } from '@/components/chrome/bottom-nav';
 import { showModal } from '@/store/modal';
 import { toast } from '@/store/toast';
 import {
@@ -88,6 +89,8 @@ export function TodayWorkout(props: TodayWorkoutProps) {
     const router = useRouter();
     const { logs, hydrate } = useSessionStore();
     const [pending, startTransition] = useTransition();
+    const barRef = useRef<HTMLDivElement>(null);
+    useLiftNav(barRef);
     // A routine's day is read before it is trained, and stays under way until
     // it is finished: the server knows, by the session starting it opened. A
     // workout was started on its page.
@@ -369,7 +372,10 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                     />
                 ))}
 
-            <div className={stickyBarClass}>
+            <div
+                ref={barRef}
+                className={stickyBarClass}
+            >
                 {canChangeDay && (
                     <button
                         type="button"
