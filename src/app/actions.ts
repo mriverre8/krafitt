@@ -331,6 +331,7 @@ function copyRoutine(
                         create: workout.exercises.map((exercise) => ({
                             name: exercise.name,
                             order: exercise.order,
+                            preview: exercise.preview,
                             sets: {
                                 create: exercise.sets.map((set) => ({
                                     order: set.order,
@@ -522,7 +523,10 @@ function readPlan(raw: string, t: Translate) {
 
     const exercises = [];
     for (const [index, entry] of plan.entries()) {
-        const { id, name, sets } = (entry ?? {}) as Record<string, unknown>;
+        const { id, name, preview, sets } = (entry ?? {}) as Record<
+            string,
+            unknown
+        >;
         if (
             (id !== null && typeof id !== 'string') ||
             typeof name !== 'string'
@@ -600,7 +604,12 @@ function readPlan(raw: string, t: Translate) {
                         : technique.trim().slice(0, NAME_MAX),
             });
         }
-        exercises.push({ id, name: name.trim(), sets: rows });
+        exercises.push({
+            id,
+            name: name.trim(),
+            preview: preview === true,
+            sets: rows,
+        });
     }
     return { exercises };
 }
@@ -662,7 +671,12 @@ export async function saveExercises(
         }),
         ...parsed.exercises.map((exercise, order) => {
             const id = ids[order];
-            const fields = { name: exercise.name, order, archived: false };
+            const fields = {
+                name: exercise.name,
+                preview: exercise.preview,
+                order,
+                archived: false,
+            };
             return id
                 ? prisma.exercise.update({
                       where: { id },
@@ -693,6 +707,7 @@ export async function saveExercises(
         select: {
             id: true,
             name: true,
+            preview: true,
             sets: {
                 orderBy: { order: 'asc' },
                 select: {
@@ -825,7 +840,9 @@ export async function logSet(
     const exercise = session.workout.exercises.find(
         (item) => item.id === exerciseId
     );
-    if (!exercise) return { error: t('error.wrongExercise') };
+    // Shown on the day, never logged: the client never offers it either.
+    if (!exercise || exercise.preview)
+        return { error: t('error.wrongExercise') };
     const setIndex = setSlots(exercise.sets).indexOf(slot);
     if (setIndex < 0) return { error: t('error.planChanged') };
     const existing = session.logs.find(

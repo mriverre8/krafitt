@@ -30,10 +30,12 @@ export type MemberSearchState = FormState & {
 
 /** One exercise as the database holds it. The kind is optional only so that a
     plain working set can be written without it — the database always has one.
-    A null technique is a set that was never given one. */
+    A null technique is a set that was never given one. `preview` — shown on
+    the day, never logged — is optional the same way. */
 export type SavedExercise = {
     id: string;
     name: string;
+    preview?: boolean;
     sets: (RepSpec & KindedSet & { technique: string | null })[];
 };
 

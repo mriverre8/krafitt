@@ -178,6 +178,20 @@ export function ExerciseFields({
                         fault?.name ? wrongTitleInputClass : titleInputClass
                     } display text-2xl [&::-webkit-search-cancel-button]:appearance-none`}
                 />
+                <label className="text-muted mt-4 flex w-fit items-center gap-2 text-xs font-semibold md:text-sm">
+                    <input
+                        type="checkbox"
+                        checked={exercise.preview}
+                        onChange={(event) =>
+                            onChange({ preview: event.target.checked })
+                        }
+                        aria-label={t('exercise.previewLabel', {
+                            exercise: exerciseNumber,
+                        })}
+                        className="accent-pulse size-4"
+                    />
+                    {t('exercise.preview')}
+                </label>
             </div>
 
             {groups.map((group, position) => {

@@ -348,6 +348,14 @@ describe('isSessionComplete', () => {
     it('never completes a workout that has no exercises', () => {
         expect(isSessionComplete([], {})).toBe(false);
     });
+
+    // A preview exercise is shown but never logged: the day is done without it.
+    it('leaves a preview exercise out of the sets to log', () => {
+        const day = [plan('a', 1), { ...plan('b', 2), preview: true }];
+        const logs: Logs = { a: { 0: { weight: 60, reps: 8 } } };
+        expect(isSessionComplete(day, logs)).toBe(true);
+        expect(isSetEnabled(day, {}, 'b', 0)).toBe(false);
+    });
 });
 
 describe('routineStatus', () => {

@@ -497,6 +497,8 @@ export const es: Dict = {
     'exercise.addDrop': 'Añadir serie drop',
     'exercise.addRest': 'Añadir serie rest pause',
     'exercise.unspecified': 'Sin especificar',
+    'exercise.preview': 'Solo vista previa',
+    'exercise.previewLabel': 'Ejercicio {exercise}, solo vista previa',
 
     'set.drop': 'Serie drop',
     'set.rest': 'Serie rest pause',
@@ -536,6 +538,9 @@ export const es: Dict = {
     'validate.noPause': 'falta la pausa',
     'validate.pauseRange': 'la pausa debe estar entre {min} y {max} segundos',
     'validate.noTechnique': 'ponle nombre a la técnica o quítala',
+    'validate.wholeDay': 'Este día',
+    'validate.allPreview':
+        'necesita al menos un ejercicio que no sea solo vista previa',
     'validate.showFields': 'Mostrar errores',
     'validate.problem': '1 cosa por completar',
     'validate.problems': '{n} {n|cosa|cosas} por completar',

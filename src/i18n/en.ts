@@ -492,6 +492,8 @@ export const en = {
     'exercise.addDrop': 'Add drop set',
     'exercise.addRest': 'Add rest-pause set',
     'exercise.unspecified': 'Unspecified',
+    'exercise.preview': 'Preview only',
+    'exercise.previewLabel': 'Exercise {exercise}, preview only',
 
     'set.drop': 'Drop set',
     'set.rest': 'Rest-pause set',
@@ -530,6 +532,9 @@ export const en = {
     'validate.noPause': 'the pause is missing',
     'validate.pauseRange': 'the pause must be between {min} and {max} seconds',
     'validate.noTechnique': 'name the technique or remove it',
+    'validate.wholeDay': 'This day',
+    'validate.allPreview':
+        'needs at least one exercise that is not preview only',
     'validate.showFields': 'Show errors',
     'validate.problem': '1 thing left to finish',
     'validate.problems': '{n} {n|thing|things} left to finish',
