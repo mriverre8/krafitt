@@ -31,7 +31,8 @@ export default async function RoutineProgressPage({
     const days = routine.workouts.map((workout) => ({
         id: workout.id,
         name: workout.name,
-        exercises: workout.exercises,
+        // Never logged: kept out of the table and of what the day was due.
+        exercises: workout.exercises.filter((exercise) => !exercise.preview),
         weeks: byDay[workout.id] ?? {},
     }));
     const week = currentWeek(routine.cursor, days.length);

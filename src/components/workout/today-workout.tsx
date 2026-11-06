@@ -312,65 +312,73 @@ export function TodayWorkout(props: TodayWorkoutProps) {
                 ))}
 
             {started &&
-                workout.exercises.map((exercise) => (
-                    <WorkoutExercise
-                        key={`${week}:${exercise.id}`}
-                        exercise={exercise}
-                        logs={logs[exercise.id] ?? {}}
-                        previous={previous[exercise.id] ?? {}}
-                        isSetEnabled={(setIndex) =>
-                            !pending &&
-                            !done &&
-                            !isSetFilled(locked, exercise.id, setIndex) &&
-                            isSetEnabled(
-                                workout.exercises,
-                                logs,
-                                exercise.id,
-                                setIndex
-                            )
-                        }
-                        onSaveSet={(setIndex, weight, reps, effort) =>
-                            run(async () => {
-                                const result = await logSet(
-                                    workout.id,
-                                    week,
+                workout.exercises.map((exercise) =>
+                    // Shown for reference, never logged.
+                    exercise.preview ? (
+                        <ExercisePreview
+                            key={`${week}:${exercise.id}`}
+                            exercise={exercise}
+                        />
+                    ) : (
+                        <WorkoutExercise
+                            key={`${week}:${exercise.id}`}
+                            exercise={exercise}
+                            logs={logs[exercise.id] ?? {}}
+                            previous={previous[exercise.id] ?? {}}
+                            isSetEnabled={(setIndex) =>
+                                !pending &&
+                                !done &&
+                                !isSetFilled(locked, exercise.id, setIndex) &&
+                                isSetEnabled(
+                                    workout.exercises,
+                                    logs,
                                     exercise.id,
-                                    setSlots(exercise.sets)[setIndex],
-                                    weight,
-                                    reps,
-                                    effort
-                                );
-                                if (result) return result;
-                                useSessionStore
-                                    .getState()
-                                    .save(exercise.id, setIndex, {
+                                    setIndex
+                                )
+                            }
+                            onSaveSet={(setIndex, weight, reps, effort) =>
+                                run(async () => {
+                                    const result = await logSet(
+                                        workout.id,
+                                        week,
+                                        exercise.id,
+                                        setSlots(exercise.sets)[setIndex],
                                         weight,
                                         reps,
-                                        effort,
-                                    });
-                                // The last set of the week's last day: on to
-                                // the next week, as finishing a workout does —
-                                // or, in the last one, the routine ends.
-                                if (
-                                    lastOfWeek &&
-                                    isSessionComplete(
-                                        workout.exercises,
-                                        useSessionStore.getState().logs
-                                    )
-                                ) {
-                                    toast(
-                                        t(
-                                            lastWeek
-                                                ? 'toast.routineFinished'
-                                                : 'toast.workoutFinished'
-                                        )
+                                        effort
                                     );
-                                    router.refresh();
-                                }
-                            })
-                        }
-                    />
-                ))}
+                                    if (result) return result;
+                                    useSessionStore
+                                        .getState()
+                                        .save(exercise.id, setIndex, {
+                                            weight,
+                                            reps,
+                                            effort,
+                                        });
+                                    // The last set of the week's last day: on to
+                                    // the next week, as finishing a workout does —
+                                    // or, in the last one, the routine ends.
+                                    if (
+                                        lastOfWeek &&
+                                        isSessionComplete(
+                                            workout.exercises,
+                                            useSessionStore.getState().logs
+                                        )
+                                    ) {
+                                        toast(
+                                            t(
+                                                lastWeek
+                                                    ? 'toast.routineFinished'
+                                                    : 'toast.workoutFinished'
+                                            )
+                                        );
+                                        router.refresh();
+                                    }
+                                })
+                            }
+                        />
+                    )
+                )}
 
             <div
                 ref={barRef}

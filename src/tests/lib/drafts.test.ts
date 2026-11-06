@@ -17,6 +17,7 @@ describe('toDrafts', () => {
                 {
                     id: 'e1',
                     name: 'Bench press',
+                    preview: false,
                     sets: [
                         {
                             repMode: 'fixed',
@@ -31,6 +32,7 @@ describe('toDrafts', () => {
             {
                 id: 'e1',
                 name: 'Bench press',
+                preview: false,
                 sets: [
                     {
                         kind: 'normal',
@@ -54,6 +56,7 @@ describe('toDrafts', () => {
                 {
                     id: 'e1',
                     name: '',
+                    preview: false,
                     sets: [
                         {
                             repMode: 'range',
@@ -75,6 +78,7 @@ describe('toDrafts', () => {
                 {
                     id: 'e1',
                     name: 'Bench press',
+                    preview: false,
                     sets: [
                         {
                             repMode: 'amrap',
@@ -99,6 +103,7 @@ describe('toDrafts', () => {
                 {
                     id: 'e1',
                     name: 'Bench press',
+                    preview: false,
                     sets: [
                         {
                             repMode: 'nonsense',

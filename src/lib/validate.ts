@@ -14,7 +14,11 @@ import {
 
 export type PlannedSet = RepSpec & KindedSet & { technique?: string | null };
 
-export type ExercisePlan = { name: string; sets: PlannedSet[] };
+export type ExercisePlan = {
+    name: string;
+    preview?: boolean;
+    sets: PlannedSet[];
+};
 
 export type WorkoutPlan = { exercises: ExercisePlan[] };
 
@@ -119,28 +123,40 @@ export function workoutProblems(workout: WorkoutPlan, t: Translate): Problem[] {
     const exercises =
         workout.exercises.length > 0 ? workout.exercises : [blankExercise];
 
-    return exercises.flatMap((exercise, index) => {
-        const where =
-            exercise.name.trim() || t('validate.exerciseN', { n: index + 1 });
-        const problems: Problem[] = [];
-        if (!exercise.name.trim()) {
-            problems.push({ where, what: t('validate.noName') });
-        }
-        if (repeatsName(exercises, index)) {
-            problems.push({ where, what: t('validate.repeatedName') });
-        }
-        if (exercise.sets.length === 0) {
-            problems.push({ where, what: t('validate.noSets') });
-        }
-        const places = setPlaces(exercise.sets);
-        exercise.sets.forEach((set, i) => {
-            const at = t('validate.setAt', { where, set: setName(places[i]) });
-            for (const what of setProblems(set, t)) {
-                problems.push({ where: at, what });
+    // A day of nothing but previews has no set to log, so it could never be
+    // done: the same as a day with a hole in it.
+    const unloggable: Problem[] = exercises.every((e) => e.preview)
+        ? [{ where: t('validate.wholeDay'), what: t('validate.allPreview') }]
+        : [];
+
+    return unloggable.concat(
+        exercises.flatMap((exercise, index) => {
+            const where =
+                exercise.name.trim() ||
+                t('validate.exerciseN', { n: index + 1 });
+            const problems: Problem[] = [];
+            if (!exercise.name.trim()) {
+                problems.push({ where, what: t('validate.noName') });
             }
-        });
-        return problems;
-    });
+            if (repeatsName(exercises, index)) {
+                problems.push({ where, what: t('validate.repeatedName') });
+            }
+            if (exercise.sets.length === 0) {
+                problems.push({ where, what: t('validate.noSets') });
+            }
+            const places = setPlaces(exercise.sets);
+            exercise.sets.forEach((set, i) => {
+                const at = t('validate.setAt', {
+                    where,
+                    set: setName(places[i]),
+                });
+                for (const what of setProblems(set, t)) {
+                    problems.push({ where: at, what });
+                }
+            });
+            return problems;
+        })
+    );
 }
 
 /**

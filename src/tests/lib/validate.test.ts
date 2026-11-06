@@ -22,6 +22,22 @@ describe('workoutProblems', () => {
         expect(workoutProblems(day([set]), t)).toEqual([]);
     });
 
+    it('refuses a day with nothing but preview exercises', () => {
+        const preview = { name: 'Stretch', preview: true, sets: [set] };
+        expect(workoutProblems({ exercises: [preview] }, t)).toEqual([
+            {
+                where: 'This day',
+                what: 'needs at least one exercise that is not preview only',
+            },
+        ]);
+        expect(
+            workoutProblems(
+                { exercises: [preview, { name: 'Bench', sets: [set] }] },
+                t
+            )
+        ).toEqual([]);
+    });
+
     // A day is added with nothing on it, but the editor opens a blank card on
     // it straight away: the complaints have to be about that card's fields, or
     // they point at nothing the user can see.

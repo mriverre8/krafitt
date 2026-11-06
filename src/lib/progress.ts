@@ -1,6 +1,11 @@
 /** Pure progression logic. No Prisma, no React */
 
-export type ExercisePlan = { id: string; sets: readonly unknown[] };
+/** A preview exercise is shown but never logged: it has no sets to fill in. */
+export type ExercisePlan = {
+    id: string;
+    preview?: boolean;
+    sets: readonly unknown[];
+};
 /** How a set felt: one more in the tank, as planned, a grind, or the rep that
     did not go up. Every set has one — a set nobody marked is a normal one. */
 export type Effort = 'easy' | 'normal' | 'hard' | 'fail';
@@ -303,14 +308,18 @@ export function profileRoutines<
     };
 }
 
-/** Every set of the workout, in the order they must be filled in. */
+/** Every set of the workout, in the order they must be filled in. A preview
+    exercise has none: the day is done without it. */
 export function flatSets(exercises: ExercisePlan[]): FlatSet[] {
     return exercises.flatMap((e, exerciseIndex) =>
-        Array.from({ length: e.sets.length }, (_, setIndex) => ({
-            exerciseId: e.id,
-            exerciseIndex,
-            setIndex,
-        }))
+        Array.from(
+            { length: e.preview ? 0 : e.sets.length },
+            (_, setIndex) => ({
+                exerciseId: e.id,
+                exerciseIndex,
+                setIndex,
+            })
+        )
     );
 }
 
@@ -342,7 +351,12 @@ export function isSetEnabled(
     setIndex: number
 ): boolean {
     const exercise = exercises.find((e) => e.id === exerciseId);
-    if (!exercise || setIndex < 0 || setIndex >= exercise.sets.length)
+    if (
+        !exercise ||
+        exercise.preview ||
+        setIndex < 0 ||
+        setIndex >= exercise.sets.length
+    )
         return false;
     return Array.from({ length: setIndex }, (_, i) => i).every((i) =>
         isSetFilled(logs, exerciseId, i)

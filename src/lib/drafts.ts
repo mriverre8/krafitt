@@ -28,6 +28,8 @@ export type SetDraft = {
 export type ExerciseDraft = {
     id: string | null;
     name: string;
+    /** Shown while training but never logged. */
+    preview: boolean;
     sets: SetDraft[];
 };
 
@@ -43,6 +45,7 @@ export const emptySet: SetDraft = {
 export const emptyExercise: ExerciseDraft = {
     id: null,
     name: '',
+    preview: false,
     sets: [emptySet],
 };
 
@@ -60,6 +63,7 @@ export function toDrafts(
     return exercises.map((exercise) => ({
         id: exercise.id,
         name: exercise.name,
+        preview: exercise.preview ?? false,
         sets: exercise.sets.map((set) => ({
             kind: setKind(set),
             mode: isRepMode(set.repMode) ? set.repMode : 'range',

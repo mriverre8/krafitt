@@ -12,6 +12,7 @@ import { describe, expect, it, vi } from 'vitest';
 const draft: ExerciseDraft = {
     id: 'e1',
     name: 'Bench press',
+    preview: false,
     sets: [
         {
             kind: 'normal',

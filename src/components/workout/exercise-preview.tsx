@@ -4,11 +4,13 @@ import { useT } from '@/i18n/use-t';
 import { formatReps, isSetComplete } from '@/lib/reps';
 import { setFullLabel, setPlaces } from '@/lib/sets';
 import { cardClass } from '@/lib/ui';
+import { Info } from 'lucide-react';
 import type { ExerciseView } from '@/components/workout/workout-exercise';
 
 export const blankExercise: ExerciseView = {
     id: '',
     name: '',
+    preview: false,
     sets: [{ repMode: 'range', repMin: null, repMax: null, technique: null }],
 };
 
@@ -18,13 +20,25 @@ export function ExercisePreview({ exercise }: { exercise: ExerciseView }) {
 
     return (
         <div className={cardClass}>
-            <h4
-                className={`display text-2xl leading-[1.1] ${
-                    exercise.name ? 'text-ink' : 'text-muted'
-                }`}
-            >
-                {exercise.name || t('exercise.namePlaceholder')}
-            </h4>
+            <div className="flex items-start gap-2">
+                <h4
+                    className={`display min-w-0 flex-1 text-2xl leading-[1.1] ${
+                        exercise.name ? 'text-ink' : 'text-muted'
+                    }`}
+                >
+                    {exercise.name || t('exercise.namePlaceholder')}
+                </h4>
+                {exercise.preview && (
+                    <Info
+                        size={18}
+                        role="img"
+                        aria-label={t('exercise.preview')}
+                        className="text-muted mt-0.5 shrink-0"
+                    >
+                        <title>{t('exercise.preview')}</title>
+                    </Info>
+                )}
+            </div>
 
             <ul className="mt-4">
                 {exercise.sets.map((set, index) => {

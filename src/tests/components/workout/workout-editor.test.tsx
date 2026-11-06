@@ -376,6 +376,7 @@ describe('WorkoutEditor', () => {
             {
                 id: 'e1',
                 name: 'Bench press',
+                preview: false,
                 sets: [
                     {
                         kind: 'normal',
@@ -390,6 +391,7 @@ describe('WorkoutEditor', () => {
             {
                 id: null,
                 name: 'Dips',
+                preview: false,
                 sets: [
                     {
                         kind: 'normal',

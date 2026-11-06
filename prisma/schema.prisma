@@ -158,6 +158,8 @@ model Exercise {
   name      String
   order     Int
   archived  Boolean @default(false)
+  /// Shown on the day but never logged: it counts for nothing a day is done by.
+  preview   Boolean @default(false)
 
   sets ExerciseSet[]
   logs SetLog[]

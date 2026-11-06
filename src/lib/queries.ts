@@ -298,6 +298,7 @@ const withPlan = {
                 where: planExercises.where,
                 select: {
                     name: true,
+                    preview: true,
                     sets: {
                         select: {
                             repMode: true,
