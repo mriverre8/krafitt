@@ -22,6 +22,23 @@ export const auth = betterAuth({
         },
     },
     user: { deleteUser: { enabled: true } },
+    // The client IP that rate-limits sign-ins comes from a header, which only
+    // the proxy in front of the app can vouch for: a client reaching the app
+    // directly could set it to anything and dodge the limit. By default
+    // BetterAuth trusts a single-value X-Forwarded-For. Behind a proxy that
+    // sets its own header (x-real-ip, cf-connecting-ip...) name it in
+    // AUTH_IP_HEADER; behind one that appends to X-Forwarded-For, list its
+    // addresses or CIDRs in AUTH_TRUSTED_PROXIES.
+    advanced: {
+        ipAddress: {
+            ipAddressHeaders: process.env.AUTH_IP_HEADER
+                ? [process.env.AUTH_IP_HEADER]
+                : undefined,
+            trustedProxies: process.env.AUTH_TRUSTED_PROXIES?.split(',')
+                .map((proxy) => proxy.trim())
+                .filter(Boolean),
+        },
+    },
     plugins: [nextCookies()],
 });
 

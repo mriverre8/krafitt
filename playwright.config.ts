@@ -84,6 +84,10 @@ export default defineConfig({
                 DIRECT_URL: process.env.E2E_DATABASE_URL,
                 BETTER_AUTH_URL: baseURL,
                 BETTER_AUTH_SECRET: process.env.E2E_AUTH_SECRET,
+                // The fixtures tell clients apart by X-Forwarded-For: pinned
+                // here so a proxy setting in your .env never changes that.
+                AUTH_IP_HEADER: 'x-forwarded-for',
+                AUTH_TRUSTED_PROXIES: '',
             },
         },
     ],

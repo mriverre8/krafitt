@@ -115,6 +115,28 @@ test.describe('brute-force protection', () => {
         expect(statuses[0]).toBe(401);
         expect(statuses).toContain(429);
     });
+
+    test('a forged X-Forwarded-For chain does not escape the limit', async ({
+        playwright,
+        baseURL,
+        newUser,
+    }) => {
+        const victim = await newUser();
+        const attacker = await playwright.request.newContext({ baseURL });
+        const statuses: number[] = [];
+        for (let attempt = 0; attempt < 5; attempt++) {
+            // A new made-up address each time, in front of a fixed one: with
+            // no trusted proxy configured the chain is not believed, so every
+            // attempt lands in the same bucket instead of a fresh one.
+            const response = await attacker.post('/api/auth/sign-in/email', {
+                data: { email: victim.email, password: 'guess-' + attempt },
+                headers: { 'x-forwarded-for': `${clientIp()}, 10.0.0.1` },
+            });
+            statuses.push(response.status());
+        }
+        await attacker.dispose();
+        expect(statuses).toContain(429);
+    });
 });
 
 test.describe('session', () => {

@@ -236,6 +236,7 @@ pnpm start
 Requirements on the target environment:
 
 - `DATABASE_URL`, `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (pointing at the deployed origin) set.
+- A proxy in front of the app that sets the client IP, which the sign-in rate limit is keyed by. Out of the box a single-value `X-Forwarded-For` is trusted, which is right for proxies that overwrite it (Vercel does); reached without one, a client could forge it and dodge the limit. A proxy with its own header goes in `AUTH_IP_HEADER` (`x-real-ip`, `cf-connecting-ip`...); one that appends to `X-Forwarded-For` goes in `AUTH_TRUSTED_PROXIES` (its addresses or CIDRs, comma-separated).
 - The schema already applied. `build` does not run migrations, and `prisma migrate` needs `DIRECT_URL` — apply them from a machine with the direct connection before releasing.
 
 ## Contributing
