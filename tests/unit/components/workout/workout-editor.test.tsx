@@ -1,0 +1,830 @@
+import {
+    EditModeContext,
+    EditModeProvider,
+    EditModeToggle,
+} from '@/components/routine/edit-mode';
+import { WorkoutEditor } from '@/components/workout/workout-editor';
+import {
+    fireEvent,
+    render as rtlRender,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
+import { en } from '@/i18n/en';
+import { I18nProvider } from '@/i18n/i18n-provider';
+import { useToastStore } from '@/store/toast';
+import type { ReactNode } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import {
+    acceptConfirm,
+    confirmDialog,
+    declineConfirm,
+    noopAction,
+    openConfirm,
+    withModals,
+} from '../../setup-helpers';
+
+const toasts = () =>
+    useToastStore.getState().toasts.map((item) => item.message);
+
+/** The editor lives inside a routine that is read-only until Edit is pressed,
+    and every test below is about what editing can do. Read mode has its own
+    tests at the end, which render without this. */
+const inEditMode = (ui: ReactNode) => (
+    <EditModeContext
+        value={{
+            editing: true,
+            toggle: () => {},
+            discarded: 0,
+            dirtyDays: new Set<string>(),
+            setDirty: () => {},
+        }}
+    >
+        {withModals(ui)}
+    </EditModeContext>
+);
+const render = (ui: ReactNode) => rtlRender(inEditMode(ui));
+
+const workout = {
+    id: 'w1',
+    name: 'Push A',
+    exercises: [
+        {
+            id: 'e1',
+            name: 'Bench press',
+            sets: [
+                {
+                    repMode: 'range',
+                    repMin: 4,
+                    repMax: 6,
+                    technique: 'Top set',
+                },
+            ],
+        },
+    ],
+};
+
+const base = {
+    workout,
+    problems: [],
+    faults: {},
+    saveExercises: noopAction,
+    onRenameWorkout: noopAction,
+    onDeleteWorkout: async () => {},
+};
+
+/** A day whose only stored exercise has no name. */
+const flagged = {
+    problems: [{ where: 'Exercise 1', what: 'give it a name' }],
+    faults: {
+        e1: {
+            name: true,
+            sets: [{ min: false, max: false, value: false, technique: false }],
+        },
+    },
+};
+
+const save = () => screen.getByRole('button', { name: /Save changes/ });
+const undo = () => screen.getByRole('button', { name: 'Undo changes' });
+/** The bar is not a disabled pair of buttons on a clean day — it is not there
+    at all, and only arrives once the draft has moved off the last save. */
+const noBar = () => screen.queryByRole('button', { name: /Save changes/ });
+const addExercise = () => screen.getByRole('button', { name: /Add exercise/ });
+/** Moving and deleting an exercise sit at the foot of its card. */
+const button = (name: string) => screen.getByRole('button', { name });
+const deleteExercise = (e: number) => button(`Delete exercise ${e}`);
+
+/** Rename and delete both live behind the day's options menu. */
+const openDayOptions = () =>
+    fireEvent.click(screen.getByRole('button', { name: 'Day options' }));
+
+describe('WorkoutEditor', () => {
+    it('shows one form per exercise of the day', () => {
+        render(<WorkoutEditor {...base} />);
+        expect(screen.getByText('Push A')).toBeInTheDocument();
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+        expect(
+            screen.queryByLabelText('Exercise 2 name')
+        ).not.toBeInTheDocument();
+    });
+
+    // The name field searches the exercises the day archived: naming a card
+    // after one brings it back with its history. One already on a card is not
+    // offered — the day would hold it twice.
+    it('offers back the archived exercises not already on a card', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                retired={['Dips', 'bench press']}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.focus(screen.getByLabelText('Exercise 2 name'));
+        expect(
+            within(screen.getByRole('listbox'))
+                .getAllByRole('option')
+                .map((option) => option.textContent)
+        ).toEqual(['Dips']);
+    });
+
+    // A started routine has its days fixed: the cursor counts them.
+    it('leaves delete out of the day menu once the days are fixed', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                onDeleteWorkout={undefined}
+            />
+        );
+        openDayOptions();
+        expect(
+            screen.queryByRole('button', { name: 'Delete day' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Rename day' })
+        ).toBeInTheDocument();
+    });
+
+    // A workout's one day goes by the workout's name, which the page already
+    // titles it with: no heading of its own, and no day to rename or delete.
+    it('draws no day heading or menu without a day to rename', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                onRenameWorkout={undefined}
+                onDeleteWorkout={undefined}
+            />
+        );
+        expect(screen.queryByText('Push A')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Day options' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+    });
+
+    // A new workout: no blank card to fill in, only the button to add one —
+    // and nothing to save until something is added.
+    it('opens an empty workout on the add button alone', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+                onRenameWorkout={undefined}
+                empty={<p>Empty</p>}
+            />
+        );
+        expect(
+            screen.queryByLabelText('Exercise 1 name')
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Empty')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /Save changes/ })
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(addExercise());
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue('');
+        expect(
+            screen.getByRole('button', { name: /Save changes/ })
+        ).toBeInTheDocument();
+    });
+
+    it('starts an empty day on a single blank exercise', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+            />
+        );
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue('');
+        expect(deleteExercise(1)).toBeDisabled();
+    });
+
+    it('adds an exercise to the draft without saving anything', () => {
+        const saveExercises = vi.fn(noopAction);
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={saveExercises}
+            />
+        );
+        fireEvent.click(addExercise());
+        expect(screen.getByLabelText('Exercise 2 name')).toHaveValue('');
+        expect(saveExercises).not.toHaveBeenCalled();
+        // Two of them now, so either can go.
+        expect(deleteExercise(1)).toBeEnabled();
+    });
+
+    it('only offers to save once something has changed', () => {
+        render(<WorkoutEditor {...base} />);
+        expect(noBar()).toBeNull();
+
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        expect(save()).toBeEnabled();
+
+        // Back to what the server holds: nothing left to save.
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Bench press' },
+        });
+        expect(noBar()).toBeNull();
+    });
+
+    it('turns adding or removing an exercise into a change to save', () => {
+        render(<WorkoutEditor {...base} />);
+        fireEvent.click(addExercise());
+        expect(save()).toBeEnabled();
+        fireEvent.click(deleteExercise(2));
+        expect(noBar()).toBeNull();
+    });
+
+    it('reorders the day as a change to save, and undoes it', () => {
+        render(<WorkoutEditor {...base} />);
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+
+        fireEvent.click(button('Move exercise 2 up'));
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue('Dips');
+        expect(screen.getByLabelText('Exercise 2 name')).toHaveValue(
+            'Bench press'
+        );
+        // The focus goes with Dips, onto the arrow still live at the top.
+        expect(button('Move exercise 1 up')).toBeDisabled();
+        expect(button('Move exercise 1 down')).toHaveFocus();
+        expect(save()).toBeEnabled();
+
+        fireEvent.click(undo());
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+        expect(noBar()).toBeNull();
+    });
+
+    describe('a technique being written', () => {
+        const writeCustom = (e: number) => {
+            fireEvent.click(button(`Exercise ${e}, set 1 technique`));
+            fireEvent.click(button('Custom'));
+            fireEvent.change(
+                screen.getByLabelText(`Exercise ${e}, technique set 1`),
+                { target: { value: 'Cluster' } }
+            );
+        };
+        const box = (e: number) =>
+            screen.queryByLabelText(`Exercise ${e}, technique set 1`);
+
+        it('goes with its exercise when the cards move', () => {
+            render(<WorkoutEditor {...base} />);
+            fireEvent.click(addExercise());
+            writeCustom(1);
+
+            fireEvent.click(button('Move exercise 1 down'));
+            expect(box(1)).toBeNull();
+            expect(box(2)).toHaveValue('Cluster');
+            expect(screen.getByLabelText('Exercise 2 name')).toHaveValue(
+                'Bench press'
+            );
+        });
+
+        it('goes with its exercise when the card is deleted', () => {
+            render(<WorkoutEditor {...base} />);
+            fireEvent.click(addExercise());
+            writeCustom(1);
+
+            fireEvent.click(deleteExercise(1));
+            expect(box(1)).toBeNull();
+        });
+    });
+
+    it('sends the day in the order the cards were left in', async () => {
+        const saveExercises = vi.fn().mockResolvedValue({ ok: true as const });
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={saveExercises}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+        fireEvent.click(button('Move exercise 1 down'));
+        // Bench press is last now: down has nowhere to take it.
+        expect(button('Move exercise 2 down')).toBeDisabled();
+        expect(button('Move exercise 2 up')).toHaveFocus();
+        fireEvent.click(save());
+
+        await waitFor(() => expect(saveExercises).toHaveBeenCalled());
+        const data = saveExercises.mock.calls[0][1] as FormData;
+        const plan = JSON.parse(String(data.get('plan')));
+        expect(plan.map((exercise: { name: string }) => exercise.name)).toEqual(
+            ['Dips', 'Bench press']
+        );
+        expect(plan[1].id).toBe('e1');
+    });
+
+    it('throws the unsaved changes away on undo', () => {
+        render(<WorkoutEditor {...base} />);
+        expect(noBar()).toBeNull();
+
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(addExercise());
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Add set 2 to exercise 1' })
+        );
+        expect(undo()).toBeEnabled();
+
+        fireEvent.click(undo());
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Bench press'
+        );
+        expect(
+            screen.queryByLabelText('Exercise 2 name')
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Exercise 1, min reps set 2')
+        ).not.toBeInTheDocument();
+        expect(noBar()).toBeNull();
+        expect(noBar()).toBeNull();
+    });
+
+    it('submits the whole day as one plan', async () => {
+        const saveExercises = vi.fn().mockResolvedValue({ ok: true as const });
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={saveExercises}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+        fireEvent.click(save());
+
+        await waitFor(() => expect(saveExercises).toHaveBeenCalled());
+        const data = saveExercises.mock.calls[0][1] as FormData;
+        expect(data.get('workoutId')).toBe('w1');
+        expect(JSON.parse(String(data.get('plan')))).toEqual([
+            {
+                id: 'e1',
+                name: 'Bench press',
+                preview: false,
+                sets: [
+                    {
+                        kind: 'normal',
+                        mode: 'range',
+                        repMin: '4',
+                        repMax: '6',
+                        value: '',
+                        technique: 'Top set',
+                    },
+                ],
+            },
+            {
+                id: null,
+                name: 'Dips',
+                preview: false,
+                sets: [
+                    {
+                        kind: 'normal',
+                        mode: 'range',
+                        repMin: '',
+                        repMax: '',
+                        value: '',
+                        technique: null,
+                    },
+                ],
+            },
+        ]);
+    });
+
+    // Dispatching the action by hand only reports `pending` from inside a
+    // transition, and the button leans on it to keep a save from being sent twice.
+    it('holds the button down while the save is in flight', async () => {
+        let finish!: (state: { ok: true }) => void;
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={() =>
+                    new Promise((resolve) => {
+                        finish = resolve;
+                    })
+                }
+            />
+        );
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(save());
+
+        // Still on screen — the day is still unsaved — but shut while the
+        // action is in flight.
+        await waitFor(() => expect(save()).toBeDisabled());
+        finish({ ok: true });
+        // Still unsaved as far as the props know, so it comes back for another go.
+        await waitFor(() => expect(save()).toBeEnabled());
+    });
+
+    // The action can answer before the revalidated day reaches the props: going
+    // back to the props then would undo the save on screen until a reload.
+    it('holds on to what was saved while the day catches up', async () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={async () => ({ ok: true as const })}
+            />
+        );
+        const mode = screen.getByLabelText('Exercise 1, reps type set 1');
+        fireEvent.change(mode, { target: { value: 'fixed' } });
+        fireEvent.click(save());
+
+        await waitFor(() => expect(save()).toBeEnabled());
+        expect(mode).toHaveValue('fixed');
+    });
+
+    // A name saved with trailing spaces comes back trimmed, which can leave the
+    // day byte for byte as it was: there is nothing in the props for the editor
+    // to notice, so it has to take the answer the save came back with.
+    it('takes back what the save trimmed', async () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={async () => ({
+                    ok: true as const,
+                    saved: workout.exercises,
+                })}
+            />
+        );
+        const name = screen.getByLabelText('Exercise 1 name');
+        fireEvent.change(name, { target: { value: 'Bench press  ' } });
+        expect(save()).toBeEnabled();
+
+        fireEvent.click(save());
+        await waitFor(() => expect(name).toHaveValue('Bench press'));
+        expect(noBar()).toBeNull();
+        expect(toasts()).toEqual(['Changes saved']);
+    });
+
+    // Every revalidation hands the layout a fresh dictionary — same words, new
+    // object. A day that was saved earlier must not take that as a second save.
+    it('says the day was saved once, however often the page refreshes', async () => {
+        const editor = (dict: typeof en) => (
+            <I18nProvider
+                locale="en"
+                dict={dict}
+            >
+                <WorkoutEditor
+                    {...base}
+                    saveExercises={async () => ({
+                        ok: true as const,
+                        saved: workout.exercises,
+                    })}
+                />
+            </I18nProvider>
+        );
+        const { rerender } = render(editor(en));
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(save());
+        await waitFor(() => expect(toasts()).toEqual(['Changes saved']));
+
+        rerender(inEditMode(editor({ ...en })));
+        rerender(inEditMode(editor({ ...en })));
+        expect(toasts()).toEqual(['Changes saved']);
+    });
+
+    it('picks up the id a brand new exercise was given', async () => {
+        const saveExercises = vi.fn().mockResolvedValue({
+            ok: true as const,
+            saved: [
+                ...workout.exercises,
+                { id: 'e2', name: 'Dips', sets: workout.exercises[0].sets },
+            ],
+        });
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={saveExercises}
+            />
+        );
+        fireEvent.click(addExercise());
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Dips' },
+        });
+        fireEvent.click(save());
+        // Save is disabled the moment it is pressed, so waiting on that would
+        // wait on nothing: the drafts are only back from the server once
+        // exercise 2 is showing the sets the save gave it.
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText('Exercise 2, min reps set 1')
+            ).toHaveValue('4')
+        );
+        expect(noBar()).toBeNull();
+
+        // Saving again must update that exercise, not create a second one.
+        fireEvent.change(screen.getByLabelText('Exercise 2 name'), {
+            target: { value: 'Weighted dips' },
+        });
+        fireEvent.click(save());
+        await waitFor(() => expect(saveExercises).toHaveBeenCalledTimes(2));
+        const plan = JSON.parse(
+            String((saveExercises.mock.calls[1][1] as FormData).get('plan'))
+        );
+        expect(plan[1].id).toBe('e2');
+    });
+
+    it('keeps what was typed when the save is rejected', async () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                saveExercises={async () => ({ error: 'Nope' })}
+            />
+        );
+        fireEvent.change(screen.getByLabelText('Exercise 1 name'), {
+            target: { value: 'Incline press' },
+        });
+        fireEvent.click(save());
+
+        await waitFor(() => expect(toasts()).toEqual(['Nope']));
+        expect(useToastStore.getState().toasts[0].kind).toBe('error');
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveValue(
+            'Incline press'
+        );
+        expect(save()).toBeEnabled();
+    });
+
+    it('lists what this day is still missing', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        const item = screen.getByRole('listitem');
+        expect(item).toHaveTextContent('Exercise 1: give it a name');
+        // The place is what the eye scans the list for, so it stands apart.
+        expect(within(item).getByText('Exercise 1')).toHaveClass(
+            'font-semibold'
+        );
+    });
+
+    it('points at the offending fields, and stops when asked again', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        const name = screen.getByLabelText('Exercise 1 name');
+        expect(name).not.toHaveClass('border-danger');
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Show errors',
+            })
+        );
+        expect(name).toHaveClass('border-danger');
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Hide errors',
+            })
+        );
+        expect(name).not.toHaveClass('border-danger');
+    });
+
+    // The blank card a fresh day opens on is in no save, so it has no id in
+    // faults — and the highlight used to skip it, leaving the button dead on
+    // the one day whose every field is wrong.
+    it('points at the blank card a day with nothing saved opens on', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+                problems={[
+                    { where: 'Exercise 1', what: 'give it a name' },
+                    {
+                        where: 'Exercise 1, set 1',
+                        what: 'the reps are missing',
+                    },
+                ]}
+            />
+        );
+        const name = screen.getByLabelText('Exercise 1 name');
+        expect(name).not.toHaveClass('border-danger');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Show errors' }));
+        expect(name).toHaveClass('border-danger');
+    });
+
+    it('leaves an exercise the errors say nothing about alone', () => {
+        render(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        // Added to the draft, so it is in no error yet.
+        fireEvent.click(addExercise());
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Show errors',
+            })
+        );
+        expect(screen.getByLabelText('Exercise 1 name')).toHaveClass(
+            'border-danger'
+        );
+        expect(screen.getByLabelText('Exercise 2 name')).not.toHaveClass(
+            'border-danger'
+        );
+    });
+
+    it('has nothing to point at when the day is fine', () => {
+        render(<WorkoutEditor {...base} />);
+        expect(
+            screen.queryByRole('button', {
+                name: 'Show errors',
+            })
+        ).not.toBeInTheDocument();
+    });
+
+    it('confirms before deleting a day', async () => {
+        const onDeleteWorkout = vi.fn().mockResolvedValue(undefined);
+        render(
+            <WorkoutEditor
+                {...base}
+                onDeleteWorkout={onDeleteWorkout}
+            />
+        );
+        openDayOptions();
+        fireEvent.click(screen.getByRole('button', { name: 'Delete day' }));
+        expect(await openConfirm()).toHaveTextContent(
+            'Delete Push A and its exercises?'
+        );
+        expect(onDeleteWorkout).not.toHaveBeenCalled();
+
+        await acceptConfirm('Delete');
+        await waitFor(() => expect(onDeleteWorkout).toHaveBeenCalledWith('w1'));
+    });
+
+    it('renames the day from the same menu', async () => {
+        const onRenameWorkout = vi.fn(noopAction);
+        render(
+            <WorkoutEditor
+                {...base}
+                onRenameWorkout={onRenameWorkout}
+            />
+        );
+        openDayOptions();
+        fireEvent.click(screen.getByRole('button', { name: 'Rename day' }));
+
+        const dialog = await screen.findByRole('dialog');
+        expect(dialog).toHaveTextContent('Rename day');
+        expect(within(dialog).getByLabelText('Day name')).toHaveValue('Push A');
+    });
+});
+
+// No provider here: a routine opens read-only, which is what the context
+// defaults to.
+describe('WorkoutEditor, before Edit is pressed', () => {
+    // A field nobody can use should not look like one: the day is read as
+    // text, and the form only exists once Edit has been pressed.
+    it('sets the day out as text, with no fields at all', () => {
+        const { container } = rtlRender(<WorkoutEditor {...base} />);
+        expect(screen.getByText('Bench press')).toBeInTheDocument();
+        expect(screen.getByText('Top set')).toBeInTheDocument();
+        expect(screen.getByText('4-6 reps')).toBeInTheDocument();
+        expect(container.querySelector('input, select')).toBeNull();
+    });
+
+    // Nothing to act on here: the list is a note to whoever writes the day.
+    it('keeps what the day is missing out of sight', () => {
+        rtlRender(
+            <WorkoutEditor
+                {...base}
+                {...flagged}
+            />
+        );
+        expect(screen.queryByText(/give it a name/)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Show errors' })
+        ).not.toBeInTheDocument();
+    });
+
+    // A day added a moment ago has nothing saved in it. It reads as the one
+    // blank exercise the editor would open it on, so the card the user is about
+    // to fill is already on screen, rather than a sentence about its absence.
+    it('reads an unsaved day as one blank exercise', () => {
+        rtlRender(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+            />
+        );
+        expect(
+            screen.queryByText('This workout has no exercises yet.')
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Exercise')).toBeInTheDocument();
+        expect(screen.getByText('Set 1')).toBeInTheDocument();
+        expect(screen.getByText('Reps to define')).toBeInTheDocument();
+    });
+
+    // A workout says it is empty instead, the way an empty routine does.
+    it('reads an empty workout as what it was told to say', () => {
+        rtlRender(
+            <WorkoutEditor
+                {...base}
+                workout={{ ...workout, exercises: [] }}
+                empty={<p>This workout is empty</p>}
+            />
+        );
+        expect(screen.getByText('This workout is empty')).toBeInTheDocument();
+        expect(screen.queryByText('Set 1')).not.toBeInTheDocument();
+    });
+
+    it('hides everything that would change the day', () => {
+        rtlRender(<WorkoutEditor {...base} />);
+        for (const name of [
+            /Save changes/,
+            /Add exercise/,
+            'Delete day',
+            'Delete exercise 1',
+            'Move exercise 1 down',
+            /^Add set \d+ to exercise 1$/,
+        ]) {
+            expect(
+                screen.queryByRole('button', { name })
+            ).not.toBeInTheDocument();
+        }
+    });
+});
+
+describe('leaving edit mode with unsaved work', () => {
+    /** The real toggle over the real editor: the count of dirty days lives in
+        one and the draft in the other, so only the pair proves the discard. */
+    const renderRoutine = () =>
+        rtlRender(
+            withModals(
+                <EditModeProvider>
+                    <EditModeToggle />
+                    <WorkoutEditor {...base} />
+                </EditModeProvider>
+            )
+        );
+
+    const edit = () => screen.getByRole('button', { name: 'Edit' });
+    const done = () => screen.getByRole('button', { name: 'Done' });
+    const name = () => screen.getByLabelText('Exercise 1 name');
+    /** Out of edit mode the name is a heading, not a field. */
+    const read = (value: string) => screen.getByText(value);
+
+    it('leaves quietly when nothing was touched', () => {
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.click(done());
+        expect(confirmDialog()).not.toBeInTheDocument();
+        expect(read('Bench press')).toBeInTheDocument();
+    });
+
+    it('asks first, then throws the draft away', async () => {
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.change(name(), { target: { value: 'Incline press' } });
+        fireEvent.click(done());
+        expect(await openConfirm()).toHaveTextContent(
+            'You have changes that were never saved. Leave editing and lose them?'
+        );
+
+        await acceptConfirm('Discard changes');
+        expect(read('Bench press')).toBeInTheDocument();
+    });
+
+    it('stays in edit mode, draft intact, when the ask is refused', async () => {
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.change(name(), { target: { value: 'Incline press' } });
+        fireEvent.click(done());
+        await declineConfirm();
+        expect(name()).toHaveValue('Incline press');
+        expect(name()).not.toHaveAttribute('readonly');
+    });
+
+    it('has nothing to ask about once the draft is back where it started', () => {
+        renderRoutine();
+        fireEvent.click(edit());
+        fireEvent.change(name(), { target: { value: 'Incline press' } });
+        fireEvent.change(name(), { target: { value: 'Bench press' } });
+        fireEvent.click(done());
+        expect(confirmDialog()).not.toBeInTheDocument();
+    });
+});

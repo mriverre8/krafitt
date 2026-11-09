@@ -62,8 +62,8 @@ src/
 ├── components/                  # auth, chrome, history, modal, routine, ui, workout
 ├── i18n/                        # en (source), es, ca, provider, server helpers
 ├── lib/                         # auth, db, access, queries, progress, reps, validate, ui
-├── store/                       # zustand: modal, session
-└── tests/                       # vitest suites
+└── store/                       # zustand: modal, session
+tests/unit/                      # vitest suites
 prisma/schema.prisma
 ```
 
@@ -140,7 +140,7 @@ pnpm format:check  # prettier --check "src/**/*.{ts,tsx}"
 | `src/lib/`                  | Auth, Prisma client, access control, queries, pure domain logic, shared class strings           |
 | `src/i18n/`                 | Dictionaries and the server/client translators                                                 |
 | `src/store/`                | Zustand stores                                                                                 |
-| `src/tests/`                | One suite per component, plus `progress`, `reps`, `validate`, `access` and `i18n` key-parity tests |
+| `tests/unit/`               | One suite per component, plus `progress`, `reps`, `validate`, `access` and `i18n` key-parity tests |
 | `prisma/schema.prisma`      | BetterAuth models (`User`, `Session`, `Account`, `Verification`) and the domain models         |
 | `prisma7.config.ts`         | Prisma 7 config: schema path, migrations path, `.env` loading, direct datasource URL           |
 
