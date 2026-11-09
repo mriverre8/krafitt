@@ -125,6 +125,7 @@ pnpm lint          # eslint
 pnpm typecheck     # next typegen && tsc --noEmit
 pnpm test          # vitest run
 pnpm test:watch    # vitest in watch mode
+pnpm test:e2e      # playwright, all browsers (also :ui, :headed, :debug, :report)
 pnpm db:migrate    # prisma migrate dev
 pnpm db:generate   # prisma generate
 pnpm format        # prettier --write "src/**/*.{ts,tsx}"
@@ -205,6 +206,22 @@ pnpm test:watch
 ```
 
 Coverage is one suite per component, plus unit tests for the pure modules (`progress`, `reps`, `validate`) and a key-parity test across the three locales.
+
+### End-to-end (Playwright)
+
+Specs live in `tests/e2e/` (page objects in `pages/`, fixtures in `fixtures/`, database helpers in `support/`) and run on Chromium, Firefox and WebKit, against a production build on port 3100. The full feature-by-feature coverage is in [docs/e2e-test-coverage.md](docs/e2e-test-coverage.md), and every test is drawn as a flowchart in [docs/e2e-flows/](docs/e2e-flows/README.md).
+
+The suite never touches the real database. Without `E2E_DATABASE_URL` it starts a throwaway Postgres of its own (`embedded-postgres`, data under `node_modules/.cache/krafitt-e2e-postgres`); CI gives it a Postgres service instead. It refuses any database that is not on localhost. Every test signs up its own users, so tests share nothing and run in parallel, and no credentials are needed.
+
+```bash
+pnpm exec playwright install      # once: download the browsers
+pnpm test:e2e                     # all specs, all browsers
+pnpm test:e2e --project=chromium  # one browser
+pnpm test:e2e:ui                  # interactive runner
+pnpm test:e2e:report              # last HTML report (screenshots, videos, traces of failures)
+```
+
+`E2E_DEV=1 pnpm test:e2e` runs against `next dev` instead of a build, for quicker iteration (stop your own dev server first: Next allows one per project).
 
 ## Deployment
 

@@ -1,5 +1,11 @@
-# Native build scripts we allow: prisma engines and the eslint native resolver.
+# Native build scripts we allow: prisma engines, the eslint native resolver,
+# and the Postgres binaries of the e2e suite (their script only recreates the
+# symlinks between the bundled libraries).
 allowBuilds:
+  '@embedded-postgres/darwin-arm64': true
+  '@embedded-postgres/darwin-x64': true
+  '@embedded-postgres/linux-x64': true
+  '@embedded-postgres/windows-x64': true
   '@prisma/engines': true
   prisma: true
   unrs-resolver: true

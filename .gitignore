@@ -57,3 +57,7 @@ next-env.d.ts
 /CLAUDE.md
 
 /prisma/migrations
+
+# playwright
+/test-results/
+/playwright-report/
